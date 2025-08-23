@@ -63,12 +63,23 @@ export async function getMe(token) {
 }
 
 // Products
-export async function getProducts({ search = '', theme = '', minPrice = '', maxPrice = '' } = {}) {
+export async function getProducts({
+  search = '',
+  theme = '',
+  minPrice = '',
+  maxPrice = '',
+  page = 1,
+  limit = 10,
+  order = 'price_asc',
+} = {}) {
   const params = new URLSearchParams();
   if (search) params.set('search', search);
   if (theme) params.set('theme', theme);
   if (minPrice) params.set('minPrice', minPrice);
   if (maxPrice) params.set('maxPrice', maxPrice);
+  if (page) params.set('page', page);
+  if (limit) params.set('limit', limit);
+  if (order) params.set('order', order);
   const queryString = params.toString();
   const path = '/products' + (queryString ? `?${queryString}` : '');
   return await request(path, { method: 'GET' });

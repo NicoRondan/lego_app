@@ -10,27 +10,67 @@ const { ApiError } = require('../../shared/errors');
 // GET /products
 exports.getProducts = async (req, res, next) => {
   try {
-    const { search, theme, minPrice, maxPrice } = req.query;
+    const {
+      search,
+      theme,
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 10,
+      order = 'price_asc',
+    } = req.query;
+
     const where = {};
     const include = [];
+
     if (search) {
       where[Op.or] = [
         { name: { [Op.iLike]: `%${search}%` } },
         { description: { [Op.iLike]: `%${search}%` } },
       ];
     }
+
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) where.price[Op.gte] = parseFloat(minPrice);
       if (maxPrice) where.price[Op.lte] = parseFloat(maxPrice);
     }
+
     if (theme) {
-      include.push({ model: Category, where: { name: { [Op.iLike]: `%${theme}%` } }, through: { attributes: [] } });
+      include.push({
+        model: Category,
+        where: { name: { [Op.iLike]: `%${theme}%` } },
+        through: { attributes: [] },
+      });
     }
+
     include.push({ model: Category, through: { attributes: [] } });
     include.push({ model: Review, include: [User] });
-    const products = await Product.findAll({ where, include });
-    res.json(products);
+
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
+    const offset = (pageNum - 1) * limitNum;
+
+    let orderBy = [];
+    if (order === 'price_desc') orderBy = [['price', 'DESC']];
+    else if (order === 'price_asc') orderBy = [['price', 'ASC']];
+    else orderBy = [['id', 'ASC']];
+
+    const result = await Product.findAndCountAll({
+      where,
+      include,
+      limit: limitNum,
+      offset,
+      order: orderBy,
+      distinct: true,
+    });
+
+    res.json({
+      total: result.count,
+      limit: limitNum,
+      page: pageNum,
+      items: result.rows,
+    });
   } catch (err) {
     next(err);
   }
