@@ -1,5 +1,5 @@
 // Environment and configuration loader
-// This file centralises environment variables and provides sensible defaults.
+// This file centralizes environment variables and provides sensible defaults.
 
 require('dotenv').config();
 
