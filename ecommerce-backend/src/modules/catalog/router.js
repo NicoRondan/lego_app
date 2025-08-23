@@ -7,7 +7,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 
-// GET /products?search=&theme=&minPrice=&maxPrice=
+// GET /products?search=&theme=&minPrice=&maxPrice=&page=&limit=&order=
 router.get('/', controller.getProducts);
 
 // GET /products/:id
