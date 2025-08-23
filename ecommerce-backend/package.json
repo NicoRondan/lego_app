@@ -5,7 +5,8 @@
   "main": "src/app/server.js",
   "scripts": {
     "start": "node src/app/server.js",
-    "dev": "nodemon src/app/server.js"
+    "dev": "nodemon src/app/server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "apollo-server-express": "^3.11.1",
