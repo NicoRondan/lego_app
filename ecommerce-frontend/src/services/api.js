@@ -1,0 +1,116 @@
+// src/services/api.js
+// Helper functions to interact with the backend API. These functions use
+// the Fetch API to call REST endpoints defined in the backend. On
+// authenticated requests, the JWT token is passed in the Authorization header.
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+
+async function request(path, { method = 'GET', headers = {}, body, token } = {}) {
+  const url = `${API_URL}${path}`;
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  };
+  if (token) {
+    opts.headers['Authorization'] = `Bearer ${token}`;
+  }
+  if (body) {
+    opts.body = JSON.stringify(body);
+  }
+  const resp = await fetch(url, opts);
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(errText || 'Request failed');
+  }
+  // Try to parse JSON; if fails return undefined
+  const text = await resp.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch (_err) {
+    return {};
+  }
+}
+
+// Authentication
+export async function login({ provider, providerId, name, email }) {
+  return await request('/auth/login', {
+    method: 'POST',
+    body: { provider, providerId, name, email },
+  });
+}
+
+// Fetch current user info via GraphQL (me query)
+export async function getMe(token) {
+  // Use GraphQL to fetch me (id, name, email)
+  const query = {
+    query: `query { me { id name email } }`,
+    variables: {},
+  };
+  const resp = await fetch(`${API_URL}/graphql`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(query),
+  });
+  if (!resp.ok) throw new Error('Failed to fetch user');
+  const json = await resp.json();
+  return json.data.me;
+}
+
+// Products
+export async function getProducts({ search = '', theme = '', minPrice = '', maxPrice = '' } = {}) {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (theme) params.set('theme', theme);
+  if (minPrice) params.set('minPrice', minPrice);
+  if (maxPrice) params.set('maxPrice', maxPrice);
+  const queryString = params.toString();
+  const path = '/products' + (queryString ? `?${queryString}` : '');
+  return await request(path, { method: 'GET' });
+}
+
+export async function getProductById(id) {
+  return await request(`/products/${id}`, { method: 'GET' });
+}
+
+export async function getCategories() {
+  return await request('/categories', { method: 'GET' });
+}
+
+// Cart
+export async function getCart(token) {
+  return await request('/cart', { method: 'GET', token });
+}
+
+export async function addToCart({ productId, quantity }, token) {
+  return await request('/cart/items', { method: 'POST', body: { productId, quantity }, token });
+}
+
+export async function updateCartItem(itemId, { quantity }, token) {
+  return await request(`/cart/items/${itemId}`, { method: 'PATCH', body: { quantity }, token });
+}
+
+export async function removeCartItem(itemId, token) {
+  return await request(`/cart/items/${itemId}`, { method: 'DELETE', token });
+}
+
+// Orders
+export async function createOrder({ couponCode } = {}, token) {
+  return await request('/orders', { method: 'POST', body: { couponCode }, token });
+}
+
+export async function getOrders(token) {
+  return await request('/orders', { method: 'GET', token });
+}
+
+// Payments
+export async function createPaymentPreference(orderId, token) {
+  return await request('/payments/mp/preference', { method: 'POST', body: { orderId }, token });
+}
+
+// Note: webhooks are handled server-side; no client function needed
