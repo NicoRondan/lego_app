@@ -45,7 +45,12 @@ exports.updateItem = async (req, res, next) => {
     if (!user) throw new ApiError('Not authenticated', 401);
     const { id } = req.params;
     const { quantity } = req.body;
-    const item = await CartItem.findByPk(id);
+    // Ensure the cart item belongs to the authenticated user to prevent
+    // tampering with another user's cart by guessing item IDs.
+    const item = await CartItem.findOne({
+      where: { id },
+      include: { model: Cart, where: { userId: user.id } },
+    });
     if (!item) throw new ApiError('Cart item not found', 404);
     if (parseInt(quantity, 10) <= 0) {
       await item.destroy();
@@ -66,11 +71,18 @@ exports.removeItem = async (req, res, next) => {
     const user = req.user;
     if (!user) throw new ApiError('Not authenticated', 401);
     const { id } = req.params;
-    const item = await CartItem.findByPk(id);
+    // Fetch the cart item ensuring it belongs to the current user
+    const item = await CartItem.findOne({
+      where: { id },
+      include: { model: Cart, where: { userId: user.id } },
+    });
     if (!item) throw new ApiError('Cart item not found', 404);
     const cartId = item.cartId;
     await item.destroy();
-    const cart = await Cart.findOne({ where: { id: cartId, userId: user.id }, include: { model: CartItem, include: Product } });
+    const cart = await Cart.findOne({
+      where: { id: cartId, userId: user.id },
+      include: { model: CartItem, include: Product },
+    });
     res.json(cart);
   } catch (err) {
     next(err);

@@ -96,7 +96,11 @@ const resolvers = {
     updateCartItem: async (_parent, { itemId, quantity }, { models, user }) => {
       if (!user) throw new Error('Not authenticated');
       const { Cart, CartItem, Product } = models;
-      const item = await CartItem.findByPk(itemId);
+      // Only allow modifying items that belong to the authenticated user
+      const item = await CartItem.findOne({
+        where: { id: itemId },
+        include: { model: Cart, where: { userId: user.id } },
+      });
       if (!item) throw new Error('Cart item not found');
       if (quantity <= 0) {
         await item.destroy();
@@ -111,7 +115,11 @@ const resolvers = {
     removeCartItem: async (_parent, { itemId }, { models, user }) => {
       if (!user) throw new Error('Not authenticated');
       const { Cart, CartItem, Product } = models;
-      const item = await CartItem.findByPk(itemId);
+      // Ensure the cart item exists and belongs to the current user
+      const item = await CartItem.findOne({
+        where: { id: itemId },
+        include: { model: Cart, where: { userId: user.id } },
+      });
       if (!item) throw new Error('Cart item not found');
       const cartId = item.cartId;
       await item.destroy();
