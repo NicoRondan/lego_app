@@ -6,15 +6,22 @@
 const jwt = require('jsonwebtoken');
 const { User, SocialIdentity } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
+const { verifyIdToken } = require('../../shared/google');
 
 // Log in with a social provider. The client must already have obtained
 // providerId (sub) and user info (name, email) via OAuth. This endpoint
 // simply maps the provider user to a local User record and issues a JWT.
 exports.login = async (req, res, next) => {
   try {
-    const { provider, providerId, name, email } = req.body;
+    const { provider, providerId, name, email, idToken } = req.body;
     if (!provider || !providerId || !email) {
       throw new ApiError('Missing required fields: provider, providerId, email', 400);
+    }
+    if (provider === 'google' && idToken) {
+      const payload = await verifyIdToken(idToken);
+      if (payload.sub !== providerId) {
+        throw new ApiError('Invalid Google token', 401);
+      }
     }
     // Find or create the local user
     let [user] = await User.findOrCreate({ where: { email }, defaults: { name } });

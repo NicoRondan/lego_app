@@ -27,6 +27,7 @@ const catalogRouter = require('../modules/catalog/router');
 const cartRouter = require('../modules/cart/router');
 const ordersRouter = require('../modules/orders/router');
 const paymentsRouter = require('../modules/payments/router');
+const uploadsRouter = require('../modules/uploads/router');
 
 async function startServer() {
   const app = express();
@@ -52,6 +53,7 @@ async function startServer() {
   app.use('/cart', cartRouter);
   app.use('/orders', ordersRouter);
   app.use('/payments', paymentsRouter);
+  app.use('/uploads', uploadsRouter);
 
   // Configure Apollo Server for GraphQL
   const apolloServer = new ApolloServer({
