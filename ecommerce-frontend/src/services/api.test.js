@@ -20,6 +20,7 @@ describe('getProducts', () => {
       theme: 'city',
       minPrice: '10',
       maxPrice: '50',
+      featured: true,
       page: 2,
       limit: 5,
       order: 'price_desc',
@@ -34,5 +35,6 @@ describe('getProducts', () => {
     expect(params.get('page')).toBe('2');
     expect(params.get('limit')).toBe('5');
     expect(params.get('order')).toBe('price_desc');
+    expect(params.get('featured')).toBe('true');
   });
 });

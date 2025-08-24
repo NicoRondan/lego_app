@@ -74,6 +74,7 @@ export const getProducts = ({
   theme = '',
   minPrice = '',
   maxPrice = '',
+  featured = '',
   page = 1,
   limit = 10,
   order = 'price_asc',
@@ -83,6 +84,7 @@ export const getProducts = ({
   if (theme) params.set('theme', theme);
   if (minPrice) params.set('minPrice', minPrice);
   if (maxPrice) params.set('maxPrice', maxPrice);
+  if (featured) params.set('featured', featured);
   if (page) params.set('page', page);
   if (limit) params.set('limit', limit);
   if (order) params.set('order', order);
@@ -94,6 +96,18 @@ export const getProducts = ({
 export const getProductById = (id) => request(`/products/${id}`);
 
 export const getCategories = () => request('/categories');
+
+// Reviews
+export const getReviews = ({ limit = 10 } = {}) => {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', limit);
+  const query = params.toString();
+  return request('/reviews' + (query ? `?${query}` : ''));
+};
+
+// Newsletter
+export const subscribeNewsletter = (email) =>
+  request('/api/newsletter', { method: 'POST', body: { email } });
 
 // Cart
 export const getCart = () => request('/cart');
