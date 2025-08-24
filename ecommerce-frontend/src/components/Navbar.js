@@ -54,6 +54,13 @@ function Navbar() {
             )}
             {user && (
               <li className="nav-item">
+                <Link className="nav-link" to="/wishlist">
+                  Mi wishlist
+                </Link>
+              </li>
+            )}
+            {user && (
+              <li className="nav-item">
                 <Link className="nav-link" to="/admin">
                   Admin
                 </Link>
