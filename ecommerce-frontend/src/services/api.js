@@ -7,7 +7,7 @@
 
 import { toast } from 'react-toastify';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 // eslint-disable-next-line no-console
 console.debug('[api] Base URL:', API_URL);
 
