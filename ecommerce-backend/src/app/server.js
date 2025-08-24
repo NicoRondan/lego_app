@@ -6,7 +6,10 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { ApolloServer } = require('apollo-server-express');
+// Apollo Server 5 requires the standalone '@apollo/server' package and
+// the express4 middleware for integration with Express 4.
+const { ApolloServer } = require('@apollo/server');
+const { expressMiddleware } = require('@apollo/server/express4');
 
 // Load environment variables from .env file if present
 dotenv.config();
@@ -25,9 +28,10 @@ const { logger } = require('../shared/logger');
 const authRouter = require('../modules/auth/router');
 const catalogRouter = require('../modules/catalog/router');
 const cartRouter = require('../modules/cart/router');
-const ordersRouter = require('../modules/orders/router');
-const paymentsRouter = require('../modules/payments/router');
-const uploadsRouter = require('../modules/uploads/router');
+  const ordersRouter = require('../modules/orders/router');
+  const paymentsRouter = require('../modules/payments/router');
+  const uploadsRouter = require('../modules/uploads/router');
+  const webhooksRouter = require('../modules/webhooks/router');
 
 async function startServer() {
   const app = express();
@@ -54,22 +58,26 @@ async function startServer() {
   app.use('/orders', ordersRouter);
   app.use('/payments', paymentsRouter);
   app.use('/uploads', uploadsRouter);
+  app.use('/webhooks', webhooksRouter);
 
-  // Configure Apollo Server for GraphQL
+  // Configure Apollo Server for GraphQL (Apollo Server 5)
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
-    context: async ({ req }) => {
-      // Pass the authenticated user into GraphQL context
-      return {
-        user: req.user || null,
-        models: require('../infra/models'),
-      };
-    },
   });
 
   await apolloServer.start();
-  apolloServer.applyMiddleware({ app, path: '/graphql' });
+  // Attach the Apollo Server middleware at /graphql with context function
+  app.use(
+    '/graphql',
+    express.json(),
+    expressMiddleware(apolloServer, {
+      context: async ({ req }) => ({
+        user: req.user || null,
+        models: require('../infra/models'),
+      }),
+    }),
+  );
 
   // Centralised error handling
   app.use(errorHandler);

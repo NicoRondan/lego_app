@@ -13,8 +13,8 @@ exports.createPreference = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new ApiError('Not authenticated', 401);
-    const { orderId } = req.body;
-    if (!orderId) throw new ApiError('orderId is required', 400);
+    const dto = require('./dto');
+    const { orderId } = dto.parseCreatePreference(req.body);
     const order = await Order.findOne({ where: { id: orderId, userId: user.id } });
     if (!order) throw new ApiError('Order not found', 404);
     if (order.status !== 'pending') throw new ApiError('Order is not pending payment', 400);
@@ -61,8 +61,8 @@ exports.createPreference = async (req, res, next) => {
 // a simplified payload { paymentId, status } for demonstration.
 exports.handleWebhook = async (req, res, next) => {
   try {
-    const { paymentId, status } = req.body;
-    if (!paymentId || !status) throw new ApiError('paymentId and status are required', 400);
+    const dto = require('./dto');
+    const { paymentId, status } = dto.parseWebhook(req.body);
     // Locate the payment by externalId (Mercado Pago id)
     const payment = await Payment.findOne({ where: { externalId: paymentId } });
     if (!payment) throw new ApiError('Payment not found', 404);

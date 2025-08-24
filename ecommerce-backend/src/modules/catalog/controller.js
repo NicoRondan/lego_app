@@ -10,6 +10,7 @@ const { ApiError } = require('../../shared/errors');
 // GET /products
 exports.getProducts = async (req, res, next) => {
   try {
+    const dto = require('./dto');
     const {
       search,
       theme,
@@ -18,7 +19,7 @@ exports.getProducts = async (req, res, next) => {
       page = 1,
       limit = 10,
       order = 'price_asc',
-    } = req.query;
+    } = dto.parseGetProducts(req.query);
 
     const where = {};
     const include = [];

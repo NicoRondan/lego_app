@@ -142,7 +142,7 @@ const typeDefs = gql`
     # Create an order from the current cart (status pending) with optional coupon code
     createOrder(couponCode: String): Order
     # Create a payment preference for Mercado Pago for a given order
-    createPaymentPreference(orderId: ID!): Payment
+    createMpPreference(orderId: ID!): Payment
   }
 `;
 
