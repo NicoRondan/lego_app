@@ -123,7 +123,7 @@ async function createApp() {
 async function startServer() {
   await seed();
   const app = await createApp();
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 4000;
   app.listen(port, () => {
     logger.info(`Server ready at http://localhost:${port}`);
     logger.info(
