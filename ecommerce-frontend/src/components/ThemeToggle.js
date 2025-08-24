@@ -16,9 +16,11 @@ const ThemeToggle = () => {
   const applyTheme = (t) => {
     if (t === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.setAttribute('data-bs-theme', 'dark');
       document.documentElement.style.colorScheme = 'dark';
     } else {
       document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-bs-theme', 'light');
       document.documentElement.style.colorScheme = 'light';
     }
   };
@@ -30,7 +32,7 @@ const ThemeToggle = () => {
   return (
     <button
       type="button"
-      className="btn btn-outline-light d-flex align-items-center"
+      className="btn btn-outline-primary d-flex align-items-center"
       onClick={toggle}
       aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
     >
