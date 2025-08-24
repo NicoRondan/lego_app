@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import * as api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import QuantityStepper from '../components/QuantityStepper';
 
 // Page that displays the user's cart and allows quantity adjustments and removal
 function CartPage() {
@@ -86,13 +87,9 @@ function CartPage() {
                 <tr key={item.id}>
                   <td>{item.product?.name}</td>
                   <td>
-                    <input
-                      type="number"
-                      min="1"
+                    <QuantityStepper
                       value={item.quantity}
-                      onChange={(e) => handleUpdate(item.id, parseInt(e.target.value, 10))}
-                      className="form-control"
-                      style={{ width: '80px' }}
+                      onChange={(qty) => handleUpdate(item.id, qty)}
                     />
                   </td>
                   <td>${parseFloat(item.unitPrice).toFixed(2)}</td>

@@ -42,6 +42,11 @@ Incluye autenticación OAuth (Google/Facebook) con PKCE, idempotencia para creac
   npm start      # servidor de desarrollo
   npm run build  # compilación para producción
   ```
+  Para auditorías de Lighthouse CI en producción:
+  ```bash
+  npm run build
+  npm run lhci
+  ```
 
 ## Pruebas
 
