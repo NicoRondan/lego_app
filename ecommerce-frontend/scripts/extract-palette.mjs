@@ -1,38 +1,15 @@
 #!/usr/bin/env node
 // scripts/extract-palette.mjs
-
+import { Vibrant } from "node-vibrant/node";
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 1) Resolver logo desde la raíz del proyecto (no desde cwd)
 const image = path.resolve(__dirname, '../public/assets/logo.png');
 
-// 2) Cargar node-vibrant con compatibilidad ESM/CJS/named/default/UMD
-async function loadVibrant() {
-  const require = createRequire(import.meta.url);
-  try {
-    // ESM con default (CJS via interop) o namespace con default
-    const mod = await import('node-vibrant');
-    if (mod.default) return mod.default;
-    if (mod.Vibrant) return mod.Vibrant; // named export
-  } catch {
-    // ignorar y probar bundle UMD
-  }
-  try {
-    const pkgDir = path.dirname(require.resolve('node-vibrant/package.json'));
-    const umdUrl = pathToFileURL(path.join(pkgDir, 'lib', 'bundle.js'));
-    const umd = await import(umdUrl.href);
-    return umd.default || umd.Vibrant || umd;
-  } catch (e) {
-    console.warn('[palette] node-vibrant no disponible:', e?.message || e);
-    return null;
-  }
-}
 
 const legoFallback = {
   primary: '#DA1A32',
@@ -42,7 +19,6 @@ const legoFallback = {
   support2: '#F06D1F'
 };
 
-// --- utilidades de color (sin cambios) ---
 function hexToRgb(hex){const s=hex.replace('#','');const n=parseInt(s,16);return[(n>>16)&255,(n>>8)&255,n&255]}
 function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const m=Math.max(r,g,b),n=Math.min(r,g,b);let h,s,l=(m+n)/2;if(m===n){h=s=0}else{const d=m-n;s=l>0.5?d/(2-m-n):d/(m+n);switch(m){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break}h/=6}return[h*360,s*100,l*100]}
 function hslToRgb(h,s,l){h/=360;s/=100;l/=100;let r,g,b;if(s===0){r=g=b=l}else{const u=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p};const q=l<0.5?l*(1+s):l+s-l*s;const p=2*l-q;r=u(p,q,h+1/3);g=u(p,q,h);b=u(p,q,h-1/3)}return[Math.round(r*255),Math.round(g*255),Math.round(b*255)]}
@@ -51,9 +27,7 @@ function luminance(r,g,b){const a=[r,g,b].map(v=>{v/=255;return v<=0.03928?v/12.
 function contrast(hex1,hex2){const[r1,g1,b1]=hexToRgb(hex1);const[r2,g2,b2]=hexToRgb(hex2);const l1=luminance(r1,g1,b1)+0.05;const l2=luminance(r2,g2,b2)+0.05;return l1>l2?l1/l2:l2/l1}
 function ensureContrast(hex,against='#ffffff',ratio=4.5){let[h,s,l]=rgbToHsl(...hexToRgb(hex));while(contrast(rgbToHex(...hslToRgb(h,s,l)),against)<ratio&&l<95){l+=1}const[r,g,b]=hslToRgb(h,s,l);const newHex=rgbToHex(r,g,b);return{hex:newHex,hsl:`${Math.round(h)} ${Math.round(s)}% ${Math.round(l)}%`}}
 
-const Vibrant = await loadVibrant();
 
-// 3) Obtener paleta (con fallback si no hay imagen o librería)
 let palette = {};
 if (Vibrant) {
   try {

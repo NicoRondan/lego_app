@@ -5,7 +5,7 @@
   "description": "Frontend para un ecommerce B2C de Legos (React)",
   "proxy": "http://localhost:4000",
   "scripts": {
-    "start": "WATCHPACK_POLLING=false react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
