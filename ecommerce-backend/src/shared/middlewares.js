@@ -82,20 +82,6 @@ function rateLimit({ windowMs, limit }) {
   };
 }
 
-function csrfMiddleware(req, res, next) {
-  const method = req.method.toUpperCase();
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    const tokenCookie = req.cookies && req.cookies.csrfToken;
-    const headerToken = req.headers['x-csrf-token'];
-    if (!tokenCookie || !headerToken || tokenCookie !== headerToken) {
-      return res
-        .status(403)
-        .json({ error: { code: ERROR_CODES[403], message: 'Invalid CSRF token' }, requestId: req.id });
-    }
-  }
-  next();
-}
-
 // Authorization middleware for role-based access control
 function requireRole(role) {
   return function (req, res, next) {
@@ -142,6 +128,5 @@ module.exports = {
   errorHandler,
   parseCookies,
   rateLimit,
-  csrfMiddleware,
   requireRole,
 };

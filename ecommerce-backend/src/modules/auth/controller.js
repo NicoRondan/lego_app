@@ -140,11 +140,21 @@ exports.oauthGoogleCallback = async (req, res, next) => {
   }
 };
 
-exports.me = (req, res) => {
-  if (!req.user) {
-    throw new ApiError('Unauthorized', 401);
+exports.me = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      throw new ApiError('Unauthorized', 401);
+    }
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'name', 'email'],
+    });
+    if (!user) {
+      throw new ApiError('User not found', 404);
+    }
+    res.json({ id: user.id, name: user.name, email: user.email });
+  } catch (err) {
+    next(err);
   }
-  res.json({ id: req.user.id, name: req.user.name, email: req.user.email });
 };
 
 exports.csrfToken = (_req, res) => {
