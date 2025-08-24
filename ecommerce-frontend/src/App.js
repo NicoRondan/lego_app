@@ -13,6 +13,7 @@ import RegisterPage from './pages/RegisterPage';
 import LoginCallback from './pages/LoginCallback';
 import OrdersPage from './pages/OrdersPage';
 import AdminPage from './pages/AdminPage';
+import WishlistPage from './pages/WishlistPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -25,6 +26,14 @@ function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <WishlistPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/checkout"
             element={

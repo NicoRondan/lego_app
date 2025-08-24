@@ -67,8 +67,11 @@ const Wishlist = sequelize.define('Wishlist', {
 });
 
 // WishlistItem bridging table (many-to-many between Wishlist and Product)
+// Explicit FK fields so camelCase attributes map to snake_case columns
 const WishlistItem = sequelize.define('WishlistItem', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  wishlistId: { type: DataTypes.INTEGER, allowNull: false, field: 'wishlist_id' },
+  productId: { type: DataTypes.INTEGER, allowNull: false, field: 'product_id' },
 }, {
   tableName: 'wishlist_items',
   underscored: true,
@@ -227,11 +230,21 @@ User.hasMany(Review, { as: 'reviews' });
 Review.belongsTo(User);
 
 // Wishlist relations
-Wishlist.belongsToMany(Product, { through: WishlistItem, as: 'products' });
-Product.belongsToMany(Wishlist, { through: WishlistItem, as: 'wishlists' });
-Wishlist.hasMany(WishlistItem, { as: 'items' });
-WishlistItem.belongsTo(Wishlist);
-WishlistItem.belongsTo(Product);
+Wishlist.belongsToMany(Product, {
+  through: WishlistItem,
+  as: 'products',
+  foreignKey: 'wishlistId',
+  otherKey: 'productId',
+});
+Product.belongsToMany(Wishlist, {
+  through: WishlistItem,
+  as: 'wishlists',
+  foreignKey: 'productId',
+  otherKey: 'wishlistId',
+});
+Wishlist.hasMany(WishlistItem, { as: 'items', foreignKey: 'wishlistId' });
+WishlistItem.belongsTo(Wishlist, { foreignKey: 'wishlistId' });
+WishlistItem.belongsTo(Product, { foreignKey: 'productId' });
 
 // Product and Category (N:M)
 Product.belongsToMany(Category, { through: ProductCategory, as: 'categories' });
