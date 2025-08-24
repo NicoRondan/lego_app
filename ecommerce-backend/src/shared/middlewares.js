@@ -5,6 +5,9 @@
 
 const jwt = require('jsonwebtoken');
 const { User } = require('../infra/models');
+const { randomUUID } = require('crypto');
+const { logger } = require('./logger');
+const { ERROR_CODES } = require('./errors');
 
 // Authentication middleware: reads the bearer token from the Authorization
 // header and decodes it using the secret. If valid, attaches a minimal
@@ -27,17 +30,36 @@ async function authMiddleware(req, _res, next) {
   return next();
 }
 
+// Request ID and logger middleware: assigns a unique requestId and binds a
+// child logger to the request for correlation across logs.
+function requestIdMiddleware(req, res, next) {
+  const id = req.headers['x-request-id'] || randomUUID();
+  req.id = id;
+  res.setHeader('x-request-id', id);
+  req.log = logger.child({ requestId: id });
+  next();
+}
+
 // Centralised error handler: catches any errors thrown in routes or
-// resolvers and sends a formatted JSON response with appropriate status.
+// resolvers and sends a formatted JSON response with appropriate status and code.
 function errorHandler(err, req, res, _next) {
-  // GraphQL errors are handled by Apollo, but this catches Express errors
-  console.error(err);
   const status = err.status || 500;
+  const code = err.code || ERROR_CODES[status] || 'INTERNAL_SERVER_ERROR';
   const message = err.message || 'Internal Server Error';
-  res.status(status).json({ error: message });
+  if (req.log && req.log.error) {
+    req.log.error({ err }, message);
+  } else {
+    // eslint-disable-next-line no-console
+    console.error(err);
+  }
+  res.status(status).json({
+    error: { code, message },
+    requestId: req.id,
+  });
 }
 
 module.exports = {
   authMiddleware,
+  requestIdMiddleware,
   errorHandler,
 };

@@ -62,6 +62,11 @@ const Product = sequelize.define('Product', {
 }, {
   tableName: 'products',
   underscored: true,
+  indexes: [
+    { fields: ['code'] },
+    { fields: ['status'] },
+    { fields: ['price'] },
+  ],
 });
 
 // Category model

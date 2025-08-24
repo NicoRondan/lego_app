@@ -1,20 +1,32 @@
 // src/shared/logger.js
-// Simple logging utility wrapping console with different levels. In a real
-// application you might replace this with a library like pino or winston.
+// Logging utility using pino with graceful fallback to console when pino is not
+// installed. Exposes helper methods and the raw logger instance.
+
+let pino;
+try {
+  // Dynamically require so tests can run even if pino isn't installed
+  pino = require('pino');
+} catch (err) {
+  pino = () => ({
+    child: () => ({ info: console.log, warn: console.warn, error: console.error }),
+    info: console.log,
+    warn: console.warn,
+    error: console.error,
+  });
+}
+
+const logger = pino();
 
 function log(...args) {
-  // eslint-disable-next-line no-console
-  console.log('[LOG]', ...args);
+  logger.info(...args);
 }
 
 function warn(...args) {
-  // eslint-disable-next-line no-console
-  console.warn('[WARN]', ...args);
+  logger.warn(...args);
 }
 
 function error(...args) {
-  // eslint-disable-next-line no-console
-  console.error('[ERROR]', ...args);
+  logger.error(...args);
 }
 
-module.exports = { log, warn, error };
+module.exports = { logger, log, warn, error };
