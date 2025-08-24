@@ -10,7 +10,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lhci": "lhci autorun",
-    "extract-palette": "node ../scripts/extract-palette.mjs"
+    "palette": "node ./scripts/extract-palette.mjs"
   },
   "dependencies": {
     "bootstrap": "^5.3.0",
