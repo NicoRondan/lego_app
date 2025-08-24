@@ -27,7 +27,11 @@ Service de backend para una tienda B2C de Lego construido con Node.js, Express y
    CLOUDINARY_API_KEY=
    CLOUDINARY_API_SECRET=
    ```
-3. (Opcional) Poblar la base de datos con datos de ejemplo:
+3. Aplicar la migración SQL inicial antes de iniciar el servidor. Ejemplo con SQLite:
+   ```bash
+   sqlite3 <ruta_de_la_base_de_datos> < src/infra/migrations/001_init.sql
+   ```
+4. (Opcional) Poblar la base de datos con datos de ejemplo:
    ```bash
    npm run seed
    ```
@@ -43,12 +47,39 @@ Service de backend para una tienda B2C de Lego construido con Node.js, Express y
   npm start
   ```
 
+## GraphQL
+
+- Implementado con [Apollo Server 5](https://www.apollographql.com/docs/apollo-server/).
+- Endpoint principal: `/graphql`.
+- Mutaciones disponibles:
+  - `addToCart`
+  - `updateCartItem`
+  - `createOrder`
+  - `createMpPreference`
+
+## REST API
+
+Endpoints disponibles:
+
+- `GET /products`
+- `POST /cart/items`
+- `PATCH /cart/items/:id`
+- `POST /orders`
+- `POST /payments/mp/preference`
+- `POST /webhooks/mp`
+
+Para detalles de parámetros y respuestas consulta `src/app/openapi.yaml`.
+
 ## Pruebas
 
-Ejecutar los tests unitarios:
-```bash
-npm test
-```
+- Ejecutar todos los tests:
+  ```bash
+  npm test
+  ```
+- Pruebas de integración GraphQL (`test/graphqlIntegration.test.js`):
+  ```bash
+  npm test test/graphqlIntegration.test.js
+  ```
 
 ## Estructura del proyecto
 
