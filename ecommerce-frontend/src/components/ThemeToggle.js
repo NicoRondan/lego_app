@@ -16,9 +16,11 @@ const ThemeToggle = () => {
   const applyTheme = (t) => {
     if (t === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.setAttribute('data-bs-theme', 'dark');
       document.documentElement.style.colorScheme = 'dark';
     } else {
       document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-bs-theme', 'light');
       document.documentElement.style.colorScheme = 'light';
     }
   };

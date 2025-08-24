@@ -2,9 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
-import './theme/variables.css';
+import applyTokens from './theme/applyTokens';
 import './theme/bootstrap.scss';
+import './theme/variables.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
+applyTokens();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
