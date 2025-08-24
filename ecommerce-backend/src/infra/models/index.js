@@ -59,6 +59,8 @@ const Address = sequelize.define('Address', {
 // Wishlist model
 const Wishlist = sequelize.define('Wishlist', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  // Explicit foreign key mapping to ensure camelCase attribute uses snake_case column
+  userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
 }, {
   tableName: 'wishlists',
   underscored: true,
@@ -212,8 +214,8 @@ RefreshToken.belongsTo(User);
 User.hasMany(IdempotencyKey, { as: 'idempotencyKeys' });
 IdempotencyKey.belongsTo(User);
 
-User.hasMany(Wishlist, { as: 'wishlists' });
-Wishlist.belongsTo(User);
+User.hasMany(Wishlist, { as: 'wishlists', foreignKey: 'userId' });
+Wishlist.belongsTo(User, { foreignKey: 'userId' });
 
 User.hasMany(Cart, { as: 'carts', foreignKey: 'userId' });
 Cart.belongsTo(User, { foreignKey: 'userId' });
