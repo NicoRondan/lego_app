@@ -77,7 +77,7 @@ const LoginPage = () => {
       </form>
       <hr />
       <button
-        className="btn btn-outline-dark w-100"
+        className="btn btn-outline-secondary w-100"
         onClick={loginWithGoogle}
         aria-label="Continuar con Google"
       >

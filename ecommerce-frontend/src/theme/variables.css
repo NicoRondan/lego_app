@@ -1,0 +1,105 @@
+:root {
+  --color-primary-hsl: 348 84% 48%;
+  --color-primary: hsl(var(--color-primary-hsl));
+  --color-secondary-hsl: 45 100% 50%;
+  --color-secondary: hsl(var(--color-secondary-hsl));
+  --color-accent-hsl: 211 100% 33%;
+  --color-accent: hsl(var(--color-accent-hsl));
+  --color-success-hsl: 142 72% 45%;
+  --color-success: hsl(var(--color-success-hsl));
+  --color-warning-hsl: 35 92% 56%;
+  --color-warning: hsl(var(--color-warning-hsl));
+  --color-danger-hsl: 0 84% 60%;
+  --color-danger: hsl(var(--color-danger-hsl));
+  --color-info-hsl: 199 90% 48%;
+  --color-info: hsl(var(--color-info-hsl));
+
+  --bg: #ffffff;
+  --fg: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+
+  --link: var(--color-primary);
+  --link-hover: var(--color-accent);
+
+  --bs-primary: var(--color-primary);
+  --bs-secondary: var(--color-secondary);
+  --bs-success: var(--color-success);
+  --bs-warning: var(--color-warning);
+  --bs-danger: var(--color-danger);
+  --bs-info: var(--color-info);
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--fg);
+  --bs-link-color: var(--link);
+  --bs-link-hover-color: var(--link-hover);
+  --bs-border-color: var(--border);
+  --bs-navbar-color: var(--fg);
+  --bs-navbar-brand-color: var(--fg);
+  --bs-card-bg: var(--bg);
+  --bs-card-color: var(--fg);
+  --bs-card-border-color: var(--border);
+  --bs-border-radius: 0.5rem;
+  --bs-btn-border-radius: 0.5rem;
+}
+
+[data-theme="dark"] {
+  --bg: #111827;
+  --fg: #f8f9fa;
+  --muted: #9ca3af;
+  --border: #374151;
+  --link: var(--color-secondary);
+  --link-hover: var(--color-accent);
+
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--fg);
+  --bs-link-color: var(--link);
+  --bs-link-hover-color: var(--link-hover);
+  --bs-border-color: var(--border);
+  --bs-navbar-color: var(--fg);
+  --bs-navbar-brand-color: var(--fg);
+  --bs-card-bg: var(--bg);
+  --bs-card-color: var(--fg);
+  --bs-card-border-color: var(--border);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+a {
+  color: var(--link);
+}
+a:hover {
+  color: var(--link-hover);
+}
+
+.nav-link {
+  color: var(--fg);
+}
+.nav-link:hover,
+.nav-link:focus {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+.card {
+  border-color: var(--border);
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.25rem hsl(var(--color-primary-hsl) / 0.25);
+  border-color: var(--color-primary);
+}
+
+.btn-accent {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+.btn-accent:hover {
+  background-color: color-mix(in srgb, var(--color-accent), black 20%);
+  border-color: color-mix(in srgb, var(--color-accent), black 20%);
+}

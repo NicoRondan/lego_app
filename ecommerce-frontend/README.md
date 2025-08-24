@@ -64,3 +64,15 @@ src/
   App.js                Componente raíz
   index.js              Punto de entrada
 ```
+
+## Tema y paleta
+
+Los colores del tema se extraen del logo y se armonizan con los tonos clásicos de Lego.
+Para regenerar los tokens ejecutá:
+
+```bash
+node ../scripts/extract-palette.mjs
+```
+
+Esto generará `src/theme/tokens.json`. Podés editar este archivo para extender
+los colores semánticos o ajustar valores específicos.
