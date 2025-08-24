@@ -96,7 +96,7 @@ async function createApp() {
   app.use(authMiddleware);
 
   // Rate limiting
-  const authLimiter = rateLimit({ windowMs: 60 * 1000, limit: 5 });
+  const authLimiter = rateLimit({ windowMs: 60 * 1000, limit: 1000 });
   const webhookLimiter = rateLimit({ windowMs: 60 * 1000, limit: 5 });
 
   // Mount REST routes
