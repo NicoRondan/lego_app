@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import * as api from '../../services/api';
 
 function Newsletter() {
   const [email, setEmail] = useState('');
@@ -9,11 +10,7 @@ function Newsletter() {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
+      await api.subscribeNewsletter(email);
       toast.success('¡Gracias por suscribirte!');
       setEmail('');
     } catch (err) {

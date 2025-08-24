@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import * as api from '../../services/api';
 import SkeletonCard from './SkeletonCard';
 
 function ProductCarousel() {
@@ -8,16 +9,20 @@ function ProductCarousel() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch('/products?featured=true&limit=10')
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .catch(() =>
-        fetch('/products?limit=10&sort=popularity').then((r) =>
-          r.ok ? r.json() : Promise.reject()
-        )
-      )
-      .then((data) => setProducts(data || []))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+    const load = async () => {
+      try {
+        let data = await api.getProducts({ featured: true, limit: 10 });
+        if (!data.items || data.items.length === 0) {
+          data = await api.getProducts({ limit: 10, order: 'popularity_desc' });
+        }
+        setProducts(data.items || []);
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   if (loading) {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import * as api from '../../services/api';
 
 const mockReviews = [
   {
@@ -27,9 +28,9 @@ function ReviewsCarousel() {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    fetch('/reviews?limit=10')
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data) => setReviews(data))
+    api
+      .getReviews({ limit: 10 })
+      .then((data) => setReviews(data.items || data))
       .catch(() => setReviews(mockReviews));
   }, []);
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import * as api from '../../services/api';
 import SkeletonCard from './SkeletonCard';
 
 function ProductList() {
@@ -8,19 +9,16 @@ function ProductList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      fetch('/products?sort=sales&limit=8').then((r) =>
-        r.ok ? r.json() : []
-      ),
-      fetch('/products?sort=createdAt:desc&limit=8').then((r) =>
-        r.ok ? r.json() : []
-      ),
-    ])
-      .then(([t, n]) => {
-        setTop(t);
-        setNews(n);
-      })
-      .finally(() => setLoading(false));
+    const load = async () => {
+      const [t, n] = await Promise.all([
+        api.getProducts({ limit: 8, order: 'sales_desc' }),
+        api.getProducts({ limit: 8, order: 'createdAt_desc' }),
+      ]);
+      setTop(t.items || []);
+      setNews(n.items || []);
+      setLoading(false);
+    };
+    load();
   }, []);
 
   if (loading) {
