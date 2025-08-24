@@ -22,8 +22,9 @@ function ProductDetailPage() {
         const data = await api.getProductById(id);
         setProduct(data);
         if (user) {
-          const wl = await api.getWishlist();
-          setInWishlist(wl.items?.some((it) => it.product?.id === data.id));
+          // Fetch wishlist but tolerate missing list for new users
+          const wl = await api.getWishlist().catch(() => null);
+          setInWishlist(wl?.items?.some((it) => it.product?.id === data.id));
         }
       } catch (err) {
         console.error(err);
