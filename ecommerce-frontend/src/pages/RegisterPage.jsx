@@ -106,11 +106,12 @@ const RegisterPage = () => {
           {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
         </div>
         <button
-          className="btn btn-primary w-100"
+          className="btn btn-primary w-100 d-flex align-items-center justify-content-center"
           disabled={loading}
           type="submit"
           aria-label="Registrarse"
         >
+          <i className="fa-solid fa-user-plus me-2" aria-hidden="true"></i>
           {loading ? 'Registrando…' : 'Registrarse'}
         </button>
       </form>

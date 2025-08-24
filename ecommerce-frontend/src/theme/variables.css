@@ -33,13 +33,12 @@
   --bs-link-color: var(--link);
   --bs-link-hover-color: var(--link-hover);
   --bs-border-color: var(--border);
-  --bs-navbar-color: var(--fg);
-  --bs-navbar-brand-color: var(--fg);
   --bs-card-bg: var(--bg);
   --bs-card-color: var(--fg);
   --bs-card-border-color: var(--border);
   --bs-border-radius: 0.5rem;
   --bs-btn-border-radius: 0.5rem;
+  color-scheme: light;
 }
 
 [data-theme="dark"] {
@@ -55,11 +54,10 @@
   --bs-link-color: var(--link);
   --bs-link-hover-color: var(--link-hover);
   --bs-border-color: var(--border);
-  --bs-navbar-color: var(--fg);
-  --bs-navbar-brand-color: var(--fg);
   --bs-card-bg: var(--bg);
   --bs-card-color: var(--fg);
   --bs-card-border-color: var(--border);
+  color-scheme: dark;
 }
 
 body {
@@ -67,21 +65,12 @@ body {
   color: var(--fg);
 }
 
-a {
+ a {
   color: var(--link);
-}
-a:hover {
+ }
+ a:hover {
   color: var(--link-hover);
-}
-
-.nav-link {
-  color: var(--fg);
-}
-.nav-link:hover,
-.nav-link:focus {
-  color: var(--link-hover);
-  text-decoration: underline;
-}
+ }
 
 .card {
   border-color: var(--border);
@@ -102,4 +91,16 @@ a:hover {
 .btn-accent:hover {
   background-color: color-mix(in srgb, var(--color-accent), black 20%);
   border-color: color-mix(in srgb, var(--color-accent), black 20%);
+}
+
+.btn-outline-warning {
+  color: #212529;
+  background-color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+.btn-outline-warning:hover,
+.btn-outline-warning:focus {
+  color: #212529;
+  background-color: color-mix(in srgb, var(--color-warning), black 10%);
+  border-color: color-mix(in srgb, var(--color-warning), black 15%);
 }
