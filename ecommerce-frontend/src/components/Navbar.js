@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import MiniCart from './MiniCart';
+import * as api from '../services/api';
 
 // Navigation bar component. Uses Bootstrap classes for styling.
 function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
+  const [cart, setCart] = useState(null);
+
+  useEffect(() => {
+    const loadCart = async () => {
+      if (!token) return setCart(null);
+      try {
+        const data = await api.getCart(token);
+        setCart(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadCart();
+  }, [token]);
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container-fluid">
@@ -45,10 +61,20 @@ function Navbar() {
             )}
           </ul>
           <ul className="navbar-nav ms-auto">
-            <li className="nav-item">
-              <Link className="nav-link" to="/cart">
+            <li className="nav-item dropdown">
+              <Link
+                className="nav-link dropdown-toggle"
+                to="/cart"
+                id="miniCartDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
                 Carrito
               </Link>
+              <div className="dropdown-menu dropdown-menu-end" aria-labelledby="miniCartDropdown">
+                <MiniCart items={cart?.items || []} />
+              </div>
             </li>
             {user ? (
               <>

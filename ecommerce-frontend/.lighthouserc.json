@@ -1,0 +1,12 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": "build",
+      "url": ["/", "/products", "/products/1", "/cart", "/checkout", "/login", "/orders", "/admin"]
+    },
+    "assert": {
+      "preset": "lighthouse:recommended",
+      "budgetsFile": "lighthouse-budgets.json"
+    }
+  }
+}

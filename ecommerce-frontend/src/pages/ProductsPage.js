@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
+import FiltersBar from '../components/FiltersBar';
 import * as api from '../services/api';
 
 // Page for listing products with filters, sorting and pagination
@@ -53,61 +54,19 @@ function ProductsPage() {
   return (
     <div>
       <h2 className="mb-4">Catálogo de productos</h2>
-      <form className="row g-3 mb-4" onSubmit={handleSubmit}>
-        <div className="col-md-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Buscar..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="col-md-2">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Tema"
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-          />
-        </div>
-        <div className="col-md-2">
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Precio mínimo"
-            min="0"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-          />
-        </div>
-        <div className="col-md-2">
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Precio máximo"
-            min="0"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-          />
-        </div>
-        <div className="col-md-2">
-          <select
-            className="form-select"
-            value={order}
-            onChange={(e) => setOrder(e.target.value)}
-          >
-            <option value="price_asc">Precio ↑</option>
-            <option value="price_desc">Precio ↓</option>
-          </select>
-        </div>
-        <div className="col-md-1 d-grid">
-          <button type="submit" className="btn btn-primary">
-            Filtrar
-          </button>
-        </div>
-      </form>
+      <FiltersBar
+        search={search}
+        theme={theme}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
+        order={order}
+        onSearchChange={setSearch}
+        onThemeChange={setTheme}
+        onMinPriceChange={setMinPrice}
+        onMaxPriceChange={setMaxPrice}
+        onOrderChange={setOrder}
+        onSubmit={handleSubmit}
+      />
       {loading ? (
         <p>Cargando...</p>
       ) : error ? (

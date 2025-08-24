@@ -2,6 +2,8 @@
 
 Aplicación web en React para la tienda B2C de Lego.
 
+Incluye rutas protegidas (Checkout, Orders, Admin), wishlist, reseñas y un formulario de checkout con validación usando React Hook Form y Zod. El consumo de API se centraliza y muestra errores mediante toasts.
+
 ## Requisitos
 
 - Node.js 18+
@@ -28,6 +30,15 @@ Aplicación web en React para la tienda B2C de Lego.
   ```bash
   npm run build
   ```
+
+## Lighthouse CI
+
+Ejecutar auditorías de rendimiento en la carpeta `build` con el presupuesto definido en `.lighthouserc.json`:
+
+```bash
+npm run build
+npm run lhci
+```
 
 ## Pruebas
 
