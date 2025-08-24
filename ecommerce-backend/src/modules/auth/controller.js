@@ -160,8 +160,9 @@ exports.me = async (req, res, next) => {
 exports.csrfToken = (_req, res) => {
   const token = crypto.randomBytes(16).toString('hex');
   res.cookie('csrfToken', token, {
+    httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     domain: process.env.COOKIE_DOMAIN || undefined,
   });
   res.json({ csrfToken: token });
