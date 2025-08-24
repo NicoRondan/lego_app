@@ -88,3 +88,16 @@ exports.handleWebhook = async (req, res, next) => {
     next(err);
   }
 };
+// GET /payments/mp/sandbox/:status
+// Returns mock webhook payloads to simulate Mercado Pago events in tests.
+const sandbox = require('./sandbox');
+exports.getSandboxPayment = (req, res, next) => {
+  try {
+    const { status } = req.params;
+    const payload = sandbox[status];
+    if (!payload) throw new ApiError('Invalid status', 400);
+    res.json(payload);
+  } catch (err) {
+    next(err);
+  }
+};
