@@ -57,7 +57,22 @@ async function createApp() {
       crossOriginEmbedderPolicy: { policy: 'require-corp' },
     })
   );
-  app.use(cors());
+  const allowList = [process.env.FRONTEND_URL].filter(Boolean);
+  const corsOptions = {
+    origin(origin, callback) {
+      if (!origin || allowList.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
+    exposedHeaders: ['X-CSRF-Token'],
+  };
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
 
   // Attach request ID and logger
   app.use(requestIdMiddleware);
