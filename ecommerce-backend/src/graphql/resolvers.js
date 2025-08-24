@@ -150,7 +150,7 @@ const resolvers = {
       });
     },
     // Create a Mercado Pago payment preference for an order (stubbed implementation)
-    createPaymentPreference: async (_parent, { orderId }, { models, user }) => {
+    createMpPreference: async (_parent, { orderId }, { models, user }) => {
       if (!user) throw new Error('Not authenticated');
       const { Order, Payment } = models;
       const order = await Order.findOne({ where: { id: orderId, userId: user.id } });

@@ -22,8 +22,8 @@ exports.addItem = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new ApiError('Not authenticated', 401);
-    const { productId, quantity } = req.body;
-    if (!productId || !quantity) throw new ApiError('productId and quantity are required', 400);
+    const dto = require('./dto');
+    const { productId, quantity } = dto.parseAddItem(req.body);
     const product = await Product.findByPk(productId);
     if (!product) throw new ApiError('Product not found', 404);
     const [cart] = await Cart.findOrCreate({ where: { userId: user.id }, defaults: {} });
@@ -44,7 +44,8 @@ exports.updateItem = async (req, res, next) => {
     const user = req.user;
     if (!user) throw new ApiError('Not authenticated', 401);
     const { id } = req.params;
-    const { quantity } = req.body;
+    const dto = require('./dto');
+    const { quantity } = dto.parseUpdateItem(req.body);
     // Ensure the cart item belongs to the authenticated user to prevent
     // tampering with another user's cart by guessing item IDs.
     const item = await CartItem.findOne({

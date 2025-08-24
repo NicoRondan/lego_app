@@ -55,7 +55,8 @@ exports.createOrder = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new ApiError('Not authenticated', 401);
-    const { couponCode } = req.body;
+    const dto = require('./dto');
+    const { couponCode } = dto.parseCreateOrder(req.body);
     const cart = await Cart.findOne({ where: { userId: user.id }, include: { model: CartItem, include: Product } });
     if (!cart || cart.CartItems.length === 0) throw new ApiError('Cart is empty', 400);
     const order = await sequelize.transaction(async (t) => {
