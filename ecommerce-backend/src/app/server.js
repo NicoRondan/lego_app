@@ -62,6 +62,15 @@ async function createApp() {
   // Attach request ID and logger
   app.use(requestIdMiddleware);
 
+  // Log each incoming request and its response status using the custom logger
+  app.use((req, res, next) => {
+    req.log.info({ method: req.method, url: req.url }, 'Incoming request');
+    res.on('finish', () => {
+      req.log.info({ status: res.statusCode }, 'Request completed');
+    });
+    next();
+  });
+
   // Body parsing
   app.use(express.json());
 

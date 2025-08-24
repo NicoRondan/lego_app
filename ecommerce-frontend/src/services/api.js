@@ -7,7 +7,9 @@
 
 import { toast } from 'react-toastify';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+// eslint-disable-next-line no-console
+console.debug('[api] Base URL:', API_URL);
 
 async function fetchWithRetry(url, opts, retries = 1) {
   try {
@@ -44,8 +46,12 @@ async function request(path, { method = 'GET', headers = {}, body, token } = {})
   if (body) {
     opts.body = JSON.stringify(body);
   }
+  // eslint-disable-next-line no-console
+  console.debug('[api] Request:', { url, ...opts });
   try {
     const resp = await fetchWithRetry(url, opts, 1);
+    // eslint-disable-next-line no-console
+    console.debug('[api] Response status:', resp.status);
     const text = await resp.text();
     try {
       return text ? JSON.parse(text) : {};
@@ -53,6 +59,8 @@ async function request(path, { method = 'GET', headers = {}, body, token } = {})
       return {};
     }
   } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[api] Request failed:', err);
     toast.error(err.message || 'Request failed');
     throw err;
   }
