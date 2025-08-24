@@ -10,7 +10,10 @@ exports.getCart = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new ApiError('Not authenticated', 401);
-    const cart = await Cart.findOne({ where: { userId: user.id }, include: { model: CartItem, include: Product } });
+    const cart = await Cart.findOne({
+      where: { userId: user.id },
+      include: { model: CartItem, as: 'items', include: [Product] },
+    });
     res.json(cart || null);
   } catch (err) {
     next(err);
@@ -26,12 +29,20 @@ exports.addItem = async (req, res, next) => {
     const { productId, quantity } = dto.parseAddItem(req.body);
     const product = await Product.findByPk(productId);
     if (!product) throw new ApiError('Product not found', 404);
-    const [cart] = await Cart.findOrCreate({ where: { userId: user.id }, defaults: {} });
-    const [item] = await CartItem.findOrCreate({ where: { cartId: cart.id, productId: product.id }, defaults: { quantity: 0, unitPrice: product.price } });
+    const [cart] = await Cart.findOrCreate({
+      where: { userId: user.id },
+      defaults: {},
+    });
+    const [item] = await CartItem.findOrCreate({
+      where: { cartId: cart.id, productId: product.id },
+      defaults: { quantity: 0, unitPrice: product.price },
+    });
     item.quantity += parseInt(quantity, 10);
     item.unitPrice = product.price;
     await item.save();
-    const refreshed = await Cart.findByPk(cart.id, { include: { model: CartItem, include: Product } });
+    const refreshed = await Cart.findByPk(cart.id, {
+      include: { model: CartItem, as: 'items', include: [Product] },
+    });
     res.json(refreshed);
   } catch (err) {
     next(err);
@@ -59,7 +70,10 @@ exports.updateItem = async (req, res, next) => {
       item.quantity = parseInt(quantity, 10);
       await item.save();
     }
-    const cart = await Cart.findOne({ where: { id: item.cartId, userId: user.id }, include: { model: CartItem, include: Product } });
+    const cart = await Cart.findOne({
+      where: { id: item.cartId, userId: user.id },
+      include: { model: CartItem, as: 'items', include: [Product] },
+    });
     res.json(cart);
   } catch (err) {
     next(err);
@@ -82,7 +96,7 @@ exports.removeItem = async (req, res, next) => {
     await item.destroy();
     const cart = await Cart.findOne({
       where: { id: cartId, userId: user.id },
-      include: { model: CartItem, include: Product },
+      include: { model: CartItem, as: 'items', include: [Product] },
     });
     res.json(cart);
   } catch (err) {
