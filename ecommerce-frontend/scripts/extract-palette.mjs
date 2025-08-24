@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import Vibrant from 'node-vibrant';
+import { Vibrant } from 'node-vibrant';
 import fs from 'fs';
 import path from 'path';
 
-const image = path.resolve('ecommerce-frontend/public/assets/logo.png');
+const image = path.resolve('./public/assets/logo.png');
 
 const legoFallback = {
   primary: '#DA1A32',
@@ -116,7 +116,7 @@ const tokens = {
 };
 
 fs.writeFileSync(
-  path.resolve('ecommerce-frontend/src/theme/tokens.json'),
+  path.resolve('./src/theme/tokens.json'),
   JSON.stringify(tokens, null, 2)
 );
 
