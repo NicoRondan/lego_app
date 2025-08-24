@@ -19,6 +19,7 @@ Incluye rutas protegidas (Checkout, Orders, Admin), wishlist, reseñas y un form
    ```env
    REACT_APP_API_URL=http://localhost:3000
    ```
+   El proyecto incluye un `proxy` en `package.json` apuntando a `http://localhost:3000` para redirigir automáticamente las solicitudes durante el desarrollo.
 
 ## Ejecución
 
@@ -39,6 +40,10 @@ Ejecutar auditorías de rendimiento en la carpeta `build` con el presupuesto def
 npm run build
 npm run lhci
 ```
+
+## Depuración de llamadas a la API
+
+El cliente de API (`src/services/api.js`) registra en la consola la URL base y cada solicitud/respuesta, lo que facilita verificar que las peticiones lleguen al backend.
 
 ## Pruebas
 
