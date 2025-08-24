@@ -21,19 +21,22 @@ const {
   authMiddleware,
   errorHandler,
   requestIdMiddleware,
+  parseCookies,
+  rateLimit,
 } = require('../shared/middlewares');
+const csrfMiddleware = require('../shared/csrf');
 const { logger } = require('../shared/logger');
 
 // Import routers for each module
 const authRouter = require('../modules/auth/router');
 const catalogRouter = require('../modules/catalog/router');
 const cartRouter = require('../modules/cart/router');
-  const ordersRouter = require('../modules/orders/router');
-  const paymentsRouter = require('../modules/payments/router');
-  const uploadsRouter = require('../modules/uploads/router');
-  const webhooksRouter = require('../modules/webhooks/router');
+const ordersRouter = require('../modules/orders/router');
+const paymentsRouter = require('../modules/payments/router');
+const uploadsRouter = require('../modules/uploads/router');
+const webhooksRouter = require('../modules/webhooks/router');
 
-async function startServer() {
+async function createApp() {
   const app = express();
   // Core security middleware
   app.use(
@@ -62,11 +65,18 @@ async function startServer() {
   // Body parsing
   app.use(express.json());
 
+  // Parse cookies
+  app.use(parseCookies);
+
   // Authentication: decode JWT and populate req.user if present
   app.use(authMiddleware);
 
+  // Rate limiting
+  const authLimiter = rateLimit({ windowMs: 60 * 1000, limit: 5 });
+  const webhookLimiter = rateLimit({ windowMs: 60 * 1000, limit: 5 });
+
   // Mount REST routes
-  app.use('/auth', authRouter);
+  app.use('/auth', authLimiter, authRouter);
   app.use('/products', catalogRouter);
   const categoriesRouter = require('../modules/catalog/categoriesRouter');
   app.use('/categories', categoriesRouter);
@@ -74,7 +84,7 @@ async function startServer() {
   app.use('/orders', ordersRouter);
   app.use('/payments', paymentsRouter);
   app.use('/uploads', uploadsRouter);
-  app.use('/webhooks', webhooksRouter);
+  app.use('/webhooks', webhookLimiter, webhooksRouter);
 
   // Configure Apollo Server for GraphQL (Apollo Server 5)
   const apolloServer = new ApolloServer({
@@ -87,6 +97,7 @@ async function startServer() {
   app.use(
     '/graphql',
     express.json(),
+    csrfMiddleware,
     expressMiddleware(apolloServer, {
       context: async ({ req }) => ({
         user: req.user || null,
@@ -97,20 +108,26 @@ async function startServer() {
 
   // Centralised error handling
   app.use(errorHandler);
+  return app;
+}
 
-  // Start database connection
+async function startServer() {
+  const app = await createApp();
   await sequelize.sync();
-
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
     logger.info(`Server ready at http://localhost:${port}`);
     logger.info(
-      `GraphQL ready at http://localhost:${port}${apolloServer.graphqlPath}`,
+      `GraphQL ready at http://localhost:${port}/graphql`,
     );
   });
 }
 
-startServer().catch((err) => {
-  // eslint-disable-next-line no-console
-  console.error('Failed to start server:', err);
-});
+if (require.main === module) {
+  startServer().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error('Failed to start server:', err);
+  });
+}
+
+module.exports = { createApp, startServer };

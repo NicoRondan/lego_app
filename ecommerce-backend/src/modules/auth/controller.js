@@ -114,9 +114,11 @@ exports.oauthCallback = async (req, res, next) => {
     if (!email) throw new ApiError('Email not available from provider', 400);
     let [user] = await User.findOrCreate({ where: { email }, defaults: { name } });
     await SocialIdentity.findOrCreate({ where: { provider, providerId, userId: user.id } });
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'secret', {
-      expiresIn: '15m',
-    });
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '15m' },
+    );
     const refreshTokenValue = crypto.randomBytes(32).toString('hex');
     const hashed = crypto.createHash('sha256').update(refreshTokenValue).digest('hex');
     await RefreshToken.create({
@@ -145,9 +147,11 @@ exports.refreshToken = async (req, res, next) => {
       throw new ApiError('Invalid refresh token', 401);
     }
     const user = await User.findByPk(stored.userId);
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'secret', {
-      expiresIn: '15m',
-    });
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '15m' },
+    );
     res.json({ token });
   } catch (err) {
     next(err);
@@ -157,4 +161,15 @@ exports.refreshToken = async (req, res, next) => {
 // Logging out is handled client-side by discarding the JWT
 exports.logout = async (_req, res, _next) => {
   res.json({ message: 'Logged out' });
+};
+
+// Issue a CSRF token and store it in an HttpOnly cookie
+exports.csrfToken = (_req, res, _next) => {
+  const token = crypto.randomBytes(32).toString('hex');
+  res.cookie('csrfToken', token, {
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: true,
+  });
+  res.json({ csrfToken: token });
 };
