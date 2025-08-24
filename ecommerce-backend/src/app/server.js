@@ -14,8 +14,12 @@ dotenv.config();
 const typeDefs = require('../graphql/typeDefs');
 const resolvers = require('../graphql/resolvers');
 const { sequelize } = require('../infra/models');
-const authMiddleware = require('../shared/middlewares').authMiddleware;
-const errorHandler = require('../shared/middlewares').errorHandler;
+const {
+  authMiddleware,
+  errorHandler,
+  requestIdMiddleware,
+} = require('../shared/middlewares');
+const { logger } = require('../shared/logger');
 
 // Import routers for each module
 const authRouter = require('../modules/auth/router');
@@ -30,6 +34,9 @@ async function startServer() {
   // Core security middleware
   app.use(helmet());
   app.use(cors());
+
+  // Attach request ID and logger
+  app.use(requestIdMiddleware);
 
   // Body parsing
   app.use(express.json());
@@ -70,8 +77,10 @@ async function startServer() {
 
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
-    console.log(`Server ready at http://localhost:${port}`);
-    console.log(`GraphQL ready at http://localhost:${port}${apolloServer.graphqlPath}`);
+    logger.info(`Server ready at http://localhost:${port}`);
+    logger.info(
+      `GraphQL ready at http://localhost:${port}${apolloServer.graphqlPath}`,
+    );
   });
 }
 
