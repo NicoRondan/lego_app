@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-function VideoBackground({ sources = [], poster, className = '' }) {
+function VideoBackground({ sources = [], poster, className = '', style = {} }) {
   const videoRef = useRef(null);
   const [canPlay, setCanPlay] = useState(false);
 
@@ -23,13 +23,14 @@ function VideoBackground({ sources = [], poster, className = '' }) {
   }, [prefersReduced]);
 
   if (prefersReduced) {
-    return poster ? <img src={poster} alt="" className={className} /> : null;
+    return poster ? <img src={poster} alt="" className={className} style={style} /> : null;
   }
 
   return (
     <video
       ref={videoRef}
       className={className}
+      style={style}
       autoPlay={canPlay}
       muted
       loop
