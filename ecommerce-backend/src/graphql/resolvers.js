@@ -42,17 +42,20 @@ const resolvers = {
     cart: async (_parent, _args, { models, user }) => {
       if (!user) return null;
       const { Cart, CartItem, Product } = models;
-      const cart = await Cart.findOne({ where: { userId: user.id }, include: { model: CartItem, include: Product } });
+      const cart = await Cart.findOne({
+        where: { userId: user.id },
+        include: { model: CartItem, as: 'items', include: [Product] },
+      });
       return cart;
     },
     // Return the authenticated user
     me: async (_parent, _args, { models, user }) => {
       if (!user) return null;
-      const { User, Address, Wishlist, WishlistItem, Product } = models;
+      const { User, Address, Wishlist, Product } = models;
       return await User.findByPk(user.id, {
         include: [
           { model: Address },
-          { model: Wishlist, include: { model: WishlistItem, include: Product } },
+          { model: Wishlist, include: { model: Product, as: 'products' } },
         ],
       });
     },
@@ -63,10 +66,10 @@ const resolvers = {
       return await Order.findAll({
         where: { userId: user.id },
         include: [
-          { model: OrderItem, include: Product },
-          { model: Payment },
-          { model: Shipment },
-          { model: Coupon },
+          { model: OrderItem, as: 'items', include: [Product] },
+          { model: Payment, as: 'payment' },
+          { model: Shipment, as: 'shipment' },
+          { model: Coupon, as: 'coupon' },
         ],
         order: [['createdAt', 'DESC']],
       });
@@ -90,7 +93,9 @@ const resolvers = {
       item.quantity += quantity;
       item.unitPrice = product.price;
       await item.save();
-      return await Cart.findByPk(cart.id, { include: { model: CartItem, include: Product } });
+      return await Cart.findByPk(cart.id, {
+        include: { model: CartItem, as: 'items', include: [Product] },
+      });
     },
     // Update the quantity of a cart item
     updateCartItem: async (_parent, { itemId, quantity }, { models, user }) => {
@@ -108,7 +113,10 @@ const resolvers = {
         item.quantity = quantity;
         await item.save();
       }
-      const cart = await Cart.findOne({ where: { id: item.cartId, userId: user.id }, include: { model: CartItem, include: Product } });
+      const cart = await Cart.findOne({
+        where: { id: item.cartId, userId: user.id },
+        include: { model: CartItem, as: 'items', include: [Product] },
+      });
       return cart;
     },
     // Remove a cart item completely
@@ -123,14 +131,20 @@ const resolvers = {
       if (!item) throw new Error('Cart item not found');
       const cartId = item.cartId;
       await item.destroy();
-      return await Cart.findOne({ where: { id: cartId, userId: user.id }, include: { model: CartItem, include: Product } });
+      return await Cart.findOne({
+        where: { id: cartId, userId: user.id },
+        include: { model: CartItem, as: 'items', include: [Product] },
+      });
     },
     // Create an order from the cart; moves items from cart to order
     createOrder: async (_parent, { couponCode }, { models, user }) => {
       if (!user) throw new Error('Not authenticated');
       const { Cart, CartItem, Order, OrderItem, Coupon, Product } = models;
-      const cart = await Cart.findOne({ where: { userId: user.id }, include: { model: CartItem, include: Product } });
-      if (!cart || cart.CartItems.length === 0) throw new Error('Cart is empty');
+      const cart = await Cart.findOne({
+        where: { userId: user.id },
+        include: { model: CartItem, as: 'items', include: [Product] },
+      });
+      if (!cart || cart.items.length === 0) throw new Error('Cart is empty');
       return await models.sequelize.transaction(async (t) => {
         // Prepare coupon if provided
         let coupon = null;
@@ -138,15 +152,29 @@ const resolvers = {
           coupon = await Coupon.findOne({ where: { code: couponCode }, transaction: t });
         }
         // Compute total and create order
-        const total = cart.CartItems.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
-        const order = await Order.create({ userId: user.id, status: 'pending', total, couponId: coupon ? coupon.id : null }, { transaction: t });
+        const total = cart.items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
+        const order = await Order.create(
+          { userId: user.id, status: 'pending', total, couponId: coupon ? coupon.id : null },
+          { transaction: t }
+        );
         // Create order items
-        for (const ci of cart.CartItems) {
-          await OrderItem.create({ orderId: order.id, productId: ci.productId, quantity: ci.quantity, unitPrice: ci.unitPrice, subtotal: ci.quantity * ci.unitPrice }, { transaction: t });
+        for (const ci of cart.items) {
+          await OrderItem.create(
+            { orderId: order.id, productId: ci.productId, quantity: ci.quantity, unitPrice: ci.unitPrice, subtotal: ci.quantity * ci.unitPrice },
+            { transaction: t }
+          );
         }
         // Clear cart items
         await CartItem.destroy({ where: { cartId: cart.id }, transaction: t });
-        return await Order.findByPk(order.id, { transaction: t, include: [ { model: OrderItem, include: Product }, 'Payment', 'Shipment', 'Coupon' ] });
+        return await Order.findByPk(order.id, {
+          transaction: t,
+          include: [
+            { model: OrderItem, as: 'items', include: [Product] },
+            { model: models.Payment, as: 'payment' },
+            { model: models.Shipment, as: 'shipment' },
+            { model: models.Coupon, as: 'coupon' },
+          ],
+        });
       });
     },
     // Create a Mercado Pago payment preference for an order (stubbed implementation)
