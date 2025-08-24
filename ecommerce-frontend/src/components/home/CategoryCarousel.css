@@ -1,14 +1,8 @@
-#categoryCarousel .carousel-item {
-  display: none;
-}
-
-#categoryCarousel .carousel-item.active,
-#categoryCarousel .carousel-item-next,
-#categoryCarousel .carousel-item-prev {
-  display: flex;
-}
-
-#categoryCarousel .carousel-item-end,
-#categoryCarousel .carousel-item-start {
-  transform: translateX(0);
+#categoryCarousel .carousel-control-prev-icon,
+#categoryCarousel .carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  background-size: 50% 50%;
 }
