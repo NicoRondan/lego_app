@@ -19,10 +19,13 @@
     "graphql-tools": "^9.0.0",
     "helmet": "^6.0.0",
     "jsonwebtoken": "^9.0.0",
+    "mercadopago": "^1.5.14",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "pino": "^8.17.0",
+    "cloudinary": "^1.41.0",
+    "google-auth-library": "^9.0.2",
     "sequelize": "^6.32.0",
     "sqlite3": "^5.1.6"
   },

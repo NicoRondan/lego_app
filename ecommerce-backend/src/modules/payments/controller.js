@@ -6,6 +6,7 @@
 const { Order, Payment } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 const crypto = require('crypto');
+const mercadopago = require('../../shared/mercadopago');
 
 // POST /payments/mp/preference
 exports.createPreference = async (req, res, next) => {
@@ -17,13 +18,37 @@ exports.createPreference = async (req, res, next) => {
     const order = await Order.findOne({ where: { id: orderId, userId: user.id } });
     if (!order) throw new ApiError('Order not found', 404);
     if (order.status !== 'pending') throw new ApiError('Order is not pending payment', 400);
-    // Generate a mock preference ID and URL
-    // Generate a pseudo-unique preference ID using random bytes
-    const randomId = crypto.randomBytes(8).toString('hex');
-    const preferenceId = `pref_${randomId}`;
-    const initPoint = `https://fake.mercadopago.com/pay/${preferenceId}`;
-    // Create a Payment record; externalId holds Mercado Pago payment/preference ID
-    const payment = await Payment.create({ orderId: order.id, provider: 'mp', status: 'pending', amount: order.total, externalId: preferenceId });
+    let preferenceId;
+    let initPoint;
+    if (mercadopago.configured) {
+      // Real Mercado Pago preference
+      const preference = {
+        items: [
+          {
+            title: `Order ${order.id}`,
+            quantity: 1,
+            unit_price: parseFloat(order.total),
+            currency_id: 'USD',
+          },
+        ],
+        external_reference: String(order.id),
+      };
+      const result = await mercadopago.preferences.create(preference);
+      preferenceId = result.body.id;
+      initPoint = result.body.init_point;
+    } else {
+      // Fallback mock preference
+      const randomId = crypto.randomBytes(8).toString('hex');
+      preferenceId = `pref_${randomId}`;
+      initPoint = `https://fake.mercadopago.com/pay/${preferenceId}`;
+    }
+    const payment = await Payment.create({
+      orderId: order.id,
+      provider: 'mp',
+      status: 'pending',
+      amount: order.total,
+      externalId: preferenceId,
+    });
     res.json({ preferenceId, initPoint, payment });
   } catch (err) {
     next(err);
