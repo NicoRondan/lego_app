@@ -14,6 +14,7 @@ import LoginCallback from './pages/LoginCallback';
 import OrdersPage from './pages/OrdersPage';
 import AdminPage from './pages/AdminPage';
 import WishlistPage from './pages/WishlistPage';
+import Styleguide from './pages/Styleguide';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/styleguide" element={<Styleguide />} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right" />

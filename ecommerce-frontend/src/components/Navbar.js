@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import MiniCart from './MiniCart';
+import ThemeToggle from './ThemeToggle';
 import * as api from '../services/api';
 
 // Navigation bar component. Uses Bootstrap classes for styling.
@@ -22,7 +23,7 @@ function Navbar() {
     loadCart();
   }, [user]);
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+    <nav className="navbar navbar-expand-lg navbar-light bg-body">
       <div className="container-fluid">
         <Link className="navbar-brand" to="/" aria-label="Inicio">
           <img
@@ -107,6 +108,9 @@ function Navbar() {
                 </Link>
               </li>
             )}
+            <li className="nav-item ms-2">
+              <ThemeToggle />
+            </li>
           </ul>
         </div>
       </div>
