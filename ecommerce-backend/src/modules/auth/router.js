@@ -12,6 +12,7 @@ const controller = require('./controller');
 router.get('/login/:provider', controller.oauthLogin);
 router.get('/callback/:provider', controller.oauthCallback);
 router.post('/refresh', controller.refreshToken);
+router.get('/csrf', controller.csrfToken);
 
 // Log out: instruct client to discard token (no server state to clear)
 router.post('/logout', controller.logout);
