@@ -2,7 +2,7 @@ import React from 'react';
 import PromoStrip from '../components/home/PromoStrip';
 import Hero from '../components/home/Hero';
 import ProductCarousel from '../components/home/ProductCarousel';
-import CategoryGrid from '../components/home/CategoryGrid';
+import CategoryCarousel from '../components/home/CategoryCarousel';
 import ProductList from '../components/home/ProductList';
 import BenefitsBar from '../components/home/BenefitsBar';
 import ReviewsCarousel from '../components/home/ReviewsCarousel';
@@ -21,7 +21,7 @@ function Home() {
         <h2 className="mb-4">Destacados</h2>
         <ProductCarousel />
         <h2 className="mt-5 mb-4">Categorías</h2>
-        <CategoryGrid />
+        <CategoryCarousel />
         <ProductList />
         <BenefitsBar />
         <h2 className="mt-5 mb-4">Reseñas</h2>
