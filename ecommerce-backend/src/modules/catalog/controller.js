@@ -43,13 +43,14 @@ exports.getProducts = async (req, res, next) => {
     if (theme) {
       include.push({
         model: Category,
+        as: 'categories',
         where: { name: { [Op.iLike]: `%${theme}%` } },
         through: { attributes: [] },
       });
     }
 
-    include.push({ model: Category, through: { attributes: [] } });
-    include.push({ model: Review, include: [User] });
+    include.push({ model: Category, as: 'categories', through: { attributes: [] } });
+    include.push({ model: Review, as: 'reviews', include: [User] });
 
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 10;
@@ -90,8 +91,8 @@ exports.getProductById = async (req, res, next) => {
     log.info({ id }, 'Fetching product by id');
     const product = await Product.findByPk(id, {
       include: [
-        { model: Category, through: { attributes: [] } },
-        { model: Review, include: [User] },
+        { model: Category, as: 'categories', through: { attributes: [] } },
+        { model: Review, as: 'reviews', include: [User] },
       ],
     });
     if (!product) throw new ApiError('Product not found', 404);
