@@ -1,10 +1,14 @@
 .category-carousel .carousel-inner {
   display: flex;
+  overflow: hidden;
   transition: transform 0.5s ease;
 }
 
 .category-carousel .carousel-item {
   display: block;
+  flex: 0 0 auto;
+  float: none;
+  margin-right: 0;
 }
 
 .category-carousel .carousel-control-prev,

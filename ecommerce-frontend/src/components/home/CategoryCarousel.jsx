@@ -8,7 +8,7 @@ function CategoryCarousel() {
   const [index, setIndex] = useState(0);
 
   const updateItemsPerSlide = () => {
-    if (window.innerWidth >= 992) return 4;
+    if (window.innerWidth >= 992) return 3;
     if (window.innerWidth >= 768) return 2;
     return 1;
   };
