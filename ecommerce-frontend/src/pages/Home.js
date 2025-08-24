@@ -14,7 +14,7 @@ function Home() {
     <div>
       <PromoStrip />
       <Hero
-        title="Bienvenido a la tienda de Legos"
+        title="Bienvenido a Brick Market"
         subtitle="Descubre sets increíbles y coleccionables"
       />
       <div className="container my-5">

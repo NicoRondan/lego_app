@@ -9,7 +9,6 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
         className="w-100"
         poster="/assets/home/hero-fallback.jpg"
         sources={[
-          { src: '/assets/home/hero.webm', type: 'video/webm' },
           { src: '/assets/home/hero.mp4', type: 'video/mp4' },
         ]}
       />

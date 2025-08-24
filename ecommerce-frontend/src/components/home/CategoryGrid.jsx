@@ -18,9 +18,6 @@ function CategoryGrid() {
                 className="img-fluid rounded"
                 loading="lazy"
               />
-              <span className="position-absolute top-50 start-50 translate-middle text-white fw-bold">
-                {cat.name}
-              </span>
             </div>
           </Link>
         </div>
