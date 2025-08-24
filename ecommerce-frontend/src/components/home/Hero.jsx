@@ -31,6 +31,27 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
           background: 'linear-gradient(to bottom, rgba(0,0,0,0), var(--bs-body-bg))',
         }}
       />
+      <div
+        className="position-absolute top-0 start-0 w-100"
+        style={{
+          height: '20%',
+          background: 'linear-gradient(to bottom, var(--bs-body-bg), rgba(0,0,0,0))',
+        }}
+      />
+      <div
+        className="position-absolute top-0 start-0 h-100"
+        style={{
+          width: '20%',
+          background: 'linear-gradient(to right, var(--bs-body-bg), rgba(0,0,0,0))',
+        }}
+      />
+      <div
+        className="position-absolute top-0 end-0 h-100"
+        style={{
+          width: '20%',
+          background: 'linear-gradient(to left, var(--bs-body-bg), rgba(0,0,0,0))',
+        }}
+      />
     </section>
   );
 }
