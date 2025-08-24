@@ -1,18 +1,36 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import PromoStrip from '../components/home/PromoStrip';
+import Hero from '../components/home/Hero';
+import ProductCarousel from '../components/home/ProductCarousel';
+import CategoryGrid from '../components/home/CategoryGrid';
+import ProductList from '../components/home/ProductList';
+import BenefitsBar from '../components/home/BenefitsBar';
+import ReviewsCarousel from '../components/home/ReviewsCarousel';
+import Newsletter from '../components/home/Newsletter';
+import TrustBadges from '../components/home/TrustBadges';
 
-// Simple home page welcoming users and linking to product catalog
 function Home() {
   return (
-    <div className="text-center">
-      <h1 className="display-4 mb-3">Bienvenido a la tienda de Legos</h1>
-      <p className="lead mb-4">
-        Descubre nuestros sets de Lego y encuentra el ideal para ti. Desde ediciones
-        clásicas hasta colecciones temáticas, tenemos todo para fans y familias.
-      </p>
-      <Link to="/products" className="btn btn-primary btn-lg">
-        Ver productos
-      </Link>
+    <div>
+      <PromoStrip />
+      <Hero
+        title="Bienvenido a Brick Market"
+        subtitle="Descubre sets increíbles y coleccionables"
+      />
+      <div className="container my-5">
+        <h2 className="mb-4">Destacados</h2>
+        <ProductCarousel />
+        <h2 className="mt-5 mb-4">Categorías</h2>
+        <CategoryGrid />
+        <ProductList />
+        <BenefitsBar />
+        <h2 className="mt-5 mb-4">Reseñas</h2>
+        <ReviewsCarousel />
+        <div className="my-5">
+          <Newsletter />
+        </div>
+        <TrustBadges />
+      </div>
     </div>
   );
 }
