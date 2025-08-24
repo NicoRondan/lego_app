@@ -112,6 +112,8 @@ const ProductCategory = sequelize.define('ProductCategory', {
 // Cart model
 const Cart = sequelize.define('Cart', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  // Explicit foreign key so queries use snake_case column
+  userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
 }, {
   tableName: 'carts',
   underscored: true,
@@ -213,8 +215,8 @@ IdempotencyKey.belongsTo(User);
 User.hasMany(Wishlist, { as: 'wishlists' });
 Wishlist.belongsTo(User);
 
-User.hasMany(Cart, { as: 'carts' });
-Cart.belongsTo(User);
+User.hasMany(Cart, { as: 'carts', foreignKey: 'userId' });
+Cart.belongsTo(User, { foreignKey: 'userId' });
 
 User.hasMany(Order, { as: 'orders' });
 Order.belongsTo(User);
