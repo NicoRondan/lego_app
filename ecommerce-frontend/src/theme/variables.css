@@ -21,6 +21,25 @@
 
   --link: var(--color-primary);
   --link-hover: var(--color-accent);
+
+  --bs-primary: var(--color-primary);
+  --bs-secondary: var(--color-secondary);
+  --bs-success: var(--color-success);
+  --bs-warning: var(--color-warning);
+  --bs-danger: var(--color-danger);
+  --bs-info: var(--color-info);
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--fg);
+  --bs-link-color: var(--link);
+  --bs-link-hover-color: var(--link-hover);
+  --bs-border-color: var(--border);
+  --bs-navbar-color: var(--fg);
+  --bs-navbar-brand-color: var(--fg);
+  --bs-card-bg: var(--bg);
+  --bs-card-color: var(--fg);
+  --bs-card-border-color: var(--border);
+  --bs-border-radius: 0.5rem;
+  --bs-btn-border-radius: 0.5rem;
 }
 
 [data-theme="dark"] {
@@ -30,6 +49,17 @@
   --border: #374151;
   --link: var(--color-secondary);
   --link-hover: var(--color-accent);
+
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--fg);
+  --bs-link-color: var(--link);
+  --bs-link-hover-color: var(--link-hover);
+  --bs-border-color: var(--border);
+  --bs-navbar-color: var(--fg);
+  --bs-navbar-brand-color: var(--fg);
+  --bs-card-bg: var(--bg);
+  --bs-card-color: var(--fg);
+  --bs-card-border-color: var(--border);
 }
 
 body {
