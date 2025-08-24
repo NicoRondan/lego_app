@@ -32,7 +32,7 @@ function CategoryCarousel() {
     <div className="category-carousel position-relative">
       <div
         className="carousel-inner d-flex"
-        style={{ transform: `translateX(-${(100 / itemsPerSlide) * index}%)` }}
+        style={{ transform: `translateX(-${(100 / categories.length) * index}%)` }}
       >
         {categories.map((cat) => (
           <div
