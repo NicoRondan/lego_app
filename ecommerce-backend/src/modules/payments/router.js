@@ -12,4 +12,7 @@ router.post('/mp/preference', controller.createPreference);
 // POST /payments/mp/webhooks
 router.post('/mp/webhooks', controller.handleWebhook);
 
+// GET /payments/mp/sandbox/:status
+router.get('/mp/sandbox/:status', controller.getSandboxPayment);
+
 module.exports = router;
