@@ -9,7 +9,7 @@ const dotenv = require('dotenv');
 // Apollo Server 5 requires the standalone '@apollo/server' package and
 // the express4 middleware for integration with Express 4.
 const { ApolloServer } = require('@apollo/server');
-const { expressMiddleware } = require('@apollo/server/express4');
+const { expressMiddleware } = require('@as-integrations/express4');
 
 // Load environment variables from .env file if present
 dotenv.config();
@@ -35,7 +35,6 @@ const cartRouter = require('../modules/cart/router');
 
 async function startServer() {
   const app = express();
-
   // Core security middleware
   app.use(
     helmet({

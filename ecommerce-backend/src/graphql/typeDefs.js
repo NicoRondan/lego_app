@@ -3,7 +3,7 @@
 // schema attempts to mirror the REST API and the underlying relational
 // model, providing typed access to catalog, cart and order data.
 
-const { gql } = require('apollo-server-express');
+const { gql } = require('graphql-tag'); 
 
 const typeDefs = gql`
   scalar Date
