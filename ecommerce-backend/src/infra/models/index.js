@@ -7,6 +7,7 @@ const User = sequelize.define('User', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  passwordHash: { type: DataTypes.STRING },
   role: { type: DataTypes.STRING, allowNull: false, defaultValue: 'customer' },
 }, {
   tableName: 'users',
@@ -28,6 +29,7 @@ const RefreshToken = sequelize.define('RefreshToken', {
   token: { type: DataTypes.STRING, primaryKey: true },
   userId: { type: DataTypes.INTEGER, allowNull: false },
   expiresAt: { type: DataTypes.DATE, allowNull: false },
+  revokedAt: { type: DataTypes.DATE },
 }, {
   tableName: 'refresh_tokens',
   underscored: true,

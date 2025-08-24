@@ -6,18 +6,18 @@ import QuantityStepper from '../components/QuantityStepper';
 
 // Page that displays the user's cart and allows quantity adjustments and removal
 function CartPage() {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const fetchCart = async () => {
-    if (!token) return;
+    if (!user) return;
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getCart(token);
+      const data = await api.getCart();
       setCart(data);
     } catch (err) {
       console.error(err);
@@ -30,11 +30,11 @@ function CartPage() {
   useEffect(() => {
     fetchCart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [user]);
 
   const handleUpdate = async (itemId, qty) => {
     try {
-      await api.updateCartItem(itemId, { quantity: qty }, token);
+      await api.updateCartItem(itemId, { quantity: qty });
       fetchCart();
     } catch (err) {
       console.error(err);
@@ -43,7 +43,7 @@ function CartPage() {
 
   const handleRemove = async (itemId) => {
     try {
-      await api.removeCartItem(itemId, token);
+      await api.removeCartItem(itemId);
       fetchCart();
     } catch (err) {
       console.error(err);

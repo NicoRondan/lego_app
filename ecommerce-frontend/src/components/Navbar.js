@@ -6,21 +6,21 @@ import * as api from '../services/api';
 
 // Navigation bar component. Uses Bootstrap classes for styling.
 function Navbar() {
-  const { user, logout, token } = useAuth();
+  const { user, logout } = useAuth();
   const [cart, setCart] = useState(null);
 
   useEffect(() => {
     const loadCart = async () => {
-      if (!token) return setCart(null);
+      if (!user) return setCart(null);
       try {
-        const data = await api.getCart(token);
+        const data = await api.getCart();
         setCart(data);
       } catch (err) {
         console.error(err);
       }
     };
     loadCart();
-  }, [token]);
+  }, [user]);
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container-fluid">

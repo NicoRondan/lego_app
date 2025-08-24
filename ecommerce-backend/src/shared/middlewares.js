@@ -13,8 +13,10 @@ const { ERROR_CODES } = require('./errors');
 // user object (containing id) to the request. Failure to authenticate
 // silently results in an anonymous request.
 async function authMiddleware(req, _res, next) {
+  const cookieToken = req.cookies && req.cookies.accessToken;
   const authHeader = req.headers.authorization || '';
-  const token = authHeader.split(' ')[1];
+  const headerToken = authHeader.split(' ')[1];
+  const token = cookieToken || headerToken;
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
@@ -59,6 +61,20 @@ function rateLimit({ windowMs, limit }) {
     }
     next();
   };
+}
+
+function csrfMiddleware(req, res, next) {
+  const method = req.method.toUpperCase();
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const tokenCookie = req.cookies && req.cookies.csrfToken;
+    const headerToken = req.headers['x-csrf-token'];
+    if (!tokenCookie || !headerToken || tokenCookie !== headerToken) {
+      return res
+        .status(403)
+        .json({ error: { code: ERROR_CODES[403], message: 'Invalid CSRF token' }, requestId: req.id });
+    }
+  }
+  next();
 }
 
 // Authorization middleware for role-based access control
@@ -107,5 +123,6 @@ module.exports = {
   errorHandler,
   parseCookies,
   rateLimit,
+  csrfMiddleware,
   requireRole,
 };

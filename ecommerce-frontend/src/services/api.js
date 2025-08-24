@@ -1,15 +1,13 @@
-// src/services/api.js
-// Helper functions to interact with the backend API. These functions use
-// the Fetch API to call REST endpoints defined in the backend. All requests
-// funnel through a central helper that adds the Authorization header when a
-// JWT token is available, performs basic error handling, selective retries
-// and surfaces errors via toast notifications.
-
 import { toast } from 'react-toastify';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+export const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 // eslint-disable-next-line no-console
 console.debug('[api] Base URL:', API_URL);
+
+function getCsrfToken() {
+  const match = document.cookie.match(/csrfToken=([^;]+)/);
+  return match ? match[1] : null;
+}
 
 async function fetchWithRetry(url, opts, retries = 1) {
   try {
@@ -30,34 +28,25 @@ async function fetchWithRetry(url, opts, retries = 1) {
   }
 }
 
-async function request(path, { method = 'GET', headers = {}, body, token } = {}) {
+async function request(path, { method = 'GET', headers = {}, body } = {}) {
   const url = `${API_URL}${path}`;
   const opts = {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
+    headers: { ...headers },
+    credentials: 'include',
   };
-  const authToken = token || localStorage.getItem('token');
-  if (authToken) {
-    opts.headers['Authorization'] = `Bearer ${authToken}`;
-  }
   if (body) {
+    opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(body);
   }
-  // eslint-disable-next-line no-console
-  console.debug('[api] Request:', { url, ...opts });
+  if (['POST', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
+    const csrf = getCsrfToken();
+    if (csrf) opts.headers['X-CSRF-Token'] = csrf;
+  }
   try {
     const resp = await fetchWithRetry(url, opts, 1);
-    // eslint-disable-next-line no-console
-    console.debug('[api] Response status:', resp.status);
     const text = await resp.text();
-    try {
-      return text ? JSON.parse(text) : {};
-    } catch {
-      return {};
-    }
+    return text ? JSON.parse(text) : {};
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[api] Request failed:', err);
@@ -66,36 +55,21 @@ async function request(path, { method = 'GET', headers = {}, body, token } = {})
   }
 }
 
-// Authentication
-export async function login({ provider, providerId, name, email }) {
-  return await request('/auth/login', {
-    method: 'POST',
-    body: { provider, providerId, name, email },
-  });
-}
+// Auth
+export const register = ({ name, email, password }) =>
+  request('/auth/register', { method: 'POST', body: { name, email, password } });
 
-// Fetch current user info via GraphQL (me query)
-export async function getMe(token) {
-  // Use GraphQL to fetch me (id, name, email)
-  const query = {
-    query: `query { me { id name email } }`,
-    variables: {},
-  };
-  const resp = await fetch(`${API_URL}/graphql`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(query),
-  });
-  if (!resp.ok) throw new Error('Failed to fetch user');
-  const json = await resp.json();
-  return json.data.me;
-}
+export const login = ({ email, password }) =>
+  request('/auth/login', { method: 'POST', body: { email, password } });
+
+export const logout = () => request('/auth/logout', { method: 'POST' });
+
+export const refresh = () => request('/auth/refresh', { method: 'POST' });
+
+export const getMe = () => request('/auth/me');
 
 // Products
-export async function getProducts({
+export const getProducts = ({
   search = '',
   theme = '',
   minPrice = '',
@@ -103,7 +77,7 @@ export async function getProducts({
   page = 1,
   limit = 10,
   order = 'price_asc',
-} = {}) {
+} = {}) => {
   const params = new URLSearchParams();
   if (search) params.set('search', search);
   if (theme) params.set('theme', theme);
@@ -114,68 +88,47 @@ export async function getProducts({
   if (order) params.set('order', order);
   const queryString = params.toString();
   const path = '/products' + (queryString ? `?${queryString}` : '');
-  return await request(path, { method: 'GET' });
-}
+  return request(path);
+};
 
-export async function getProductById(id) {
-  return await request(`/products/${id}`, { method: 'GET' });
-}
+export const getProductById = (id) => request(`/products/${id}`);
 
-export async function getCategories() {
-  return await request('/categories', { method: 'GET' });
-}
+export const getCategories = () => request('/categories');
 
 // Cart
-export async function getCart(token) {
-  return await request('/cart', { method: 'GET', token });
-}
+export const getCart = () => request('/cart');
 
-export async function addToCart({ productId, quantity }, token) {
-  return await request('/cart/items', { method: 'POST', body: { productId, quantity }, token });
-}
+export const addToCart = ({ productId, quantity }) =>
+  request('/cart/items', { method: 'POST', body: { productId, quantity } });
 
-export async function updateCartItem(itemId, { quantity }, token) {
-  return await request(`/cart/items/${itemId}`, { method: 'PATCH', body: { quantity }, token });
-}
+export const updateCartItem = (itemId, { quantity }) =>
+  request(`/cart/items/${itemId}`, { method: 'PATCH', body: { quantity } });
 
-export async function removeCartItem(itemId, token) {
-  return await request(`/cart/items/${itemId}`, { method: 'DELETE', token });
-}
+export const removeCartItem = (itemId) =>
+  request(`/cart/items/${itemId}`, { method: 'DELETE' });
 
 // Orders
-export async function createOrder({ couponCode } = {}, token) {
-  return await request('/orders', { method: 'POST', body: { couponCode }, token });
-}
+export const createOrder = ({ couponCode } = {}) =>
+  request('/orders', { method: 'POST', body: { couponCode } });
 
-export async function getOrders(token) {
-  return await request('/orders', { method: 'GET', token });
-}
+export const getOrders = () => request('/orders');
 
 // Payments
-export async function createPaymentPreference(orderId, token) {
-  return await request('/payments/mp/preference', { method: 'POST', body: { orderId }, token });
-}
+export const createPaymentPreference = (orderId) =>
+  request('/payments/mp/preference', { method: 'POST', body: { orderId } });
 
 // Wishlist
-export async function getWishlist(token) {
-  return await request('/wishlist', { method: 'GET', token });
-}
+export const getWishlist = () => request('/wishlist');
 
-export async function addToWishlist(productId, token) {
-  return await request('/wishlist/items', { method: 'POST', body: { productId }, token });
-}
+export const addToWishlist = (productId) =>
+  request('/wishlist/items', { method: 'POST', body: { productId } });
 
-export async function removeFromWishlist(itemId, token) {
-  return await request(`/wishlist/items/${itemId}`, { method: 'DELETE', token });
-}
+export const removeFromWishlist = (itemId) =>
+  request(`/wishlist/items/${itemId}`, { method: 'DELETE' });
 
 // Reviews
-export async function createReview(productId, { rating, comment }, token) {
-  return await request(`/products/${productId}/reviews`, {
+export const createReview = (productId, { rating, comment }) =>
+  request(`/products/${productId}/reviews`, {
     method: 'POST',
     body: { rating, comment },
-    token,
   });
-}
-
-// Note: webhooks are handled server-side; no client function needed

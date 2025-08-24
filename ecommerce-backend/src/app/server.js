@@ -28,7 +28,7 @@ const csrfMiddleware = require('../shared/csrf');
 const { logger } = require('../shared/logger');
 
 // Import routers for each module
-const authRouter = require('../modules/auth/router');
+const authRouter = require('../modules/auth/routes');
 const catalogRouter = require('../modules/catalog/router');
 const cartRouter = require('../modules/cart/router');
 const ordersRouter = require('../modules/orders/router');
