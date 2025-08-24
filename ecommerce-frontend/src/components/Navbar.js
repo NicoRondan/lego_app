@@ -23,7 +23,7 @@ function Navbar() {
     loadCart();
   }, [user]);
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-body">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
       <div className="container-fluid">
         <Link className="navbar-brand" to="/" aria-label="Inicio">
           <img
@@ -77,14 +77,15 @@ function Navbar() {
           <ul className="navbar-nav ms-auto">
             <li className="nav-item dropdown">
               <Link
-                className="nav-link dropdown-toggle"
+                className="nav-link dropdown-toggle d-flex align-items-center"
                 to="/cart"
                 id="miniCartDropdown"
                 role="button"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                Carrito
+                <i className="fa-solid fa-cart-shopping me-1" aria-hidden="true"></i>
+                <span>Carrito</span>
               </Link>
               <div className="dropdown-menu dropdown-menu-end" aria-labelledby="miniCartDropdown">
                 <MiniCart items={cart?.items || []} />
@@ -93,18 +94,23 @@ function Navbar() {
             {user ? (
               <>
                 <li className="nav-item">
-                  <span className="nav-link">Hola, {user.name}</span>
+                  <span className="nav-link">
+                    <i className="fa-solid fa-user me-1" aria-hidden="true"></i>
+                    Hola, {user.name}
+                  </span>
                 </li>
                 <li className="nav-item">
                   <button onClick={logout} className="btn btn-link nav-link">
+                    <i className="fa-solid fa-right-from-bracket me-1" aria-hidden="true"></i>
                     Salir
                   </button>
                 </li>
               </>
             ) : (
               <li className="nav-item">
-                <Link className="nav-link" to="/login">
-                  Iniciar sesión
+                <Link className="nav-link d-flex align-items-center" to="/login">
+                  <i className="fa-solid fa-right-to-bracket me-1" aria-hidden="true"></i>
+                  <span>Iniciar sesión</span>
                 </Link>
               </li>
             )}
