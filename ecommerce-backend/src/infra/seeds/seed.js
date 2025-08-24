@@ -96,7 +96,13 @@ async function seed() {
   console.log('Database seeded');
 }
 
-seed().then(() => sequelize.close()).catch(err => {
-  console.error(err);
-  sequelize.close();
-});
+module.exports = { seed };
+
+if (require.main === module) {
+  seed()
+    .then(() => sequelize.close())
+    .catch((err) => {
+      console.error(err);
+      sequelize.close();
+    });
+}

@@ -16,7 +16,7 @@ dotenv.config();
 
 const typeDefs = require('../graphql/typeDefs');
 const resolvers = require('../graphql/resolvers');
-const { sequelize } = require('../infra/models');
+const { seed } = require('../infra/seeds/seed');
 const {
   authMiddleware,
   errorHandler,
@@ -121,9 +121,8 @@ async function createApp() {
 }
 
 async function startServer() {
+  await seed();
   const app = await createApp();
-  // Ensure database schema is updated to match models (adds missing columns)
-  await sequelize.sync({ alter: true });
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
     logger.info(`Server ready at http://localhost:${port}`);
