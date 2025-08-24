@@ -32,9 +32,9 @@ const LoginPage = () => {
       <div className="text-center mb-3">
         <img
           src="/assets/logo.png"
-          alt="Lego Shop"
-          width="64"
-          height="64"
+          alt="Brick Market"
+          width="96"
+          height="96"
           className="mb-3"
           loading="lazy"
         />

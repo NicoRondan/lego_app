@@ -24,19 +24,14 @@ function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container-fluid">
-        <Link
-          className="navbar-brand d-flex align-items-center"
-          to="/"
-          aria-label="Inicio"
-        >
+        <Link className="navbar-brand" to="/" aria-label="Inicio">
           <img
             src="/assets/logo.png"
-            alt="Lego Shop"
-            width="32"
-            height="32"
-            className="me-2 d-inline-block align-text-top"
+            alt="Brick Market"
+            width="48"
+            height="48"
+            className="d-inline-block align-text-top"
           />
-          <span className="fw-semibold">Lego Shop</span>
         </Link>
         <button
           className="navbar-toggler"
