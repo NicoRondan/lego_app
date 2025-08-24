@@ -227,6 +227,9 @@ Review.belongsTo(User);
 // Wishlist relations
 Wishlist.belongsToMany(Product, { through: WishlistItem, as: 'products' });
 Product.belongsToMany(Wishlist, { through: WishlistItem, as: 'wishlists' });
+Wishlist.hasMany(WishlistItem, { as: 'items' });
+WishlistItem.belongsTo(Wishlist);
+WishlistItem.belongsTo(Product);
 
 // Product and Category (N:M)
 Product.belongsToMany(Category, { through: ProductCategory, as: 'categories' });

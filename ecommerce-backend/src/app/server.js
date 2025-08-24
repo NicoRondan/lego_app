@@ -31,6 +31,7 @@ const { logger } = require('../shared/logger');
 const authRouter = require('../modules/auth/routes');
 const catalogRouter = require('../modules/catalog/router');
 const cartRouter = require('../modules/cart/router');
+const wishlistRouter = require('../modules/wishlist/router');
 const ordersRouter = require('../modules/orders/router');
 const paymentsRouter = require('../modules/payments/router');
 const uploadsRouter = require('../modules/uploads/router');
@@ -105,6 +106,7 @@ async function createApp() {
   const categoriesRouter = require('../modules/catalog/categoriesRouter');
   app.use('/categories', categoriesRouter);
   app.use('/cart', cartRouter);
+  app.use('/wishlist', wishlistRouter);
   app.use('/orders', ordersRouter);
   app.use('/payments', paymentsRouter);
   app.use('/uploads', uploadsRouter);
