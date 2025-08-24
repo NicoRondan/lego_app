@@ -69,8 +69,16 @@ body {
   color: var(--link);
  }
  a:hover {
-  color: var(--link-hover);
- }
+ color: var(--link-hover);
+}
+
+.navbar {
+  --bs-navbar-color: var(--fg);
+  --bs-navbar-hover-color: var(--link);
+  --bs-navbar-brand-color: var(--fg);
+  --bs-navbar-brand-hover-color: var(--link);
+  --bs-navbar-active-color: var(--link);
+}
 
 .card {
   border-color: var(--border);

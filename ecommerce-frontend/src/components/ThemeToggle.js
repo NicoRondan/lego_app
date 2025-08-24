@@ -32,7 +32,7 @@ const ThemeToggle = () => {
   return (
     <button
       type="button"
-      className="btn btn-outline-light d-flex align-items-center"
+      className="btn btn-outline-primary d-flex align-items-center"
       onClick={toggle}
       aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
     >
