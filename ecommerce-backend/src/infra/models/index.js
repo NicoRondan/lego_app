@@ -7,6 +7,7 @@ const User = sequelize.define('User', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  passwordHash: { type: DataTypes.STRING },
   role: { type: DataTypes.STRING, allowNull: false, defaultValue: 'customer' },
 }, {
   tableName: 'users',
@@ -28,6 +29,7 @@ const RefreshToken = sequelize.define('RefreshToken', {
   token: { type: DataTypes.STRING, primaryKey: true },
   userId: { type: DataTypes.INTEGER, allowNull: false },
   expiresAt: { type: DataTypes.DATE, allowNull: false },
+  revokedAt: { type: DataTypes.DATE },
 }, {
   tableName: 'refresh_tokens',
   underscored: true,
@@ -57,14 +59,19 @@ const Address = sequelize.define('Address', {
 // Wishlist model
 const Wishlist = sequelize.define('Wishlist', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  // Explicit foreign key mapping to ensure camelCase attribute uses snake_case column
+  userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
 }, {
   tableName: 'wishlists',
   underscored: true,
 });
 
 // WishlistItem bridging table (many-to-many between Wishlist and Product)
+// Explicit FK fields so camelCase attributes map to snake_case columns
 const WishlistItem = sequelize.define('WishlistItem', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  wishlistId: { type: DataTypes.INTEGER, allowNull: false, field: 'wishlist_id' },
+  productId: { type: DataTypes.INTEGER, allowNull: false, field: 'product_id' },
 }, {
   tableName: 'wishlist_items',
   underscored: true,
@@ -110,6 +117,8 @@ const ProductCategory = sequelize.define('ProductCategory', {
 // Cart model
 const Cart = sequelize.define('Cart', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  // Explicit foreign key so queries use snake_case column
+  userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
 }, {
   tableName: 'carts',
   underscored: true,
@@ -208,11 +217,11 @@ RefreshToken.belongsTo(User);
 User.hasMany(IdempotencyKey, { as: 'idempotencyKeys' });
 IdempotencyKey.belongsTo(User);
 
-User.hasMany(Wishlist, { as: 'wishlists' });
-Wishlist.belongsTo(User);
+User.hasMany(Wishlist, { as: 'wishlists', foreignKey: 'userId' });
+Wishlist.belongsTo(User, { foreignKey: 'userId' });
 
-User.hasMany(Cart, { as: 'carts' });
-Cart.belongsTo(User);
+User.hasMany(Cart, { as: 'carts', foreignKey: 'userId' });
+Cart.belongsTo(User, { foreignKey: 'userId' });
 
 User.hasMany(Order, { as: 'orders' });
 Order.belongsTo(User);
@@ -221,8 +230,21 @@ User.hasMany(Review, { as: 'reviews' });
 Review.belongsTo(User);
 
 // Wishlist relations
-Wishlist.belongsToMany(Product, { through: WishlistItem, as: 'products' });
-Product.belongsToMany(Wishlist, { through: WishlistItem, as: 'wishlists' });
+Wishlist.belongsToMany(Product, {
+  through: WishlistItem,
+  as: 'products',
+  foreignKey: 'wishlistId',
+  otherKey: 'productId',
+});
+Product.belongsToMany(Wishlist, {
+  through: WishlistItem,
+  as: 'wishlists',
+  foreignKey: 'productId',
+  otherKey: 'wishlistId',
+});
+Wishlist.hasMany(WishlistItem, { as: 'items', foreignKey: 'wishlistId' });
+WishlistItem.belongsTo(Wishlist, { foreignKey: 'wishlistId' });
+WishlistItem.belongsTo(Product, { foreignKey: 'productId' });
 
 // Product and Category (N:M)
 Product.belongsToMany(Category, { through: ProductCategory, as: 'categories' });

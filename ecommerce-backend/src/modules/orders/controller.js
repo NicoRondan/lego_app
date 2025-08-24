@@ -15,10 +15,10 @@ exports.getOrders = async (req, res, next) => {
     const orders = await Order.findAll({
       where: { userId: user.id },
       include: [
-        { model: OrderItem, include: Product },
-        Payment,
-        Shipment,
-        Coupon,
+        { model: OrderItem, as: 'items', include: [Product] },
+        { model: Payment, as: 'payment' },
+        { model: Shipment, as: 'shipment' },
+        { model: Coupon, as: 'coupon' },
       ],
       order: [['createdAt', 'DESC']],
     });
@@ -37,10 +37,10 @@ exports.getOrderById = async (req, res, next) => {
     const order = await Order.findOne({
       where: { id, userId: user.id },
       include: [
-        { model: OrderItem, include: Product },
-        Payment,
-        Shipment,
-        Coupon,
+        { model: OrderItem, as: 'items', include: [Product] },
+        { model: Payment, as: 'payment' },
+        { model: Shipment, as: 'shipment' },
+        { model: Coupon, as: 'coupon' },
       ],
     });
     if (!order) throw new ApiError('Order not found', 404);
@@ -63,10 +63,10 @@ exports.createOrder = async (req, res, next) => {
       if (existingKey) {
         const existingOrder = await Order.findByPk(existingKey.refId, {
           include: [
-            { model: OrderItem, include: Product },
-            Payment,
-            Shipment,
-            Coupon,
+            { model: OrderItem, as: 'items', include: [Product] },
+            { model: Payment, as: 'payment' },
+            { model: Shipment, as: 'shipment' },
+            { model: Coupon, as: 'coupon' },
           ],
         });
         if (existingOrder) return res.json(existingOrder);
@@ -74,17 +74,26 @@ exports.createOrder = async (req, res, next) => {
     }
     const dto = require('./dto');
     const { couponCode } = dto.parseCreateOrder(req.body);
-    const cart = await Cart.findOne({ where: { userId: user.id }, include: { model: CartItem, include: Product } });
-    if (!cart || cart.CartItems.length === 0) throw new ApiError('Cart is empty', 400);
+    const cart = await Cart.findOne({
+      where: { userId: user.id },
+      include: { model: CartItem, as: 'items', include: [Product] },
+    });
+    if (!cart || cart.items.length === 0) throw new ApiError('Cart is empty', 400);
     const order = await sequelize.transaction(async (t) => {
       let coupon = null;
       if (couponCode) {
         coupon = await Coupon.findOne({ where: { code: couponCode }, transaction: t });
       }
-      const total = cart.CartItems.reduce((sum, ci) => sum + ci.quantity * ci.unitPrice, 0);
-      const orderRecord = await Order.create({ userId: user.id, status: 'pending', total, couponId: coupon ? coupon.id : null }, { transaction: t });
-      for (const ci of cart.CartItems) {
-        await OrderItem.create({ orderId: orderRecord.id, productId: ci.productId, quantity: ci.quantity, unitPrice: ci.unitPrice, subtotal: ci.quantity * ci.unitPrice }, { transaction: t });
+      const total = cart.items.reduce((sum, ci) => sum + ci.quantity * ci.unitPrice, 0);
+      const orderRecord = await Order.create(
+        { userId: user.id, status: 'pending', total, couponId: coupon ? coupon.id : null },
+        { transaction: t }
+      );
+      for (const ci of cart.items) {
+        await OrderItem.create(
+          { orderId: orderRecord.id, productId: ci.productId, quantity: ci.quantity, unitPrice: ci.unitPrice, subtotal: ci.quantity * ci.unitPrice },
+          { transaction: t }
+        );
       }
       await CartItem.destroy({ where: { cartId: cart.id }, transaction: t });
       return orderRecord;
@@ -99,10 +108,10 @@ exports.createOrder = async (req, res, next) => {
     }
     const fullOrder = await Order.findByPk(order.id, {
       include: [
-        { model: OrderItem, include: Product },
-        Payment,
-        Shipment,
-        Coupon,
+        { model: OrderItem, as: 'items', include: [Product] },
+        { model: Payment, as: 'payment' },
+        { model: Shipment, as: 'shipment' },
+        { model: Coupon, as: 'coupon' },
       ],
     });
     res.json(fullOrder);

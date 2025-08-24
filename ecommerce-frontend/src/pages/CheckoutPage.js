@@ -7,7 +7,7 @@ import OrderSummary from '../components/OrderSummary';
 
 // Page for checking out: review cart, apply coupon, create order and payment
 function CheckoutPage() {
-  const { token } = useAuth();
+  const { user } = useAuth();
   const [cart, setCart] = useState(null);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -40,12 +40,12 @@ function CheckoutPage() {
 
   useEffect(() => {
     const fetchCart = async () => {
-      if (!token) return;
-      const data = await api.getCart(token);
+      if (!user) return;
+      const data = await api.getCart();
       setCart(data);
     };
     fetchCart();
-  }, [token]);
+  }, [user]);
 
   const subtotal = cart?.items?.reduce((sum, it) => sum + it.quantity * parseFloat(it.unitPrice), 0) || 0;
   const couponCode = watch('coupon');
@@ -59,8 +59,8 @@ function CheckoutPage() {
     }
     try {
       setLoading(true);
-      const order = await api.createOrder({ couponCode: data.coupon || undefined }, token);
-      const payment = await api.createPaymentPreference(order.id, token);
+      const order = await api.createOrder({ couponCode: data.coupon || undefined });
+      const payment = await api.createPaymentPreference(order.id);
       window.location.href = payment.initPoint;
     } catch (err) {
       console.error(err);

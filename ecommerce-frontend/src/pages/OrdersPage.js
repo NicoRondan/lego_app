@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 // Page to display the user's past orders
 function OrdersPage() {
-  const { token } = useAuth();
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,7 +13,7 @@ function OrdersPage() {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const data = await api.getOrders(token);
+        const data = await api.getOrders();
         setOrders(data);
       } catch (err) {
         console.error(err);
@@ -22,10 +22,10 @@ function OrdersPage() {
         setLoading(false);
       }
     };
-    if (token) {
+    if (user) {
       fetchOrders();
     }
-  }, [token]);
+  }, [user]);
 
   return (
     <div>

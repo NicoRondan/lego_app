@@ -7,7 +7,7 @@ import QuantityStepper from '../components/QuantityStepper';
 // Page to display detailed information about a single product
 function ProductDetailPage() {
   const { id } = useParams();
-  const { token } = useAuth();
+  const { user } = useAuth();
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState(null);
@@ -21,9 +21,10 @@ function ProductDetailPage() {
       try {
         const data = await api.getProductById(id);
         setProduct(data);
-        if (token) {
-          const wl = await api.getWishlist(token);
-          setInWishlist(wl.items?.some((it) => it.product?.id === data.id));
+        if (user) {
+          // Fetch wishlist but tolerate missing list for new users
+          const wl = await api.getWishlist().catch(() => null);
+          setInWishlist(wl?.items?.some((it) => it.product?.id === data.id));
         }
       } catch (err) {
         console.error(err);
@@ -31,16 +32,16 @@ function ProductDetailPage() {
       }
     };
     fetchProduct();
-  }, [id, token]);
+  }, [id, user]);
 
   const handleAddToCart = async () => {
-    if (!token) {
+    if (!user) {
       setMessage('Por favor inicia sesión para añadir al carrito');
       return;
     }
     try {
       setLoading(true);
-      await api.addToCart({ productId: product.id, quantity }, token);
+      await api.addToCart({ productId: product.id, quantity });
       setMessage('Producto añadido al carrito');
     } catch (err) {
       console.error(err);
@@ -72,18 +73,18 @@ function ProductDetailPage() {
         {loading ? 'Añadiendo…' : 'Añadir al carrito'}
       </button>
       <button onClick={async () => {
-          if (!token) {
+          if (!user) {
             setMessage('Inicia sesión para administrar la wishlist');
             return;
           }
           try {
             if (inWishlist) {
-              const wl = await api.getWishlist(token);
+              const wl = await api.getWishlist();
               const item = wl.items.find((it) => it.product?.id === product.id);
-              if (item) await api.removeFromWishlist(item.id, token);
+              if (item) await api.removeFromWishlist(item.id);
               setInWishlist(false);
             } else {
-              await api.addToWishlist(product.id, token);
+              await api.addToWishlist(product.id);
               setInWishlist(true);
             }
           } catch (err) {
@@ -109,13 +110,13 @@ function ProductDetailPage() {
       ) : (
         <p>Aún no hay reseñas.</p>
       )}
-      {token && (
+      {user && (
         <form
           className="mt-3"
           onSubmit={async (e) => {
             e.preventDefault();
             try {
-              await api.createReview(product.id, review, token);
+              await api.createReview(product.id, review);
               const updated = await api.getProductById(id);
               setProduct(updated);
               setReview({ rating: 5, comment: '' });

@@ -16,7 +16,7 @@ dotenv.config();
 
 const typeDefs = require('../graphql/typeDefs');
 const resolvers = require('../graphql/resolvers');
-const { sequelize } = require('../infra/models');
+const { seed } = require('../infra/seeds/seed');
 const {
   authMiddleware,
   errorHandler,
@@ -28,9 +28,10 @@ const csrfMiddleware = require('../shared/csrf');
 const { logger } = require('../shared/logger');
 
 // Import routers for each module
-const authRouter = require('../modules/auth/router');
+const authRouter = require('../modules/auth/routes');
 const catalogRouter = require('../modules/catalog/router');
 const cartRouter = require('../modules/cart/router');
+const wishlistRouter = require('../modules/wishlist/router');
 const ordersRouter = require('../modules/orders/router');
 const paymentsRouter = require('../modules/payments/router');
 const uploadsRouter = require('../modules/uploads/router');
@@ -57,7 +58,22 @@ async function createApp() {
       crossOriginEmbedderPolicy: { policy: 'require-corp' },
     })
   );
-  app.use(cors());
+  const allowList = [process.env.FRONTEND_URL].filter(Boolean);
+  const corsOptions = {
+    origin(origin, callback) {
+      if (!origin || allowList.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
+    exposedHeaders: ['X-CSRF-Token'],
+  };
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
 
   // Attach request ID and logger
   app.use(requestIdMiddleware);
@@ -81,7 +97,7 @@ async function createApp() {
   app.use(authMiddleware);
 
   // Rate limiting
-  const authLimiter = rateLimit({ windowMs: 60 * 1000, limit: 5 });
+  const authLimiter = rateLimit({ windowMs: 60 * 1000, limit: 1000 });
   const webhookLimiter = rateLimit({ windowMs: 60 * 1000, limit: 5 });
 
   // Mount REST routes
@@ -90,6 +106,7 @@ async function createApp() {
   const categoriesRouter = require('../modules/catalog/categoriesRouter');
   app.use('/categories', categoriesRouter);
   app.use('/cart', cartRouter);
+  app.use('/wishlist', wishlistRouter);
   app.use('/orders', ordersRouter);
   app.use('/payments', paymentsRouter);
   app.use('/uploads', uploadsRouter);
@@ -121,9 +138,9 @@ async function createApp() {
 }
 
 async function startServer() {
+  await seed();
   const app = await createApp();
-  await sequelize.sync();
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 4000;
   app.listen(port, () => {
     logger.info(`Server ready at http://localhost:${port}`);
     logger.info(
