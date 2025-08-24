@@ -1,0 +1,13 @@
+.category-carousel .carousel-inner {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+
+.category-carousel .carousel-item {
+  display: block;
+}
+
+.category-carousel .carousel-control-prev,
+.category-carousel .carousel-control-next {
+  width: 3rem;
+}
