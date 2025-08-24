@@ -16,6 +16,7 @@ Service de backend para una tienda B2C de Lego construido con Node.js, Express y
 2. Crear un archivo `.env` en la raíz del proyecto con las variables necesarias. Ejemplo:
    ```env
    PORT=3000
+   BASE_URL=http://localhost:3000
    DB_URI=sqlite::memory:
    JWT_SECRET=cambia_este_secreto
    GOOGLE_CLIENT_ID=
@@ -67,6 +68,34 @@ Endpoints disponibles:
 - `POST /orders`
 - `POST /payments/mp/preference`
 - `POST /webhooks/mp`
+
+### Autenticación OAuth
+
+- `GET /auth/login/:provider` inicia el flujo Authorization Code + PKCE para `google` o `facebook`.
+- `GET /auth/callback/:provider` procesa el código de autorización, crea el usuario y devuelve:
+  - JWT de corta duración (15min).
+  - `refreshToken` para solicitar nuevos JWT vía `POST /auth/refresh`.
+
+### Idempotencia
+
+Los endpoints `POST /orders` y `POST /webhooks/mp` aceptan el header `Idempotency-Key` para evitar
+peticiones duplicadas. Se almacena una clave de deduplicación en la tabla `idempotency_keys`.
+
+### Seguridad HTTP
+
+Se usa `helmet` con políticas CSP, HSTS, `noSniff`, `frameguard`, `Referrer-Policy` y CORP/COEP.
+Ejemplo de CSP compatible con Bootstrap/CDN:
+
+```js
+contentSecurityPolicy: {
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://stackpath.bootstrapcdn.com'],
+    styleSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://stackpath.bootstrapcdn.com', "'unsafe-inline'"],
+    imgSrc: ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
+  },
+}
+```
 
 Para detalles de parámetros y respuestas consulta `src/app/openapi.yaml`.
 

@@ -8,8 +8,10 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 
-// Log in with social provider. Expects body { provider, providerId, name, email }
-router.post('/login', controller.login);
+// OAuth 2.0 Authorization Code + PKCE
+router.get('/login/:provider', controller.oauthLogin);
+router.get('/callback/:provider', controller.oauthCallback);
+router.post('/refresh', controller.refreshToken);
 
 // Log out: instruct client to discard token (no server state to clear)
 router.post('/logout', controller.logout);

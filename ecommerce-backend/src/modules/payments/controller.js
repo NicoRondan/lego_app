@@ -3,7 +3,7 @@
 // payment notifications via webhook. This implementation is stubbed for
 // educational purposes and does not interact with the real Mercado Pago API.
 
-const { Order, Payment } = require('../../infra/models');
+const { Order, Payment, IdempotencyKey } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 const crypto = require('crypto');
 const mercadopago = require('../../shared/mercadopago');
@@ -61,6 +61,13 @@ exports.createPreference = async (req, res, next) => {
 // a simplified payload { paymentId, status } for demonstration.
 exports.handleWebhook = async (req, res, next) => {
   try {
+    const idempotencyKey = req.get('Idempotency-Key');
+    if (idempotencyKey) {
+      const existing = await IdempotencyKey.findOne({
+        where: { key: idempotencyKey, endpoint: 'POST /webhooks/mp' },
+      });
+      if (existing) return res.json({ message: 'Duplicate webhook' });
+    }
     const dto = require('./dto');
     const { paymentId, status } = dto.parseWebhook(req.body);
     // Locate the payment by externalId (Mercado Pago id)
@@ -83,6 +90,13 @@ exports.handleWebhook = async (req, res, next) => {
       order.status = 'refunded';
     }
     await order.save();
+    if (idempotencyKey) {
+      await IdempotencyKey.create({
+        key: idempotencyKey,
+        endpoint: 'POST /webhooks/mp',
+        refId: payment.id,
+      });
+    }
     res.json({ message: 'Webhook processed' });
   } catch (err) {
     next(err);

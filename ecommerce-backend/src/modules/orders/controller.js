@@ -3,7 +3,7 @@
 // orders, fetching a specific order by ID and creating a new order from
 // the current cart. All routes require authentication.
 
-const { Cart, CartItem, Order, OrderItem, Product, Payment, Shipment, Coupon } = require('../../infra/models');
+const { Cart, CartItem, Order, OrderItem, Product, Payment, Shipment, Coupon, IdempotencyKey } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 const sequelize = require('../../infra/models').sequelize;
 
@@ -55,6 +55,23 @@ exports.createOrder = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) throw new ApiError('Not authenticated', 401);
+    const idempotencyKey = req.get('Idempotency-Key');
+    if (idempotencyKey) {
+      const existingKey = await IdempotencyKey.findOne({
+        where: { key: idempotencyKey, endpoint: 'POST /orders', userId: user.id },
+      });
+      if (existingKey) {
+        const existingOrder = await Order.findByPk(existingKey.refId, {
+          include: [
+            { model: OrderItem, include: Product },
+            Payment,
+            Shipment,
+            Coupon,
+          ],
+        });
+        if (existingOrder) return res.json(existingOrder);
+      }
+    }
     const dto = require('./dto');
     const { couponCode } = dto.parseCreateOrder(req.body);
     const cart = await Cart.findOne({ where: { userId: user.id }, include: { model: CartItem, include: Product } });
@@ -72,6 +89,14 @@ exports.createOrder = async (req, res, next) => {
       await CartItem.destroy({ where: { cartId: cart.id }, transaction: t });
       return orderRecord;
     });
+    if (idempotencyKey) {
+      await IdempotencyKey.create({
+        key: idempotencyKey,
+        endpoint: 'POST /orders',
+        refId: order.id,
+        userId: user.id,
+      });
+    }
     const fullOrder = await Order.findByPk(order.id, {
       include: [
         { model: OrderItem, include: Product },
