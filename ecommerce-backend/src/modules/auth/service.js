@@ -52,11 +52,7 @@ function setAuthCookies(res, { accessToken, refreshToken, csrfToken }) {
     ...base,
     maxAge: parseDuration(process.env.REFRESH_TOKEN_TTL || '30d'),
   });
-  res.cookie('csrfToken', csrfToken, {
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    domain: process.env.COOKIE_DOMAIN || undefined,
-  });
+  res.cookie('csrfToken', csrfToken, { ...base, secure: true });
 }
 
 function clearAuthCookies(res) {

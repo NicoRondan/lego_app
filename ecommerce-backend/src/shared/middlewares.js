@@ -45,13 +45,32 @@ function parseCookies(req, _res, next) {
 // Basic in-memory rate limiter per IP
 function rateLimit({ windowMs, limit }) {
   const hits = new Map();
+
+  // Periodically remove stale IP records to avoid unbounded memory growth
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, value] of hits.entries()) {
+      if (value.reset < now) {
+        hits.delete(key);
+      }
+    }
+  }, windowMs).unref();
+
   return function (req, res, next) {
     const ip = req.ip || req.connection.remoteAddress || 'unknown';
     const now = Date.now();
     let record = hits.get(ip);
-    if (!record || record.reset < now) {
+
+    // If the record has expired, remove it so the map does not grow indefinitely
+    if (record && record.reset < now) {
+      hits.delete(ip);
+      record = null;
+    }
+
+    if (!record) {
       record = { count: 0, reset: now + windowMs };
     }
+
     record.count += 1;
     hits.set(ip, record);
     if (record.count > limit) {
@@ -61,20 +80,6 @@ function rateLimit({ windowMs, limit }) {
     }
     next();
   };
-}
-
-function csrfMiddleware(req, res, next) {
-  const method = req.method.toUpperCase();
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    const tokenCookie = req.cookies && req.cookies.csrfToken;
-    const headerToken = req.headers['x-csrf-token'];
-    if (!tokenCookie || !headerToken || tokenCookie !== headerToken) {
-      return res
-        .status(403)
-        .json({ error: { code: ERROR_CODES[403], message: 'Invalid CSRF token' }, requestId: req.id });
-    }
-  }
-  next();
 }
 
 // Authorization middleware for role-based access control
@@ -123,6 +128,5 @@ module.exports = {
   errorHandler,
   parseCookies,
   rateLimit,
-  csrfMiddleware,
   requireRole,
 };

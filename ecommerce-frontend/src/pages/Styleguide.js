@@ -4,7 +4,7 @@ import tokens from '../theme/tokens.json';
 const hexToRgb = (hex) => {
   const s = hex.replace('#', '');
   const num = parseInt(s, 16);
-  return [num >> 16 & 255, num >> 8 & 255, num & 255];
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
 const luminance = (r, g, b) => {
