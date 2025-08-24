@@ -53,8 +53,9 @@ function setAuthCookies(res, { accessToken, refreshToken, csrfToken }) {
     maxAge: parseDuration(process.env.REFRESH_TOKEN_TTL || '30d'),
   });
   res.cookie('csrfToken', csrfToken, {
+    httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     domain: process.env.COOKIE_DOMAIN || undefined,
   });
 }
