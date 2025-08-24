@@ -50,7 +50,7 @@ exports.getProducts = async (req, res, next) => {
     }
 
     include.push({ model: Category, as: 'categories', through: { attributes: [] } });
-    include.push({ model: Review, as: 'reviews', include: [User] });
+    include.push({ model: Review, as: 'reviews', include: [{ model: User, attributes: ['id', 'name'] }] });
 
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 10;
@@ -92,7 +92,7 @@ exports.getProductById = async (req, res, next) => {
     const product = await Product.findByPk(id, {
       include: [
         { model: Category, as: 'categories', through: { attributes: [] } },
-        { model: Review, as: 'reviews', include: [User] },
+        { model: Review, as: 'reviews', include: [{ model: User, attributes: ['id', 'name'] }] },
       ],
     });
     if (!product) throw new ApiError('Product not found', 404);

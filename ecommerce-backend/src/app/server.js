@@ -122,7 +122,8 @@ async function createApp() {
 
 async function startServer() {
   const app = await createApp();
-  await sequelize.sync();
+  // Ensure database schema is updated to match models (adds missing columns)
+  await sequelize.sync({ alter: true });
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
     logger.info(`Server ready at http://localhost:${port}`);

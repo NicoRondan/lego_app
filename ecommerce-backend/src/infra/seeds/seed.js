@@ -1,4 +1,5 @@
 const { sequelize, User, Product, Category, Coupon, Order, OrderItem } = require('../models');
+const bcrypt = require('bcrypt');
 
 async function seed() {
   await sequelize.sync({ force: true });
@@ -35,11 +36,15 @@ async function seed() {
   const users = [];
   for (let i = 1; i <= 10; i++) {
     const isAdmin = i <= 2;
-    users.push(await User.create({
-      name: isAdmin ? `Admin ${i}` : `User ${i - 2}`,
-      email: isAdmin ? `admin${i}@example.com` : `user${i - 2}@example.com`,
-      role: isAdmin ? 'admin' : 'customer',
-    }));
+    const passwordHash = await bcrypt.hash('password123', 10);
+    users.push(
+      await User.create({
+        name: isAdmin ? `Admin ${i}` : `User ${i - 2}`,
+        email: isAdmin ? `admin${i}@example.com` : `user${i - 2}@example.com`,
+        role: isAdmin ? 'admin' : 'customer',
+        passwordHash,
+      })
+    );
   }
 
   // Coupons

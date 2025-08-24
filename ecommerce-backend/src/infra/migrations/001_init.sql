@@ -3,6 +3,7 @@ CREATE TABLE users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
+  password_hash TEXT,
   role TEXT NOT NULL DEFAULT 'customer'
 );
 
