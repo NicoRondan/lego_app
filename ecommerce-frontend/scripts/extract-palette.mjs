@@ -3,7 +3,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { createRequire } from 'module';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,18 +14,23 @@ const image = path.resolve(__dirname, '../public/assets/logo.png');
 
 // 2) Cargar node-vibrant con compatibilidad ESM/CJS/named/default/UMD
 async function loadVibrant() {
+  const require = createRequire(import.meta.url);
   try {
     // ESM con default (CJS via interop) o namespace con default
     const mod = await import('node-vibrant');
     if (mod.default) return mod.default;
     if (mod.Vibrant) return mod.Vibrant; // named export
-    // Último intento: el bundle UMD
-    const umd = await import('node-vibrant/lib/bundle.js');
+  } catch {
+    // ignorar y probar bundle UMD
+  }
+  try {
+    const pkgDir = path.dirname(require.resolve('node-vibrant/package.json'));
+    const umdUrl = pathToFileURL(path.join(pkgDir, 'lib', 'bundle.js'));
+    const umd = await import(umdUrl.href);
     return umd.default || umd.Vibrant || umd;
   } catch (e) {
-    // Reintento directo al bundle UMD si el import principal falló
-    const umd = await import('node-vibrant/lib/bundle.js');
-    return umd.default || umd.Vibrant || umd;
+    console.warn('[palette] node-vibrant no disponible:', e?.message || e);
+    return null;
   }
 }
 
@@ -47,13 +53,16 @@ function ensureContrast(hex,against='#ffffff',ratio=4.5){let[h,s,l]=rgbToHsl(...
 
 const Vibrant = await loadVibrant();
 
-// 3) Obtener paleta (con fallback si no hay imagen)
-let palette;
-try {
-  palette = await Vibrant.from(image).getPalette();
-} catch (e) {
-  console.warn('[palette] no se pudo extraer del logo, uso fallback Lego:', e?.message || e);
-  palette = {};
+// 3) Obtener paleta (con fallback si no hay imagen o librería)
+let palette = {};
+if (Vibrant) {
+  try {
+    palette = await Vibrant.from(image).getPalette();
+  } catch (e) {
+    console.warn('[palette] no se pudo extraer del logo, uso fallback Lego:', e?.message || e);
+  }
+} else {
+  console.warn('[palette] node-vibrant no disponible, uso fallback Lego');
 }
 
 const pick = (swatch, fallback) => (swatch && swatch.hex) ? swatch.hex : fallback;
