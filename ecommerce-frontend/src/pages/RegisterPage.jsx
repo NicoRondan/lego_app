@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthCard from '../components/AuthCard';
 
 const RegisterPage = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +19,7 @@ const RegisterPage = () => {
     if (!form.name) errs.name = 'Requerido';
     if (!form.email) errs.email = 'Requerido';
     if (form.password.length < 8) errs.password = 'Mínimo 8 caracteres';
-    if (form.password !== form.confirm) errs.confirm = 'No coincide';
+    if (form.password !== form.confirmPassword) errs.confirmPassword = 'No coincide';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -41,7 +41,17 @@ const RegisterPage = () => {
 
   return (
     <AuthCard>
-      <h2 className="mb-3">Crear cuenta</h2>
+      <div className="text-center mb-3">
+        <img
+          src="/assets/logo.png"
+          alt="Lego Shop"
+          width="64"
+          height="64"
+          className="mb-3"
+          loading="lazy"
+        />
+        <h2 className="mb-0">Crear cuenta</h2>
+      </div>
       <form onSubmit={handleSubmit} noValidate>
         <div className="mb-3">
           <label className="form-label">Nombre</label>
@@ -51,6 +61,7 @@ const RegisterPage = () => {
             value={form.name}
             onChange={handleChange}
             required
+            aria-label="Nombre"
           />
           {errors.name && <div className="invalid-feedback">{errors.name}</div>}
         </div>
@@ -63,6 +74,7 @@ const RegisterPage = () => {
             value={form.email}
             onChange={handleChange}
             required
+            aria-label="Email"
           />
           {errors.email && <div className="invalid-feedback">{errors.email}</div>}
         </div>
@@ -76,25 +88,35 @@ const RegisterPage = () => {
             onChange={handleChange}
             required
             minLength={8}
+            aria-label="Contraseña"
           />
           {errors.password && <div className="invalid-feedback">{errors.password}</div>}
         </div>
         <div className="mb-3">
           <label className="form-label">Confirmar contraseña</label>
           <input
-            name="confirm"
+            name="confirmPassword"
             type="password"
-            className={`form-control ${errors.confirm ? 'is-invalid' : ''}`}
-            value={form.confirm}
+            className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
+            value={form.confirmPassword}
             onChange={handleChange}
             required
+            aria-label="Confirmar contraseña"
           />
-          {errors.confirm && <div className="invalid-feedback">{errors.confirm}</div>}
+          {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
         </div>
-        <button className="btn btn-primary w-100" disabled={loading} type="submit">
+        <button
+          className="btn btn-primary w-100"
+          disabled={loading}
+          type="submit"
+          aria-label="Registrarse"
+        >
           {loading ? 'Registrando…' : 'Registrarse'}
         </button>
       </form>
+      <p className="mt-3 mb-0 text-center">
+        <Link to="/login">¿Ya tenés cuenta? Iniciar sesión</Link>
+      </p>
     </AuthCard>
   );
 };

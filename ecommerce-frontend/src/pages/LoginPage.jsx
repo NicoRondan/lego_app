@@ -29,7 +29,17 @@ const LoginPage = () => {
 
   return (
     <AuthCard>
-      <h2 className="mb-3">Iniciar sesión</h2>
+      <div className="text-center mb-3">
+        <img
+          src="/assets/logo.png"
+          alt="Lego Shop"
+          width="64"
+          height="64"
+          className="mb-3"
+          loading="lazy"
+        />
+        <h2 className="mb-0">Iniciar sesión</h2>
+      </div>
       <form onSubmit={handleSubmit} noValidate>
         <div className="mb-3">
           <label className="form-label">Email</label>
@@ -40,6 +50,7 @@ const LoginPage = () => {
             value={form.email}
             onChange={handleChange}
             required
+            aria-label="Email"
           />
         </div>
         <div className="mb-3">
@@ -51,15 +62,25 @@ const LoginPage = () => {
             value={form.password}
             onChange={handleChange}
             required
+            aria-label="Contraseña"
           />
         </div>
         {error && <p className="text-danger">{error}</p>}
-        <button className="btn btn-primary w-100" disabled={loading} type="submit">
+        <button
+          className="btn btn-primary w-100"
+          disabled={loading}
+          type="submit"
+          aria-label="Ingresar"
+        >
           {loading ? 'Ingresando…' : 'Ingresar'}
         </button>
       </form>
       <hr />
-      <button className="btn btn-outline-dark w-100" onClick={loginWithGoogle}>
+      <button
+        className="btn btn-outline-dark w-100"
+        onClick={loginWithGoogle}
+        aria-label="Continuar con Google"
+      >
         <span className="me-2" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
             <path fill="#EA4335" d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.56-2.56C13.55.8 11.48 0 9 0 5.48 0 2.44 2.02.96 5l2.9 2.26C4.45 5.09 6.55 3.48 9 3.48z"/>
