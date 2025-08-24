@@ -37,7 +37,24 @@ async function startServer() {
   const app = express();
 
   // Core security middleware
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://stackpath.bootstrapcdn.com'],
+          styleSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://stackpath.bootstrapcdn.com', "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
+        },
+      },
+      hsts: { maxAge: 31536000 },
+      noSniff: true,
+      frameguard: { action: 'deny' },
+      referrerPolicy: { policy: 'no-referrer' },
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      crossOriginEmbedderPolicy: { policy: 'require-corp' },
+    })
+  );
   app.use(cors());
 
   // Attach request ID and logger

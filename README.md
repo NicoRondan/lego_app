@@ -2,6 +2,9 @@
 
 Repositorio que agrupa el backend y frontend de una tienda B2C de Lego.
 
+Incluye autenticación OAuth (Google/Facebook) con PKCE, idempotencia para creación de
+órdenes y webhooks, y configuración de seguridad HTTP con Helmet.
+
 ## Requisitos
 
 - Node.js 18+

@@ -23,6 +23,27 @@ const SocialIdentity = sequelize.define('SocialIdentity', {
   underscored: true,
 });
 
+// Refresh token model for secure OAuth sessions
+const RefreshToken = sequelize.define('RefreshToken', {
+  token: { type: DataTypes.STRING, primaryKey: true },
+  userId: { type: DataTypes.INTEGER, allowNull: false },
+  expiresAt: { type: DataTypes.DATE, allowNull: false },
+}, {
+  tableName: 'refresh_tokens',
+  underscored: true,
+});
+
+// Idempotency key model to deduplicate requests
+const IdempotencyKey = sequelize.define('IdempotencyKey', {
+  key: { type: DataTypes.STRING, primaryKey: true },
+  endpoint: { type: DataTypes.STRING, allowNull: false },
+  refId: { type: DataTypes.STRING },
+  userId: { type: DataTypes.INTEGER },
+}, {
+  tableName: 'idempotency_keys',
+  underscored: true,
+});
+
 // Address model
 const Address = sequelize.define('Address', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -181,6 +202,12 @@ Address.belongsTo(User);
 User.hasMany(SocialIdentity, { as: 'socialIdentities' });
 SocialIdentity.belongsTo(User);
 
+User.hasMany(RefreshToken, { as: 'refreshTokens' });
+RefreshToken.belongsTo(User);
+
+User.hasMany(IdempotencyKey, { as: 'idempotencyKeys' });
+IdempotencyKey.belongsTo(User);
+
 User.hasMany(Wishlist, { as: 'wishlists' });
 Wishlist.belongsTo(User);
 
@@ -247,4 +274,6 @@ module.exports = {
   Shipment,
   Coupon,
   Review,
+  RefreshToken,
+  IdempotencyKey,
 };
