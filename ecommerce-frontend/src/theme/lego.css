@@ -4,7 +4,6 @@
   --lego-surface: var(--bs-warning);
   --lego-shadow: rgba(0,0,0,.28);
   --lego-highlight: rgba(255,255,255,.35);
-  --lego-enable-texture: 1; /* 1=ON, 0=OFF */
 }
 :root[data-theme="dark"]{ --lego-surface:#0f1115; }
 
@@ -16,8 +15,6 @@
     radial-gradient(circle at 70% 70%, var(--lego-shadow), transparent 60%);
   background-size: var(--lego-stud-gap) var(--lego-stud-gap);
 }
-body.no-texture .lego-plate.tex,
-body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
 
 /* Marco “brick” con relieve */
 .lego-brick{

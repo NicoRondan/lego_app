@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import MiniCart from './MiniCart';
 import ThemeToggle from './ThemeToggle';
-import TextureToggle from './lego/TextureToggle';
 import * as api from '../services/api';
 
 // Navigation bar component. Uses Bootstrap classes for styling.
@@ -117,9 +116,6 @@ function Navbar() {
             )}
             <li className="nav-item ms-2">
               <ThemeToggle />
-            </li>
-            <li className="nav-item ms-2">
-              <TextureToggle />
             </li>
           </ul>
         </div>

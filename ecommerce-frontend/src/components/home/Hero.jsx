@@ -18,7 +18,7 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
           { src: '/assets/home/hero.mp4', type: 'video/mp4' },
         ]}
       />
-      <div className="position-absolute top-50 start-50 translate-middle lego-plate tex p-4 rounded text-dark">
+      <div className="position-absolute top-50 start-50 translate-middle">
         <h1 className="display-4">{title}</h1>
         <p className="lead mb-4">{subtitle}</p>
         <Link to={ctaHref} className="text-decoration-none">
