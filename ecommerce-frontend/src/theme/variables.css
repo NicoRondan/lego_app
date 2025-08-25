@@ -1,13 +1,13 @@
 :root {
-  --color-primary-hsl: 348 84% 48%;
+  --color-primary-hsl: 357 100% 44%;
   --color-primary: hsl(var(--color-primary-hsl));
-  --color-secondary-hsl: 45 100% 50%;
+  --color-secondary-hsl: 56 100% 50%;
   --color-secondary: hsl(var(--color-secondary-hsl));
   --color-accent-hsl: 211 100% 33%;
   --color-accent: hsl(var(--color-accent-hsl));
   --color-success-hsl: 142 72% 45%;
   --color-success: hsl(var(--color-success-hsl));
-  --color-warning-hsl: 35 92% 56%;
+  --color-warning-hsl: 56 100% 50%;
   --color-warning: hsl(var(--color-warning-hsl));
   --color-danger-hsl: 0 84% 60%;
   --color-danger: hsl(var(--color-danger-hsl));
