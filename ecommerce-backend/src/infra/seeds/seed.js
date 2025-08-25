@@ -5,30 +5,100 @@ async function seed() {
   await sequelize.sync({ force: true });
 
   // Categories
-  const categories = [];
-  for (let i = 1; i <= 5; i++) {
-    categories.push(await Category.create({ name: `Category ${i}` }));
+  const categoryNames = ['Star Wars', 'Technic', 'City', 'Ideas', 'Harry Potter', 'Creator'];
+  const categories = {};
+  for (const name of categoryNames) {
+    categories[name] = await Category.create({ name });
   }
 
   // Products
-  const products = [];
-  for (let i = 1; i <= 50; i++) {
-    const product = await Product.create({
-      code: `PRD${i}`,
-      name: `Product ${i}`,
-      description: `Description for product ${i}`,
-      price: (10 + Math.random() * 90).toFixed(2),
+  const legoSets = [
+    {
+      code: 'SW001',
+      name: 'Millennium Falcon',
+      description: 'Legendary ship from the Star Wars saga.',
+      price: 799.99,
       currency: 'USD',
-      stock: Math.floor(Math.random() * 100),
+      stock: 5,
+      categories: ['Star Wars'],
+      images: ['https://picsum.photos/seed/lego-millennium-falcon/600/400'],
+    },
+    {
+      code: 'TECH001',
+      name: 'Bugatti Chiron',
+      description: 'Advanced Technic model of the Bugatti Chiron supercar.',
+      price: 349.99,
+      currency: 'USD',
+      stock: 10,
+      categories: ['Technic'],
+      images: ['https://picsum.photos/seed/lego-bugatti/600/400'],
+    },
+    {
+      code: 'CITY001',
+      name: 'City Police Station',
+      description: 'Classic police station set for the LEGO City lineup.',
+      price: 99.99,
+      currency: 'USD',
+      stock: 20,
+      categories: ['City'],
+      images: ['https://picsum.photos/seed/lego-police-station/600/400'],
+    },
+    {
+      code: 'IDEA001',
+      name: 'Tree House',
+      description: 'Buildable tree house from LEGO Ideas.',
+      price: 249.99,
+      currency: 'USD',
+      stock: 15,
+      categories: ['Ideas'],
+      images: ['https://picsum.photos/seed/lego-tree-house/600/400'],
+    },
+    {
+      code: 'HP001',
+      name: 'Hogwarts Castle',
+      description: 'Magical castle from the Harry Potter series.',
+      price: 399.99,
+      currency: 'USD',
+      stock: 8,
+      categories: ['Harry Potter'],
+      images: ['https://picsum.photos/seed/lego-hogwarts/600/400'],
+    },
+    {
+      code: 'CRE001',
+      name: 'Volkswagen Beetle',
+      description: 'Iconic Beetle from the Creator Expert line.',
+      price: 89.99,
+      currency: 'USD',
+      stock: 25,
+      categories: ['Creator'],
+      images: ['https://picsum.photos/seed/lego-beetle/600/400'],
+    },
+    {
+      code: 'SWCRE001',
+      name: 'Darth Vader Helmet',
+      description: 'Build-and-display helmet of Darth Vader.',
+      price: 69.99,
+      currency: 'USD',
+      stock: 30,
+      categories: ['Star Wars', 'Creator'],
+      images: ['https://picsum.photos/seed/lego-vader-helmet/600/400'],
+    },
+  ];
+
+  const products = [];
+  for (const set of legoSets) {
+    const product = await Product.create({
+      code: set.code,
+      name: set.name,
+      description: set.description,
+      price: set.price.toFixed(2),
+      currency: set.currency,
+      stock: set.stock,
+      image: set.images[0],
     });
 
-    const assigned = new Set();
-    const num = Math.floor(Math.random() * 3) + 1;
-    while (assigned.size < num) {
-      const cat = categories[Math.floor(Math.random() * categories.length)];
-      assigned.add(cat);
-    }
-    await product.setCategories([...assigned]);
+    const cats = set.categories.map((name) => categories[name]).filter(Boolean);
+    await product.setCategories(cats);
     products.push(product);
   }
 
