@@ -105,6 +105,11 @@ p {
   --bs-navbar-brand-color: var(--fg);
   --bs-navbar-brand-hover-color: var(--link);
   --bs-navbar-active-color: var(--link);
+  --bs-navbar-bg: var(--bg);
+}
+
+.navbar .nav-link:hover {
+  text-decoration: underline;
 }
 
 .card {
