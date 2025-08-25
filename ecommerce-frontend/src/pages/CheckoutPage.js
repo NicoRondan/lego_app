@@ -42,7 +42,11 @@ function CheckoutPage() {
     const fetchCart = async () => {
       if (!user) return;
       const data = await api.getCart();
-      setCart(data);
+      const itemsCount = (data?.items || []).reduce(
+        (sum, it) => sum + it.quantity,
+        0,
+      );
+      setCart({ ...data, summary: { ...(data.summary || {}), itemsCount } });
     };
     fetchCart();
   }, [user]);
@@ -53,7 +57,7 @@ function CheckoutPage() {
   const tax = subtotal * 0.21;
 
   const onSubmit = async (data) => {
-    if (!cart || !cart.items || cart.items.length === 0) {
+    if (!cart || !cart.summary || cart.summary.itemsCount === 0) {
       setMessage('El carrito está vacío');
       return;
     }
@@ -73,7 +77,7 @@ function CheckoutPage() {
   return (
     <div>
       <h2>Checkout</h2>
-      {!cart || !cart.items || cart.items.length === 0 ? (
+      {!cart || !cart.summary || cart.summary.itemsCount === 0 ? (
         <p>Tu carrito está vacío.</p>
       ) : (
         <>

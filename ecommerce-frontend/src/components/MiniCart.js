@@ -5,8 +5,9 @@ import { useCart } from '../contexts/CartContext';
 function MiniCart() {
   const { cart } = useCart();
   const items = cart?.items || [];
+  const itemsCount = cart?.summary?.itemsCount || 0;
 
-  if (!items.length) {
+  if (!itemsCount) {
     return <div className="p-3 text-center" role="menuitem">Carrito vacío</div>;
   }
 

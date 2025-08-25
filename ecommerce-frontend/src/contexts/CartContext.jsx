@@ -15,7 +15,11 @@ export const CartProvider = ({ children }) => {
     }
     try {
       const data = await api.getCart();
-      setCart(data);
+      const itemsCount = (data?.items || []).reduce(
+        (sum, it) => sum + it.quantity,
+        0,
+      );
+      setCart({ ...data, summary: { ...(data.summary || {}), itemsCount } });
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
