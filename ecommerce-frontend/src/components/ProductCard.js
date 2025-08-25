@@ -2,18 +2,19 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import BrickButton from "./lego/BrickButton";
 import BrickBadge from "./lego/BrickBadge";
-import * as api from "../services/api";
+import { useCart } from "../contexts/CartContext";
 import "./ProductCard.css";
 
 // Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { addItem } = useCart();
 
   const handleAddToCart = async () => {
     try {
       setLoading(true);
-      await api.addToCart({ productId: product.id, quantity: 1 });
+      await addItem({ productId: product.id, quantity: 1 });
       setAdded(true);
     } catch (err) {
       // eslint-disable-next-line no-console
