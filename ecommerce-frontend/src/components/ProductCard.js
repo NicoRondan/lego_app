@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import BrickButton from './lego/BrickButton';
-import * as api from '../services/api';
-import './ProductCard.css';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import BrickButton from "./lego/BrickButton";
+import * as api from "../services/api";
+import "./ProductCard.css";
 
 // Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
@@ -23,49 +23,70 @@ function ProductCard({ product }) {
   };
   const avgRating =
     product.reviews && product.reviews.length > 0
-      ? product.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / product.reviews.length
+      ? product.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+        product.reviews.length
       : null;
   const pieceCount = product.pieceCount || product.pieces;
   return (
     <div className="col-md-4 col-sm-6 mb-4" role="listitem">
-      <div className="card h-100 brick-card" role="article" aria-label={product.name}>
-        <div className="card-img-top bg-secondary" style={{ height: '180px' }}></div>
+      <div
+        className="card h-100 brick-card"
+        role="article"
+        aria-label={product.name}
+      >
+        <div
+          className="card-img-top bg-secondary"
+          style={{ height: "180px" }}
+        ></div>
         <div className="card-body d-flex flex-column">
           <h5 className="card-title">{product.name}</h5>
           <p className="card-text flex-grow-1">
             {product.description?.substring(0, 80)}
-            {product.description && product.description.length > 80 ? '…' : ''}
+            {product.description && product.description.length > 80 ? "…" : ""}
           </p>
-<div className="product-meta">
-              {avgRating && (
-                <span>
-                  <span role="img" aria-label="rating">⭐</span>
-                  {avgRating.toFixed(1)}
+          <div className="product-meta">
+            {avgRating && (
+              <span>
+                <span role="img" aria-label="rating">
+                  ⭐
                 </span>
-              )}
-              {pieceCount && (
-                <span>
-                  <span role="img" aria-label="pieces">🧱</span>
-                  {pieceCount}
+                {avgRating.toFixed(1)}
+              </span>
+            )}
+            {pieceCount && (
+              <span>
+                <span role="img" aria-label="pieces">
+                  🧱
                 </span>
-              )}
-            </div>
-          <p className="card-text fw-bold">${parseFloat(product.price).toFixed(2)}</p>
+                {pieceCount}
+              </span>
+            )}
+          </div>
+          <p className="card-text fw-bold">
+            ${parseFloat(product.price).toFixed(2)}
+          </p>
           <div className="mt-auto">
             <BrickButton
               className="w-100 mb-2"
-              color={added ? 'green' : 'yellow'}
+              color={added ? "green" : "yellow"}
               onClick={handleAddToCart}
               disabled={loading}
             >
-              {added ? '✔ Añadido' : loading ? 'Añadiendo…' : 'Añadir al carrito'}
+              {added
+                ? "✔ Añadido"
+                : loading
+                ? "Añadiendo…"
+                : "Añadir al carrito"}
             </BrickButton>
-            <Link to={`/products/${product.id}`} className="text-decoration-none">
+            <Link
+              to={`/products/${product.id}`}
+              className="text-decoration-none"
+            >
               <BrickButton className="w-100">Ver</BrickButton>
             </Link>
           </div>
         </div>
-      </Link>
+      </div>
     </div>
   );
 }
