@@ -11,7 +11,9 @@ const LoginCallback = () => {
     const params = new URLSearchParams(search);
     const ok = params.get('ok');
     if (ok) {
-      fetchMe().finally(() => navigate('/'));
+      const redirectTo = sessionStorage.getItem('redirectTo');
+      sessionStorage.removeItem('redirectTo');
+      fetchMe().finally(() => navigate(redirectTo || -1));
     } else {
       navigate('/login');
     }

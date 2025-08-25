@@ -81,7 +81,14 @@ const LoginPage = () => {
       <hr />
       <button
         className="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-        onClick={loginWithGoogle}
+        onClick={() => {
+          if (redirectTo) {
+            sessionStorage.setItem('redirectTo', redirectTo);
+          } else {
+            sessionStorage.removeItem('redirectTo');
+          }
+          loginWithGoogle();
+        }}
         aria-label="Continuar con Google"
       >
         <i className="fa-brands fa-google me-2" aria-hidden="true"></i>
