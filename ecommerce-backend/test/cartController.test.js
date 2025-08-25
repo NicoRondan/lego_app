@@ -7,7 +7,7 @@ const modelsPath = path.resolve(__dirname, '../src/infra/models/index.js');
 const mockModels = { Cart: {}, CartItem: {}, Product: {} };
 require.cache[modelsPath] = { exports: mockModels };
 
-const { addItem, removeItem } = require('../src/modules/cart/controller');
+const { addItem, removeItem, getCart } = require('../src/modules/cart/controller');
 const { ApiError } = require('../src/shared/errors');
 
 // Añadir artículo nuevo al carrito
@@ -83,5 +83,31 @@ test('removeItem deletes an item from the cart', async () => {
 
   assert.ok(destroyed);
   assert.strictEqual(output.total, 0);
+});
+
+// Obtener carrito con estructura simplificada de ítems
+test('getCart returns items with expected shape', async () => {
+  const item = {
+    quantity: 3,
+    unitPrice: '5.00',
+    Product: { name: 'Brick', image: 'brick.png' },
+  };
+  mockModels.Cart.findOne = async () => ({
+    toJSON() {
+      return { id: 1, items: [item] };
+    },
+  });
+
+  let output;
+  const req = { user: { id: 1 } };
+  const res = { json: (data) => { output = data; } };
+  await getCart(req, res, (err) => { if (err) throw err; });
+
+  assert.deepStrictEqual(output.items, [
+    { name: 'Brick', thumbnailUrl: 'brick.png', unitPrice: 5, quantity: 3 },
+  ]);
+  assert.strictEqual(output.total, 15);
+  // Ensure no extra properties like Product are leaked
+  assert.deepStrictEqual(Object.keys(output.items[0]).sort(), ['name', 'quantity', 'thumbnailUrl', 'unitPrice'].sort());
 });
 

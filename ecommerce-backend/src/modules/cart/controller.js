@@ -5,17 +5,22 @@
 const { Cart, CartItem, Product } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 
-// Helper to attach cart total by summing item subtotals
+// Helper to attach cart total and expose a simplified item structure
 function attachTotal(cart) {
   if (!cart) return null;
   const data = cart.toJSON();
-  const total = (data.items || []).reduce((sum, it) => {
-    const subtotal =
-      it.subtotal != null
-        ? parseFloat(it.subtotal)
-        : it.quantity * parseFloat(it.unitPrice);
-    return sum + subtotal;
-  }, 0);
+
+  // Map items to only expose required fields and avoid leaking the Product model
+  const items = (data.items || []).map((it) => ({
+    name: it.Product ? it.Product.name : undefined,
+    thumbnailUrl: it.Product ? it.Product.image : undefined,
+    unitPrice: parseFloat(it.unitPrice),
+    quantity: it.quantity,
+  }));
+
+  const total = items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0);
+
+  data.items = items;
   data.total = total;
   return data;
 }
