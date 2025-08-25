@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as api from '../services/api';
 import { useAuth } from './AuthContext';
+import { withItemsCount } from '../utils/cart';
 
 const REQUIRE_AUTH = process.env.REACT_APP_CART_REQUIRE_AUTH !== 'false';
 
@@ -13,6 +14,15 @@ export const CartProvider = ({ children }) => {
   const location = useLocation();
   const [cart, setCart] = useState(null);
 
+  // Wraps setCart to recompute summary.itemsCount as the sum of item quantities.
+  const setCartWithCount = (dataOrUpdater) => {
+    setCart((prev) =>
+      withItemsCount(
+        typeof dataOrUpdater === 'function' ? dataOrUpdater(prev) : dataOrUpdater,
+      ),
+    );
+  };
+
   const fetchCart = async () => {
     if (!user) {
       setCart(null);
@@ -20,11 +30,7 @@ export const CartProvider = ({ children }) => {
     }
     try {
       const data = await api.getCart();
-      const itemsCount = (data?.items || []).reduce(
-        (sum, it) => sum + it.quantity,
-        0,
-      );
-      setCart({ ...data, summary: { ...(data.summary || {}), itemsCount } });
+      setCartWithCount(data);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
@@ -41,18 +47,38 @@ export const CartProvider = ({ children }) => {
       navigate('/login', { state: { redirectTo: location.pathname + location.search } });
       return;
     }
-    await api.addToCart({ productId, quantity });
-    await fetchCart();
+    // Optimistically bump summary count so badge updates immediately.
+    setCart((prev) => {
+      if (!prev) return prev;
+      const itemsCount = (prev.summary?.itemsCount || 0) + quantity;
+      return { ...prev, summary: { ...(prev.summary || {}), itemsCount } };
+    });
+    const data = await api.addToCart({ productId, quantity });
+    setCartWithCount(data);
   };
 
   const updateItem = async (itemId, { quantity }) => {
-    await api.updateCartItem(itemId, { quantity });
-    await fetchCart();
+    // Optimistically update selected item's quantity and summary.
+    setCartWithCount((prev) => {
+      if (!prev) return prev;
+      const items = (prev.items || []).map((it) =>
+        it.id === itemId ? { ...it, quantity } : it,
+      );
+      return { ...prev, items };
+    });
+    const data = await api.updateCartItem(itemId, { quantity });
+    setCartWithCount(data);
   };
 
   const removeItem = async (itemId) => {
-    await api.removeCartItem(itemId);
-    await fetchCart();
+    // Remove locally so UI updates without waiting for server.
+    setCartWithCount((prev) => {
+      if (!prev) return prev;
+      const items = (prev.items || []).filter((it) => it.id !== itemId);
+      return { ...prev, items };
+    });
+    const data = await api.removeCartItem(itemId);
+    setCartWithCount(data);
   };
 
   return (
