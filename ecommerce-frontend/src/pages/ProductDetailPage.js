@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import * as api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 import QuantityStepper from '../components/QuantityStepper';
 
 // Page to display detailed information about a single product
 function ProductDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState(null);
@@ -41,7 +43,7 @@ function ProductDetailPage() {
     }
     try {
       setLoading(true);
-      await api.addToCart({ productId: product.id, quantity });
+      await addItem({ productId: product.id, quantity });
       setMessage('Producto añadido al carrito');
     } catch (err) {
       console.error(err);

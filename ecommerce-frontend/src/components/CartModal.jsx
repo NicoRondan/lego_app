@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
 import MiniCart from './MiniCart';
 import BrickModal from './lego/BrickModal';
 
 // Modal displaying current cart items with actions.
-export default function CartModal({ items = [] }) {
+export default function CartModal() {
+  const { cart } = useCart();
+  const items = cart?.items || [];
   return (
     <BrickModal id="cartModal" title="Tu Carrito">
       {items.length ? (

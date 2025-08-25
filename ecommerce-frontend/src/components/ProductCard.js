@@ -2,19 +2,21 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import BrickButton from "./lego/BrickButton";
 import BrickBadge from "./lego/BrickBadge";
-import * as api from "../services/api";
+import { useCart } from "../contexts/CartContext";
 import "./ProductCard.css";
 
 // Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
-  const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { cart, addItem } = useCart();
+  const added = cart?.items?.some(
+    (it) => it.product?.id === product.id || it.productId === product.id
+  );
 
   const handleAddToCart = async () => {
     try {
       setLoading(true);
-      await api.addToCart({ productId: product.id, quantity: 1 });
-      setAdded(true);
+      await addItem({ productId: product.id, quantity: 1 });
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
@@ -87,7 +89,7 @@ function ProductCard({ product }) {
               className="w-100 mb-2"
               color={added ? "green" : "yellow"}
               onClick={handleAddToCart}
-              disabled={loading}
+              disabled={loading || added}
             >
               {added
                 ? "✔ Añadido"

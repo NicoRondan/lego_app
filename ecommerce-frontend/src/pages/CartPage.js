@@ -1,41 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import * as api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 import QuantityStepper from '../components/QuantityStepper';
 
 // Page that displays the user's cart and allows quantity adjustments and removal
 function CartPage() {
   const { user } = useAuth();
-  const [cart, setCart] = useState(null);
+  const { cart, fetchCart, updateItem, removeItem } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const fetchCart = async () => {
-    if (!user) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await api.getCart();
-      setCart(data);
-    } catch (err) {
-      console.error(err);
-      setError('Error al cargar el carrito');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchCart();
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        await fetchCart();
+      } catch (err) {
+        console.error(err);
+        setError('Error al cargar el carrito');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleUpdate = async (itemId, qty) => {
     try {
-      await api.updateCartItem(itemId, { quantity: qty });
-      fetchCart();
+      await updateItem(itemId, { quantity: qty });
     } catch (err) {
       console.error(err);
     }
@@ -43,8 +39,7 @@ function CartPage() {
 
   const handleRemove = async (itemId) => {
     try {
-      await api.removeCartItem(itemId);
-      fetchCart();
+      await removeItem(itemId);
     } catch (err) {
       console.error(err);
     }
