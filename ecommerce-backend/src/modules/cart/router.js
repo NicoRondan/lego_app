@@ -18,4 +18,7 @@ router.patch('/items/:id', controller.updateItem);
 // DELETE /cart/items/:id
 router.delete('/items/:id', controller.removeItem);
 
+// DELETE /cart
+router.delete('/', controller.clearCart);
+
 module.exports = router;
