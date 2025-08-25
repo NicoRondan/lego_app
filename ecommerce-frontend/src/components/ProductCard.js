@@ -1,26 +1,42 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import BrickButton from './lego/BrickButton';
+import './ProductCard.css';
 
-// Card component for displaying a product in a grid. Uses Bootstrap classes.
+// Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
+  const avgRating =
+    product.reviews && product.reviews.length > 0
+      ? product.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / product.reviews.length
+      : null;
+  const pieceCount = product.pieceCount || product.pieces;
+
   return (
     <div className="col-md-4 col-sm-6 mb-4" role="listitem">
-      <div className="card h-100 brick-card" role="article" aria-label={product.name}>
-        {/* Placeholder for product image: in a real app you'd load from product.images */}
-        <div className="card-img-top bg-secondary" style={{ height: '180px' }}></div>
-        <div className="card-body d-flex flex-column">
-          <h5 className="card-title">{product.name}</h5>
-          <p className="card-text flex-grow-1">
-            {product.description?.substring(0, 80)}
-            {product.description && product.description.length > 80 ? '…' : ''}
-          </p>
-          <p className="card-text fw-bold">${parseFloat(product.price).toFixed(2)}</p>
-          <Link to={`/products/${product.id}`} className="mt-auto text-decoration-none">
-            <BrickButton className="w-100">Ver</BrickButton>
-          </Link>
+      <Link to={`/products/${product.id}`} className="text-decoration-none">
+        <div className="product-card" role="article" aria-label={product.name}>
+          {product.image && (
+            <img src={product.image} alt={product.name} className="product-image" />
+          )}
+          <div className="product-info">
+            <h5 className="product-name">{product.name}</h5>
+            <div className="product-meta">
+              {avgRating && (
+                <span>
+                  <span role="img" aria-label="rating">⭐</span>
+                  {avgRating.toFixed(1)}
+                </span>
+              )}
+              {pieceCount && (
+                <span>
+                  <span role="img" aria-label="pieces">🧱</span>
+                  {pieceCount}
+                </span>
+              )}
+            </div>
+            <p className="product-price">${parseFloat(product.price).toFixed(2)}</p>
+          </div>
         </div>
-      </div>
+      </Link>
     </div>
   );
 }
