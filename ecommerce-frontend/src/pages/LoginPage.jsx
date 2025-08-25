@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthCard from '../components/AuthCard';
 
 const LoginPage = () => {
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const redirectTo = state?.redirectTo;
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -19,7 +21,7 @@ const LoginPage = () => {
     try {
       setLoading(true);
       await login(form);
-      navigate('/');
+      navigate(redirectTo || -1);
     } catch (err) {
       setError('Credenciales inválidas');
     } finally {
