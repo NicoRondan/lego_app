@@ -69,14 +69,15 @@ function ProductCard({ product }) {
         {product.isOnSale && (
           <BrickBadge
             color="lego-red"
-            className="position-absolute end-0 m-2"
-            style={{ top: "2.5rem" }}
+            className="position-absolute start-0 m-2"
+            style={{ top: product.isNew ? "2.5rem" : 0 }}
           >
             Oferta
           </BrickBadge>
         )}
         <button
-          className="btn btn-outline-secondary position-absolute top-0 end-0 m-2"
+          type="button"
+          className="btn btn-outline-secondary position-absolute top-0 end-0 m-2 z-1"
           aria-label="Agregar a wishlist"
           onClick={handleWishlist}
         >
@@ -126,7 +127,7 @@ function ProductCard({ product }) {
             ${parseFloat(product.price).toFixed(2)}
           </p>
           <div
-            className="mt-auto d-flex align-items-center gap-2 position-relative"
+            className="mt-auto d-flex align-items-center gap-2 position-relative z-1"
             onClick={(e) => e.stopPropagation()}
           >
             <QuantityStepper
