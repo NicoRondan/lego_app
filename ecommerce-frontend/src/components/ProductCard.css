@@ -46,3 +46,18 @@
   align-items: center;
   gap: 0.25rem;
 }
+
+/* hover effects for action buttons */
+.wishlist-btn {
+  transition: transform 0.15s;
+}
+.wishlist-btn:hover {
+  transform: scale(1.1);
+}
+
+.product-actions .btn-outline-secondary {
+  transition: transform 0.15s;
+}
+.product-actions .btn-outline-secondary:hover {
+  transform: scale(1.1);
+}

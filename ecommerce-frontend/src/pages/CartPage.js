@@ -46,6 +46,7 @@ function CartPage() {
   };
 
   const handleClear = async () => {
+    if (!window.confirm('¿Vaciar el carrito?')) return;
     try {
       await clearCart();
     } catch (err) {
@@ -74,57 +75,112 @@ function CartPage() {
       ) : !cart || !cart.summary || cart.summary.itemsCount === 0 ? (
         <p>Tu carrito está vacío.</p>
       ) : (
-        <>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Imagen</th>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio</th>
-                <th>Subtotal</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {cart.items.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <img src={item.imageUrl} alt={item.name} width="60" />
-                  </td>
-                  <td>{item.name}</td>
-                  <td>
-                    <QuantityStepper
-                      value={item.quantity}
-                      onChange={(qty) => handleUpdate(item.id, qty)}
-                    />
-                  </td>
-                  <td>${parseFloat(item.unitPrice).toFixed(2)}</td>
-                  <td>
-                    ${(item.quantity * parseFloat(item.unitPrice)).toFixed(2)}
-                    <div className="text-muted small">
-                      ${parseFloat(item.unitPrice).toFixed(2)} c/u
-                    </div>
-                  </td>
-                  <td>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleRemove(item.id)}>
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <h5>Total: ${total.toFixed(2)}</h5>
-          <div className="mt-3">
-            <button className="btn btn-secondary me-2" onClick={handleClear}>
-              Vaciar carrito
-            </button>
-            <button className="btn btn-success" onClick={() => navigate('/checkout')}>
-              Realizar pedido
-            </button>
+        <div className="row">
+          <div className="col-md-8">
+            <div className="table-responsive d-none d-md-block">
+              <table className="table align-middle">
+                <thead>
+                  <tr>
+                    <th>Imagen</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.items.map((item) => (
+                    <tr key={item.id}>
+                      <td><img src={item.imageUrl} alt={item.name} width="60" /></td>
+                      <td>
+                        <Link to={`/products/${item.productId || item.product?.id}`}>{item.name}</Link>
+                      </td>
+                      <td>
+                        <QuantityStepper
+                          value={item.quantity}
+                          onChange={(qty) => handleUpdate(item.id, qty)}
+                          min={1}
+                          max={item.stock}
+                        />
+                      </td>
+                      <td>${parseFloat(item.unitPrice).toFixed(2)}</td>
+                      <td>${(item.quantity * parseFloat(item.unitPrice)).toFixed(2)}</td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center"
+                          onClick={() => handleRemove(item.id)}
+                        >
+                          <i className="fa-solid fa-trash" aria-hidden="true"></i>
+                          <span className="visually-hidden">Eliminar</span>
+                        </button>
+                      </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </>
+            <div className="d-md-none">
+              {cart.items.map((item) => (
+                <div className="card mb-3" key={item.id}>
+                  <div className="row g-0">
+                    <div className="col-4">
+                      <img src={item.imageUrl} alt={item.name} className="img-fluid rounded-start" />
+                    </div>
+                    <div className="col-8">
+                      <div className="card-body">
+                        <Link to={`/products/${item.productId || item.product?.id}`} className="card-title h6 d-block">
+                          {item.name}
+                        </Link>
+                        <QuantityStepper
+                          value={item.quantity}
+                          onChange={(qty) => handleUpdate(item.id, qty)}
+                          min={1}
+                          max={item.stock}
+                        />
+                        <p className="card-text mt-2 mb-1">
+                          <small className="text-muted">${parseFloat(item.unitPrice).toFixed(2)} c/u</small>
+                        </p>
+                        <p className="card-text fw-bold mb-2">
+                          Subtotal: ${(item.quantity * parseFloat(item.unitPrice)).toFixed(2)}
+                        </p>
+                        <button
+                          className="btn btn-sm btn-outline-danger d-inline-flex align-items-center"
+                          onClick={() => handleRemove(item.id)}
+                        >
+                          <i className="fa-solid fa-trash me-1" aria-hidden="true"></i>
+                          <span>Eliminar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="position-sticky top-0 p-3 bg-body-tertiary rounded border">
+              <h5 className="mb-3">Resumen</h5>
+              <p className="mb-1">Subtotal: ${total.toFixed(2)}</p>
+              <p className="mb-3">Total: ${total.toFixed(2)}</p>
+              <button
+                className="btn btn-outline-danger w-100 mb-2 d-flex align-items-center justify-content-center"
+                onClick={handleClear}
+              >
+                <i className="fa-solid fa-trash me-2" aria-hidden="true"></i>
+                Vaciar carrito
+              </button>
+              <button
+                className="btn btn-primary w-100 d-flex align-items-center justify-content-center"
+                onClick={() => navigate('/checkout')}
+                disabled={cart.summary.itemsCount === 0}
+              >
+                <i className="fa-solid fa-credit-card me-2" aria-hidden="true"></i>
+                Proceder al pago
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
