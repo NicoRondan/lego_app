@@ -1,4 +1,8 @@
 :root {
+  --font-base: 'Montserrat', sans-serif;
+  --bs-body-font-family: var(--font-base);
+  --bs-body-font-size: 1rem;
+  --bs-body-line-height: 1.5;
   --color-primary-hsl: 357 100% 44%;
   --color-primary: hsl(var(--color-primary-hsl));
   --color-secondary-hsl: 56 100% 50%;
@@ -63,6 +67,9 @@
 body {
   background-color: var(--bg);
   color: var(--fg);
+  font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size);
+  line-height: var(--bs-body-line-height);
 }
 
  a {
@@ -70,6 +77,26 @@ body {
  }
  a:hover {
  color: var(--link-hover);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+p {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: 1rem;
 }
 
 .navbar {
