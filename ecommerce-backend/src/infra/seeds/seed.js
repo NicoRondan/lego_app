@@ -22,6 +22,7 @@ async function seed() {
       stock: 5,
       categories: ['Star Wars'],
       images: ['https://picsum.photos/seed/lego-millennium-falcon/600/400'],
+      isNew: true,
     },
     {
       code: 'TECH001',
@@ -32,6 +33,7 @@ async function seed() {
       stock: 10,
       categories: ['Technic'],
       images: ['https://picsum.photos/seed/lego-bugatti/600/400'],
+      isOnSale: true,
     },
     {
       code: 'CITY001',
@@ -42,6 +44,7 @@ async function seed() {
       stock: 20,
       categories: ['City'],
       images: ['https://picsum.photos/seed/lego-police-station/600/400'],
+      isNew: true,
     },
     {
       code: 'IDEA001',
@@ -62,6 +65,7 @@ async function seed() {
       stock: 8,
       categories: ['Harry Potter'],
       images: ['https://picsum.photos/seed/lego-hogwarts/600/400'],
+      isOnSale: true,
     },
     {
       code: 'CRE001',
@@ -95,6 +99,8 @@ async function seed() {
       currency: set.currency,
       stock: set.stock,
       image: set.images[0],
+      isNew: !!set.isNew,
+      isOnSale: !!set.isOnSale,
     });
 
     const cats = set.categories.map((name) => categories[name]).filter(Boolean);

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import BrickButton from "./lego/BrickButton";
+import BrickBadge from "./lego/BrickBadge";
 import * as api from "../services/api";
 import "./ProductCard.css";
 
@@ -30,10 +31,26 @@ function ProductCard({ product }) {
   return (
     <div className="col-md-4 col-sm-6 mb-4" role="listitem">
       <div
-        className="card h-100 brick-card"
+        className="card h-100 brick-card position-relative"
         role="article"
         aria-label={product.name}
       >
+        {product.isNew && (
+          <BrickBadge
+            color="lego-yellow"
+            className="position-absolute top-0 start-0 m-2"
+          >
+            Nuevo
+          </BrickBadge>
+        )}
+        {product.isOnSale && (
+          <BrickBadge
+            color="lego-red"
+            className="position-absolute top-0 end-0 m-2"
+          >
+            Oferta
+          </BrickBadge>
+        )}
         <div
           className="card-img-top bg-secondary"
           style={{ height: "180px" }}

@@ -87,6 +87,9 @@ body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
   box-shadow: inset 0 .05rem 0 rgba(255,255,255,.25);
 }
 
+.bg-lego-yellow{ background-color:#FFCF00!important; color:#000; }
+.bg-lego-red{ background-color:#DA291C!important; color:#fff; }
+
 /* Enlaces del footer */
 footer a.text-light{ color:#f8f9fa; text-decoration:none; }
 footer a.text-light:hover{ color:var(--bs-danger); }
