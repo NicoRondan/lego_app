@@ -63,7 +63,7 @@ function CartPage() {
         <p>Cargando...</p>
       ) : error ? (
         <p className="text-danger">{error}</p>
-      ) : !cart || !cart.items || cart.items.length === 0 ? (
+      ) : !cart || !cart.summary || cart.summary.itemsCount === 0 ? (
         <p>Tu carrito está vacío.</p>
       ) : (
         <>

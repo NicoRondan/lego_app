@@ -8,6 +8,7 @@ import BrickModal from './lego/BrickModal';
 export default function CartModal() {
   const { cart } = useCart();
   const items = cart?.items || [];
+  const itemsCount = cart?.summary?.itemsCount || 0;
   const total = items.reduce(
     (sum, it) => sum + it.quantity * parseFloat(it.unitPrice),
     0,
@@ -15,7 +16,7 @@ export default function CartModal() {
 
   return (
     <BrickModal id="cartModal" title="Tu Carrito">
-      {items.length ? (
+      {itemsCount ? (
         <>
           <MiniCart />
           <div className="mt-3 d-flex justify-content-between align-items-center">
