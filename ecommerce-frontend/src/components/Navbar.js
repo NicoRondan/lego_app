@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import MiniCart from './MiniCart';
+import CartModal from './CartModal';
 import ThemeToggle from './ThemeToggle';
 import * as api from '../services/api';
 
@@ -23,6 +23,7 @@ function Navbar() {
     loadCart();
   }, [user]);
   return (
+    <>
     <nav className="navbar navbar-expand-lg navbar-light border-bottom">
       <div className="container-fluid">
         <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="Inicio">
@@ -76,21 +77,16 @@ function Navbar() {
             )}
           </ul>
           <ul className="navbar-nav ms-auto">
-            <li className="nav-item dropdown">
-              <Link
-                className="nav-link dropdown-toggle d-flex align-items-center"
-                to="/cart"
-                id="miniCartDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
+            <li className="nav-item">
+              <button
+                className="nav-link btn btn-link d-flex align-items-center"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#cartModal"
               >
                 <i className="fa-solid fa-cart-shopping me-1" aria-hidden="true"></i>
                 <span>Carrito</span>
-              </Link>
-              <div className="dropdown-menu dropdown-menu-end" aria-labelledby="miniCartDropdown">
-                <MiniCart items={cart?.items || []} />
-              </div>
+              </button>
             </li>
             {user ? (
               <>
@@ -122,6 +118,8 @@ function Navbar() {
         </div>
       </div>
     </nav>
+    <CartModal items={cart?.items || []} />
+    </>
   );
 }
 
