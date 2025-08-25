@@ -5,6 +5,21 @@
 const { Cart, CartItem, Product } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 
+// Helper to attach cart total by summing item subtotals
+function attachTotal(cart) {
+  if (!cart) return null;
+  const data = cart.toJSON();
+  const total = (data.items || []).reduce((sum, it) => {
+    const subtotal =
+      it.subtotal != null
+        ? parseFloat(it.subtotal)
+        : it.quantity * parseFloat(it.unitPrice);
+    return sum + subtotal;
+  }, 0);
+  data.total = total;
+  return data;
+}
+
 // GET /cart
 exports.getCart = async (req, res, next) => {
   try {
@@ -14,7 +29,7 @@ exports.getCart = async (req, res, next) => {
       where: { userId: user.id },
       include: { model: CartItem, as: 'items', include: [Product] },
     });
-    res.json(cart || null);
+    res.json(attachTotal(cart));
   } catch (err) {
     next(err);
   }
@@ -37,13 +52,16 @@ exports.addItem = async (req, res, next) => {
       where: { cartId: cart.id, productId: product.id },
       defaults: { quantity: 0, unitPrice: product.price },
     });
-    item.quantity += parseInt(quantity, 10);
+    const newQty = item.quantity + parseInt(quantity, 10);
+    if (newQty > product.stock) throw new ApiError('Insufficient stock', 400);
+    item.quantity = newQty;
     item.unitPrice = product.price;
+    item.subtotal = item.quantity * item.unitPrice;
     await item.save();
     const refreshed = await Cart.findByPk(cart.id, {
       include: { model: CartItem, as: 'items', include: [Product] },
     });
-    res.json(refreshed);
+    res.json(attachTotal(refreshed));
   } catch (err) {
     next(err);
   }
@@ -67,14 +85,20 @@ exports.updateItem = async (req, res, next) => {
     if (parseInt(quantity, 10) <= 0) {
       await item.destroy();
     } else {
-      item.quantity = parseInt(quantity, 10);
+      const product = await Product.findByPk(item.productId);
+      if (!product) throw new ApiError('Product not found', 404);
+      const newQty = parseInt(quantity, 10);
+      if (newQty > product.stock) throw new ApiError('Insufficient stock', 400);
+      item.quantity = newQty;
+      item.unitPrice = product.price;
+      item.subtotal = item.quantity * item.unitPrice;
       await item.save();
     }
     const cart = await Cart.findOne({
       where: { id: item.cartId, userId: user.id },
       include: { model: CartItem, as: 'items', include: [Product] },
     });
-    res.json(cart);
+    res.json(attachTotal(cart));
   } catch (err) {
     next(err);
   }
@@ -98,7 +122,7 @@ exports.removeItem = async (req, res, next) => {
       where: { id: cartId, userId: user.id },
       include: { model: CartItem, as: 'items', include: [Product] },
     });
-    res.json(cart);
+    res.json(attachTotal(cart));
   } catch (err) {
     next(err);
   }
