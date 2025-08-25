@@ -36,11 +36,12 @@ function ProductDetailPage() {
     fetchProduct();
   }, [id, user]);
 
+  useEffect(() => {
+    setMessage(null);
+  }, [user]);
+
   const handleAddToCart = async () => {
-    if (!user) {
-      setMessage('Por favor inicia sesión para añadir al carrito');
-      return;
-    }
+    setMessage(null);
     try {
       setLoading(true);
       await addItem({ productId: product.id, quantity });
