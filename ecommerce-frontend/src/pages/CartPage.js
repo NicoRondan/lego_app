@@ -70,6 +70,7 @@ function CartPage() {
           <table className="table">
             <thead>
               <tr>
+                <th>Imagen</th>
                 <th>Producto</th>
                 <th>Cantidad</th>
                 <th>Precio</th>
@@ -80,6 +81,13 @@ function CartPage() {
             <tbody>
               {cart.items.map((item) => (
                 <tr key={item.id}>
+                  <td>
+                    <img
+                      src={item.product?.image}
+                      alt={item.product?.name}
+                      width="60"
+                    />
+                  </td>
                   <td>{item.product?.name}</td>
                   <td>
                     <QuantityStepper
@@ -88,7 +96,12 @@ function CartPage() {
                     />
                   </td>
                   <td>${parseFloat(item.unitPrice).toFixed(2)}</td>
-                  <td>${(item.quantity * parseFloat(item.unitPrice)).toFixed(2)}</td>
+                  <td>
+                    ${(item.quantity * parseFloat(item.unitPrice)).toFixed(2)}
+                    <div className="text-muted small">
+                      ${parseFloat(item.unitPrice).toFixed(2)} c/u
+                    </div>
+                  </td>
                   <td>
                     <button className="btn btn-sm btn-danger" onClick={() => handleRemove(item.id)}>
                       Eliminar
