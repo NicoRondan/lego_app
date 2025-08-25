@@ -41,6 +41,8 @@ body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
   transform:translateY(0);
   transition:transform 80ms, box-shadow 80ms, filter .2s;
 }
+.btn-brick:hover,
+.btn-brick:focus{ filter:brightness(1.1); }
 .btn-brick:active{
   transform:translateY(.25rem);
   box-shadow: inset 0 .05rem 0 rgba(255,255,255,.2),
@@ -50,6 +52,7 @@ body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
 .btn-brick.yellow{ --bg:var(--bs-warning); color:#111; }
 .btn-brick.blue  { --bg:var(--bs-info); }
 .btn-brick.red   { --bg:var(--bs-danger); }
+.btn-brick.green { --bg:var(--bs-success); }
 
 /* Card tipo placa */
 .card.brick-card{

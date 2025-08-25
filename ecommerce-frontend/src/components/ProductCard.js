@@ -1,25 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import BrickButton from './lego/BrickButton';
+import * as api from '../services/api';
 import './ProductCard.css';
 
 // Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
+  const [added, setAdded] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleAddToCart = async () => {
+    try {
+      setLoading(true);
+      await api.addToCart({ productId: product.id, quantity: 1 });
+      setAdded(true);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
   const avgRating =
     product.reviews && product.reviews.length > 0
       ? product.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / product.reviews.length
       : null;
   const pieceCount = product.pieceCount || product.pieces;
-
   return (
     <div className="col-md-4 col-sm-6 mb-4" role="listitem">
-      <Link to={`/products/${product.id}`} className="text-decoration-none">
-        <div className="product-card" role="article" aria-label={product.name}>
-          {product.image && (
-            <img src={product.image} alt={product.name} className="product-image" />
-          )}
-          <div className="product-info">
-            <h5 className="product-name">{product.name}</h5>
-            <div className="product-meta">
+      <div className="card h-100 brick-card" role="article" aria-label={product.name}>
+        <div className="card-img-top bg-secondary" style={{ height: '180px' }}></div>
+        <div className="card-body d-flex flex-column">
+          <h5 className="card-title">{product.name}</h5>
+          <p className="card-text flex-grow-1">
+            {product.description?.substring(0, 80)}
+            {product.description && product.description.length > 80 ? '…' : ''}
+          </p>
+<div className="product-meta">
               {avgRating && (
                 <span>
                   <span role="img" aria-label="rating">⭐</span>
@@ -33,7 +50,19 @@ function ProductCard({ product }) {
                 </span>
               )}
             </div>
-            <p className="product-price">${parseFloat(product.price).toFixed(2)}</p>
+          <p className="card-text fw-bold">${parseFloat(product.price).toFixed(2)}</p>
+          <div className="mt-auto">
+            <BrickButton
+              className="w-100 mb-2"
+              color={added ? 'green' : 'yellow'}
+              onClick={handleAddToCart}
+              disabled={loading}
+            >
+              {added ? '✔ Añadido' : loading ? 'Añadiendo…' : 'Añadir al carrito'}
+            </BrickButton>
+            <Link to={`/products/${product.id}`} className="text-decoration-none">
+              <BrickButton className="w-100">Ver</BrickButton>
+            </Link>
           </div>
         </div>
       </Link>
