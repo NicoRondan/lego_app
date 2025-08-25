@@ -63,11 +63,16 @@ Service de backend para una tienda B2C de Lego construido con Node.js, Express y
 Endpoints disponibles:
 
 - `GET /products`
+- `GET /cart`
 - `POST /cart/items`
 - `PATCH /cart/items/:id`
+- `DELETE /cart/items/:id`
 - `POST /orders`
 - `POST /payments/mp/preference`
 - `POST /webhooks/mp`
+
+Los campos monetarios como `subtotal` y `total` se devuelven como cadenas con dos decimales,
+por ejemplo `"19.99"`.
 
 ### Autenticación OAuth
 
