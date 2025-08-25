@@ -128,6 +128,9 @@ const Cart = sequelize.define('Cart', {
 // CartItem model
 const CartItem = sequelize.define('CartItem', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  // Explicit FK fields so camelCase attributes map to snake_case columns
+  cartId: { type: DataTypes.INTEGER, allowNull: false, field: 'cart_id' },
+  productId: { type: DataTypes.INTEGER, allowNull: false, field: 'product_id' },
   quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
   unitPrice: { type: DataTypes.DECIMAL(10,2), allowNull: false },
   subtotal: { type: DataTypes.DECIMAL(10,2) },
@@ -252,11 +255,11 @@ Product.belongsToMany(Category, { through: ProductCategory, as: 'categories' });
 Category.belongsToMany(Product, { through: ProductCategory, as: 'products' });
 
 // Cart relations
-Cart.hasMany(CartItem, { as: 'items' });
-CartItem.belongsTo(Cart);
+Cart.hasMany(CartItem, { as: 'items', foreignKey: 'cartId' });
+CartItem.belongsTo(Cart, { foreignKey: 'cartId' });
 
-Product.hasMany(CartItem, { as: 'cartItems' });
-CartItem.belongsTo(Product);
+Product.hasMany(CartItem, { as: 'cartItems', foreignKey: 'productId' });
+CartItem.belongsTo(Product, { foreignKey: 'productId' });
 
 // Order relations
 Order.hasMany(OrderItem, { as: 'items' });
