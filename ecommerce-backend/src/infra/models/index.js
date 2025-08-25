@@ -86,6 +86,8 @@ const Product = sequelize.define('Product', {
   price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
   currency: { type: DataTypes.STRING(3), allowNull: false },
   image: { type: DataTypes.STRING },
+  isNew: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+  isOnSale: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'active' },
   stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
 }, {

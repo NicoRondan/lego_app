@@ -37,6 +37,8 @@ const typeDefs = gql`
     price: Float!
     currency: String
     image: String
+    isNew: Boolean
+    isOnSale: Boolean
     status: String
     stock: Int!
     categories: [Category!]

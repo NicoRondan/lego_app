@@ -28,6 +28,9 @@ CREATE TABLE products (
   description TEXT,
   price REAL NOT NULL,
   currency TEXT NOT NULL,
+  image TEXT,
+  is_new INTEGER NOT NULL DEFAULT 0,
+  is_on_sale INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'active',
   stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0)
 );
