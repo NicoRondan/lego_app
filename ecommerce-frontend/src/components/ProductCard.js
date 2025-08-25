@@ -9,7 +9,9 @@ import "./ProductCard.css";
 function ProductCard({ product }) {
   const [loading, setLoading] = useState(false);
   const { cart, addItem } = useCart();
-  const added = cart?.items?.some((it) => it.product?.id === product.id);
+  const added = cart?.items?.some(
+    (it) => it.product?.id === product.id || it.productId === product.id
+  );
 
   const handleAddToCart = async () => {
     try {
