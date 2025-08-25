@@ -72,12 +72,10 @@ body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
 
 /* Modal general */
 .modal-content.brick-modal{
-  background:#fff;
   border-radius:.375rem;
-  border:1px solid rgba(0,0,0,.1);
+  border:1px solid var(--bs-border-color);
   box-shadow:0 .5rem 1rem rgba(0,0,0,.15);
 }
-.brick-modal .modal-title{ color:#000; }
 .modal-backdrop.show{ opacity:.5; }
 
 /* Badge tile */
