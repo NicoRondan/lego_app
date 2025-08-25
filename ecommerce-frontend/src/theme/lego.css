@@ -19,9 +19,6 @@ body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
   background-size: var(--lego-stud-gap) var(--lego-stud-gap);
 }
 
-/* Borde superior con studs */
-.footer-studs{ height:1rem; }
-
 /* Marco “brick” con relieve */
 .lego-brick{
   border-radius:.75rem;

@@ -23,7 +23,7 @@ function Navbar() {
     loadCart();
   }, [user]);
   return (
-    <nav className="navbar navbar-expand-lg navbar-light sticky-top border-bottom">
+    <nav className="navbar navbar-expand-lg navbar-light border-bottom">
       <div className="container-fluid">
         <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="Inicio">
           <img

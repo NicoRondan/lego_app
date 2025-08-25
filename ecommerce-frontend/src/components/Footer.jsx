@@ -5,9 +5,8 @@ import BrickButton from './lego/BrickButton';
 export default function Footer(){
   return (
     <footer className="bg-dark text-light mt-5" role="contentinfo">
-      <div className="footer-studs lego-plate tex"></div>
       <div className="container py-5">
-        <div className="lego-plate tex p-4 text-center rounded mb-4">
+        <div className="lego-plate p-4 text-center rounded mb-4">
           <h2 className="mb-3">¿Listo para construir?</h2>
           <Link to="/products" className="text-decoration-none">
             <BrickButton className="btn-lg">Ver productos</BrickButton>

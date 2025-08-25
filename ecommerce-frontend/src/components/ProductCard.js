@@ -9,7 +9,7 @@ function ProductCard({ product }) {
       <div className="card h-100 brick-card" role="article" aria-label={product.name}>
         {/* Placeholder for product image: in a real app you'd load from product.images */}
         <div className="card-img-top bg-secondary" style={{ height: '180px' }}></div>
-        <div className="card-body d-flex flex-column tex">
+        <div className="card-body d-flex flex-column">
           <h5 className="card-title">{product.name}</h5>
           <p className="card-text flex-grow-1">
             {product.description?.substring(0, 80)}
