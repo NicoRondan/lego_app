@@ -10,6 +10,7 @@ function Navbar() {
   const { user, logout } = useAuth();
   const { cart } = useCart();
   const itemsCount = cart?.summary?.itemsCount || 0;
+  const allowGuestCart = process.env.REACT_APP_ALLOW_GUEST_CART === 'true';
   return (
     <>
     <nav className="navbar navbar-expand-lg navbar-light border-bottom">
@@ -65,25 +66,28 @@ function Navbar() {
             )}
           </ul>
           <ul className="navbar-nav ms-auto">
-            <li className="nav-item">
-              <div className="position-relative">
+            {(user || allowGuestCart) && (
+              <li className="nav-item">
                 <button
                   className="nav-link btn btn-link d-flex align-items-center"
                   type="button"
                   data-bs-toggle="modal"
                   data-bs-target="#cartModal"
+                  disabled={!user}
                 >
-                  <i className="fa-solid fa-cart-shopping me-1" aria-hidden="true"></i>
+                  <span className="position-relative me-1">
+                    <i className="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+                    {itemsCount > 0 && (
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {itemsCount}
+                        <span className="visually-hidden">items in cart</span>
+                      </span>
+                    )}
+                  </span>
                   <span>Carrito</span>
                 </button>
-                {itemsCount > 0 && (
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {itemsCount}
-                    <span className="visually-hidden">items in cart</span>
-                  </span>
-                )}
-              </div>
-            </li>
+              </li>
+            )}
             {user ? (
               <>
                 <li className="nav-item">
