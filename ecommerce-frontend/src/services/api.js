@@ -121,6 +121,8 @@ export const updateCartItem = (itemId, { quantity }) =>
 export const removeCartItem = (itemId) =>
   request(`/cart/items/${itemId}`, { method: 'DELETE' });
 
+export const clearCart = () => request('/cart', { method: 'DELETE' });
+
 // Orders
 export const createOrder = ({ couponCode } = {}) =>
   request('/orders', { method: 'POST', body: { couponCode } });

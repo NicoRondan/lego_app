@@ -133,3 +133,22 @@ exports.removeItem = async (req, res, next) => {
     next(err);
   }
 };
+
+// DELETE /cart
+exports.clearCart = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) throw new ApiError('Not authenticated', 401);
+    const [cart] = await Cart.findOrCreate({
+      where: { userId: user.id },
+      defaults: {},
+    });
+    await CartItem.destroy({ where: { cartId: cart.id } });
+    const refreshed = await Cart.findByPk(cart.id, {
+      include: { model: CartItem, as: 'items', include: [Product] },
+    });
+    res.json(attachTotal(refreshed));
+  } catch (err) {
+    next(err);
+  }
+};

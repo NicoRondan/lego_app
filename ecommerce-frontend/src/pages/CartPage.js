@@ -7,7 +7,7 @@ import QuantityStepper from '../components/QuantityStepper';
 // Page that displays the user's cart and allows quantity adjustments and removal
 function CartPage() {
   const { user } = useAuth();
-  const { cart, fetchCart, updateItem, removeItem } = useCart();
+  const { cart, fetchCart, updateItem, removeItem, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -40,6 +40,14 @@ function CartPage() {
   const handleRemove = async (itemId) => {
     try {
       await removeItem(itemId);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleClear = async () => {
+    try {
+      await clearCart();
     } catch (err) {
       console.error(err);
     }
@@ -108,7 +116,14 @@ function CartPage() {
             </tbody>
           </table>
           <h5>Total: ${total.toFixed(2)}</h5>
-          <button className="btn btn-success" onClick={() => navigate('/checkout')}>Realizar pedido</button>
+          <div className="mt-3">
+            <button className="btn btn-secondary me-2" onClick={handleClear}>
+              Vaciar carrito
+            </button>
+            <button className="btn btn-success" onClick={() => navigate('/checkout')}>
+              Realizar pedido
+            </button>
+          </div>
         </>
       )}
     </div>

@@ -55,8 +55,13 @@ export const CartProvider = ({ children }) => {
     await fetchCart();
   };
 
+  const clearCart = async () => {
+    await api.clearCart();
+    await fetchCart();
+  };
+
   return (
-    <CartContext.Provider value={{ cart, fetchCart, addItem, updateItem, removeItem }}>
+    <CartContext.Provider value={{ cart, fetchCart, addItem, updateItem, removeItem, clearCart }}>
       {children}
     </CartContext.Provider>
   );

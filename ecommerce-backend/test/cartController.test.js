@@ -7,7 +7,7 @@ const modelsPath = path.resolve(__dirname, '../src/infra/models/index.js');
 const mockModels = { Cart: {}, CartItem: {}, Product: {} };
 require.cache[modelsPath] = { exports: mockModels };
 
-const { addItem, removeItem, getCart } = require('../src/modules/cart/controller');
+const { addItem, removeItem, getCart, clearCart } = require('../src/modules/cart/controller');
 const { ApiError } = require('../src/shared/errors');
 
 // Añadir artículo nuevo al carrito
@@ -82,6 +82,26 @@ test('removeItem deletes an item from the cart', async () => {
   await removeItem(req, res, (err) => { if (err) throw err; });
 
   assert.ok(destroyed);
+  assert.strictEqual(output.total, 0);
+});
+
+// Vaciar el carrito
+test('clearCart removes all items from the cart', async () => {
+  mockModels.Cart.findOrCreate = async () => [{ id: 1 }];
+  let destroyedArgs;
+  mockModels.CartItem.destroy = async (args) => { destroyedArgs = args; };
+  mockModels.Cart.findByPk = async () => ({
+    id: 1,
+    items: [],
+    toJSON() { return { id: 1, items: [] }; },
+  });
+
+  let output;
+  const req = { user: { id: 1 } };
+  const res = { json: (data) => { output = data; } };
+  await clearCart(req, res, (err) => { if (err) throw err; });
+
+  assert.deepStrictEqual(destroyedArgs.where, { cartId: 1 });
   assert.strictEqual(output.total, 0);
 });
 
