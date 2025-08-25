@@ -21,6 +21,22 @@ paths:
           schema: { type: number }
       responses:
         '200': { description: OK }
+  /cart:
+    get:
+      summary: Get current user's cart
+      responses:
+        '200':
+          description: Cart contents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /cart/items:
     post:
       summary: Add item to cart
@@ -53,6 +69,32 @@ paths:
                 quantity: { type: integer }
       responses:
         '200': { description: OK }
+    delete:
+      summary: Remove cart item
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Cart item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /orders:
     post:
       summary: Create order
@@ -93,3 +135,45 @@ paths:
                 status: { type: string }
       responses:
         '200': { description: OK }
+
+components:
+  schemas:
+    CartItem:
+      type: object
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        quantity: { type: integer }
+        unitPrice:
+          type: string
+          description: Unit price with two decimal places
+          example: '10.00'
+        subtotal:
+          type: string
+          description: Quantity multiplied by unit price with two decimal places
+          example: '20.00'
+        product:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+            price:
+              type: string
+              description: Product price with two decimal places
+              example: '10.00'
+    Cart:
+      type: object
+      properties:
+        id: { type: integer }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        total:
+          type: string
+          description: Sum of item subtotals with two decimal places
+          example: '30.00'
+    Error:
+      type: object
+      properties:
+        message: { type: string }
