@@ -1,11 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import * as api from '../services/api';
 import { useAuth } from './AuthContext';
+
+const REQUIRE_AUTH = process.env.REACT_APP_CART_REQUIRE_AUTH !== 'false';
 
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [cart, setCart] = useState(null);
 
   const fetchCart = async () => {
@@ -32,6 +37,10 @@ export const CartProvider = ({ children }) => {
   }, [user]);
 
   const addItem = async ({ productId, quantity }) => {
+    if (REQUIRE_AUTH && !user) {
+      navigate('/login', { state: { redirectTo: location.pathname + location.search } });
+      return;
+    }
     await api.addToCart({ productId, quantity });
     await fetchCart();
   };
