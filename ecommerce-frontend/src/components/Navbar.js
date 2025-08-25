@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 import CartModal from './CartModal';
 import ThemeToggle from './ThemeToggle';
 
 // Navigation bar component. Uses Bootstrap classes for styling.
 function Navbar() {
   const { user, logout } = useAuth();
+  const { cart } = useCart();
+  const itemsCount = cart?.summary?.itemsCount || 0;
   return (
     <>
     <nav className="navbar navbar-expand-lg navbar-light border-bottom">
@@ -63,15 +66,23 @@ function Navbar() {
           </ul>
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <button
-                className="nav-link btn btn-link d-flex align-items-center"
-                type="button"
-                data-bs-toggle="modal"
-                data-bs-target="#cartModal"
-              >
-                <i className="fa-solid fa-cart-shopping me-1" aria-hidden="true"></i>
-                <span>Carrito</span>
-              </button>
+              <div className="position-relative">
+                <button
+                  className="nav-link btn btn-link d-flex align-items-center"
+                  type="button"
+                  data-bs-toggle="modal"
+                  data-bs-target="#cartModal"
+                >
+                  <i className="fa-solid fa-cart-shopping me-1" aria-hidden="true"></i>
+                  <span>Carrito</span>
+                </button>
+                {itemsCount > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {itemsCount}
+                    <span className="visually-hidden">items in cart</span>
+                  </span>
+                )}
+              </div>
             </li>
             {user ? (
               <>
