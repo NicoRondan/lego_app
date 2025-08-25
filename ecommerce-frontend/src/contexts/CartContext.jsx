@@ -53,8 +53,14 @@ export const CartProvider = ({ children }) => {
       const itemsCount = (prev.summary?.itemsCount || 0) + quantity;
       return { ...prev, summary: { ...(prev.summary || {}), itemsCount } };
     });
-    const data = await api.addToCart({ productId, quantity });
-    setCartWithCount(data);
+    try {
+      const data = await api.addToCart({ productId, quantity });
+      setCartWithCount(data);
+    } catch (err) {
+      // Revert optimistic update on failure
+      await fetchCart();
+      throw err;
+    }
   };
 
   const updateItem = async (itemId, { quantity }) => {
@@ -66,8 +72,14 @@ export const CartProvider = ({ children }) => {
       );
       return { ...prev, items };
     });
-    const data = await api.updateCartItem(itemId, { quantity });
-    setCartWithCount(data);
+    try {
+      const data = await api.updateCartItem(itemId, { quantity });
+      setCartWithCount(data);
+    } catch (err) {
+      // Fetch cart to revert if server rejects update (e.g., out of stock)
+      await fetchCart();
+      throw err;
+    }
   };
 
   const removeItem = async (itemId) => {
