@@ -33,8 +33,8 @@ exports.getProducts = async (req, res, next) => {
       if (dialect === 'sqlite') {
         const lowerPattern = `%${search.toLowerCase()}%`;
         where[Op.or] = [
-          sequelizeWhere(fn('lower', col('name')), { [Op.like]: lowerPattern }),
-          sequelizeWhere(fn('lower', col('description')), { [Op.like]: lowerPattern }),
+          sequelizeWhere(fn('lower', col('Product.name')), { [Op.like]: lowerPattern }),
+          sequelizeWhere(fn('lower', col('Product.description')), { [Op.like]: lowerPattern }),
         ];
       } else {
         const likeOp = dialect === 'postgres' ? Op.iLike : Op.like;
@@ -69,9 +69,9 @@ exports.getProducts = async (req, res, next) => {
         where: categoryWhere,
         through: { attributes: [] },
       });
+    } else {
+      include.push({ model: Category, as: 'categories', through: { attributes: [] } });
     }
-
-    include.push({ model: Category, as: 'categories', through: { attributes: [] } });
     include.push({ model: Review, as: 'reviews', include: [{ model: User, attributes: ['id', 'name'] }] });
 
     const pageNum = parseInt(page, 10) || 1;
