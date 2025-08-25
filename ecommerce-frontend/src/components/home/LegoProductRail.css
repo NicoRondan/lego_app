@@ -1,0 +1,17 @@
+.lego-rail-container {
+  background-color: var(--bs-dark);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.lego-rail-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: var(--rail-gap, 16px);
+  scrollbar-width: none;
+}
+
+.lego-rail-track::-webkit-scrollbar {
+  display: none;
+}

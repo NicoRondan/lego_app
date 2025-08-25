@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SkeletonCard from './SkeletonCard';
+import './LegoProductRail.css';
 
 function LegoProductRail({
   title,
@@ -137,11 +138,11 @@ function LegoProductRail({
           </Link>
         )}
       </div>
-      <div className="position-relative">
+      <div className="position-relative lego-rail-container">
         <div
           ref={trackRef}
-          className="d-flex overflow-auto"
-          style={{ scrollSnapType: 'x mandatory', gap: `${gap}px` }}
+          className="lego-rail-track"
+          style={{ '--rail-gap': `${gap}px` }}
           tabIndex={0}
           onKeyDown={handleKey}
           onPointerDown={onPointerDown}
