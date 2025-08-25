@@ -77,7 +77,7 @@ function ProductCard({ product }) {
         )}
         <button
           type="button"
-          className="btn btn-outline-secondary position-absolute top-0 end-0 m-2 z-1"
+          className={`btn ${wish ? "btn-danger" : "btn-outline-danger"} wishlist-btn position-absolute top-0 end-0 m-2 z-3`}
           aria-label="Agregar a wishlist"
           onClick={handleWishlist}
         >
@@ -127,7 +127,7 @@ function ProductCard({ product }) {
             ${parseFloat(product.price).toFixed(2)}
           </p>
           <div
-            className="mt-auto d-flex align-items-center gap-2 position-relative z-1"
+            className="mt-auto d-flex align-items-center gap-2 position-relative z-3 product-actions"
             onClick={(e) => e.stopPropagation()}
           >
             <QuantityStepper
