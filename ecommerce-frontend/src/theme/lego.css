@@ -90,3 +90,20 @@ footer a.text-light{ color:#f8f9fa; text-decoration:none; }
 footer a.text-light:hover{ color:var(--bs-danger); }
 .footer-social a{ color:#fff; font-size:1.25rem; transition:color .15s; }
 .footer-social a:hover{ color:var(--bs-danger); }
+
+/* Marco y estilos neutrales para imágenes de productos o categorías */
+.image-frame{
+  border-radius:.25rem;
+  padding:.25rem;
+  background-color:#fff;
+  overflow:hidden;
+}
+.image-frame img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  background-color:#f8f9fa;
+  box-shadow:none;
+  border-radius:.25rem;
+}
