@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import VideoBackground from './VideoBackground';
+import BrickButton from '../lego/BrickButton';
 
 function Hero({ title, subtitle, ctaHref = '/products' }) {
   return (
@@ -17,11 +18,11 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
           { src: '/assets/home/hero.mp4', type: 'video/mp4' },
         ]}
       />
-      <div className="position-absolute top-50 start-50 translate-middle">
+      <div className="position-absolute top-50 start-50 translate-middle lego-plate tex p-4 rounded text-dark">
         <h1 className="display-4">{title}</h1>
         <p className="lead mb-4">{subtitle}</p>
-        <Link to={ctaHref} className="btn btn-primary btn-lg">
-          Ver productos
+        <Link to={ctaHref} className="text-decoration-none">
+          <BrickButton className="btn-lg">Ver productos</BrickButton>
         </Link>
       </div>
       <div
