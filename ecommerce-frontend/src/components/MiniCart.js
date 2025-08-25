@@ -20,15 +20,15 @@ function MiniCart() {
           role="menuitem"
         >
           <img
-            src={item.product?.image}
-            alt={item.product?.name}
+            src={item.imageUrl}
+            alt={item.name}
             width="40"
             height="40"
             className="flex-shrink-0"
             style={{ objectFit: 'cover' }}
           />
           <div className="flex-grow-1">
-            <div>{item.product?.name}</div>
+            <div>{item.name}</div>
             <div className="small text-muted">
               ${parseFloat(item.unitPrice).toFixed(2)} c/u
             </div>

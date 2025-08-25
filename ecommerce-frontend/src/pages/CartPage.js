@@ -82,13 +82,9 @@ function CartPage() {
               {cart.items.map((item) => (
                 <tr key={item.id}>
                   <td>
-                    <img
-                      src={item.product?.image}
-                      alt={item.product?.name}
-                      width="60"
-                    />
+                    <img src={item.imageUrl} alt={item.name} width="60" />
                   </td>
-                  <td>{item.product?.name}</td>
+                  <td>{item.name}</td>
                   <td>
                     <QuantityStepper
                       value={item.quantity}

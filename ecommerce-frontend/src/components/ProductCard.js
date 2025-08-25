@@ -53,10 +53,19 @@ function ProductCard({ product }) {
             Oferta
           </BrickBadge>
         )}
-        <div
-          className="card-img-top bg-secondary"
-          style={{ height: "180px" }}
-        ></div>
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="card-img-top"
+            style={{ objectFit: "cover", height: "180px" }}
+          />
+        ) : (
+          <div
+            className="card-img-top bg-secondary"
+            style={{ height: "180px" }}
+          ></div>
+        )}
         <div className="card-body d-flex flex-column">
           <h5 className="card-title">{product.name}</h5>
           <p className="card-text flex-grow-1">

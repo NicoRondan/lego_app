@@ -12,8 +12,9 @@ function attachTotal(cart) {
 
   // Map items to only expose required fields and avoid leaking the Product model
   const items = (data.items || []).map((it) => ({
+    id: it.id,
     name: it.Product ? it.Product.name : undefined,
-    thumbnailUrl: it.Product ? it.Product.image : undefined,
+    imageUrl: it.Product ? it.Product.imageUrl : undefined,
     unitPrice: parseFloat(it.unitPrice),
     quantity: it.quantity,
   }));
