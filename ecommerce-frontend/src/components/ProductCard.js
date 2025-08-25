@@ -11,8 +11,8 @@ import "./ProductCard.css";
 // Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
   const [loading, setLoading] = useState(false);
-  const [showQty, setShowQty] = useState(false);
   const [qty, setQty] = useState(1);
+  const [wish, setWish] = useState(false);
   const { cart, addItem } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -21,26 +21,29 @@ function ProductCard({ product }) {
     (it) => it.product?.id === product.id || it.productId === product.id
   );
 
-  const handleAddClick = () => {
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!user) {
       navigate("/login", { state: { redirectTo: location.pathname + location.search } });
       return;
     }
-    setShowQty(true);
-  };
-
-  const handleConfirm = async () => {
     try {
       setLoading(true);
       await addItem({ productId: product.id, quantity: qty });
       toast.success("Agregado");
-      setShowQty(false);
       setQty(1);
     } catch (err) {
       // error toast handled in api
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleWishlist = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setWish(!wish);
   };
   const avgRating =
     product.reviews && product.reviews.length > 0
@@ -66,11 +69,22 @@ function ProductCard({ product }) {
         {product.isOnSale && (
           <BrickBadge
             color="lego-red"
-            className="position-absolute top-0 end-0 m-2"
+            className="position-absolute end-0 m-2"
+            style={{ top: "2.5rem" }}
           >
             Oferta
           </BrickBadge>
         )}
+        <button
+          className="btn btn-outline-secondary position-absolute top-0 end-0 m-2"
+          aria-label="Agregar a wishlist"
+          onClick={handleWishlist}
+        >
+          <i
+            className={`${wish ? "fa-solid" : "fa-regular"} fa-heart`}
+            aria-hidden="true"
+          ></i>
+        </button>
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
@@ -111,47 +125,35 @@ function ProductCard({ product }) {
           <p className="card-text fw-bold">
             ${parseFloat(product.price).toFixed(2)}
           </p>
-          <div className="mt-auto position-relative">
+          <div
+            className="mt-auto d-flex align-items-center gap-2 position-relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <QuantityStepper
+              value={qty}
+              onChange={setQty}
+              min={1}
+              max={product.stock}
+            />
             <BrickButton
-              className="w-100 mb-2"
               color={added ? "green" : "yellow"}
-              onClick={handleAddClick}
-              disabled={added}
+              onClick={handleAdd}
+              disabled={added || loading}
+              className="flex-grow-1 d-flex align-items-center justify-content-center"
             >
-              {added ? "✔ Añadido" : "Añadir al carrito"}
+              <i
+                className={`fa-solid ${added ? "fa-check" : "fa-cart-plus"} me-1`}
+                aria-hidden="true"
+              ></i>
+              {added ? "Añadido" : "Agregar"}
             </BrickButton>
-            {showQty && (
-              <div
-                className="position-absolute start-50 translate-middle-x bg-white border rounded p-3 shadow"
-                style={{ zIndex: 10 }}
-              >
-                <QuantityStepper value={qty} onChange={setQty} min={1} max={product.stock} />
-                <div className="d-flex mt-2">
-                  <button
-                    className="btn btn-primary me-2 flex-fill"
-                    onClick={handleConfirm}
-                    disabled={loading}
-                  >
-                    {loading ? "Añadiendo…" : "Confirmar"}
-                  </button>
-                  <button
-                    className="btn btn-outline-secondary flex-fill"
-                    onClick={() => setShowQty(false)}
-                    disabled={loading}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            )}
-            <Link
-              to={`/products/${product.id}`}
-              className="text-decoration-none"
-            >
-              <BrickButton className="w-100">Ver</BrickButton>
-            </Link>
           </div>
         </div>
+        <Link
+          to={`/products/${product.id}`}
+          className="stretched-link"
+          aria-label={product.name}
+        ></Link>
       </div>
     </div>
   );
