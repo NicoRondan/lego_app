@@ -1,14 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useCart } from '../contexts/CartContext';
 import CartModal from './CartModal';
 import ThemeToggle from './ThemeToggle';
 
 // Navigation bar component. Uses Bootstrap classes for styling.
 function Navbar() {
   const { user, logout } = useAuth();
-  const { cart } = useCart();
   return (
     <>
     <nav className="navbar navbar-expand-lg navbar-light border-bottom">
@@ -105,7 +103,7 @@ function Navbar() {
         </div>
       </div>
     </nav>
-    <CartModal items={cart?.items || []} />
+    <CartModal />
     </>
   );
 }

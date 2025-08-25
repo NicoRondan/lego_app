@@ -28,18 +28,18 @@ export const CartProvider = ({ children }) => {
   }, [user]);
 
   const addItem = async ({ productId, quantity }) => {
-    await api.addToCart({ productId, quantity });
-    await fetchCart();
+    const data = await api.addToCart({ productId, quantity });
+    setCart(data);
   };
 
   const updateItem = async (itemId, { quantity }) => {
-    await api.updateCartItem(itemId, { quantity });
-    await fetchCart();
+    const data = await api.updateCartItem(itemId, { quantity });
+    setCart(data);
   };
 
   const removeItem = async (itemId) => {
-    await api.removeCartItem(itemId);
-    await fetchCart();
+    const data = await api.removeCartItem(itemId);
+    setCart(data);
   };
 
   return (
