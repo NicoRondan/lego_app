@@ -4,6 +4,7 @@ import * as api from '../services/api';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import OrderSummary from '../components/OrderSummary';
+import { withItemsCount } from '../utils/cart';
 
 // Page for checking out: review cart, apply coupon, create order and payment
 function CheckoutPage() {
@@ -42,11 +43,7 @@ function CheckoutPage() {
     const fetchCart = async () => {
       if (!user) return;
       const data = await api.getCart();
-      const itemsCount = (data?.items || []).reduce(
-        (sum, it) => sum + it.quantity,
-        0,
-      );
-      setCart({ ...data, summary: { ...(data.summary || {}), itemsCount } });
+      setCart(withItemsCount(data));
     };
     fetchCart();
   }, [user]);
