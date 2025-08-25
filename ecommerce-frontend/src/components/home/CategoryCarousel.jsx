@@ -34,13 +34,8 @@ function CategoryCarousel() {
                     to={`/products?theme=${encodeURIComponent(cat.theme)}`}
                     className="text-decoration-none"
                   >
-                    <div className="position-relative">
-                      <img
-                        src={cat.image}
-                        alt={cat.name}
-                        className="d-block w-100 rounded"
-                        loading="lazy"
-                      />
+                    <div className="image-frame">
+                      <img src={cat.image} alt={cat.name} loading="lazy" />
                     </div>
                   </Link>
                 </div>
