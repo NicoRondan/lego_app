@@ -55,6 +55,7 @@ function ProductCarousel() {
               <img
                 src={p.image}
                 className="d-block w-100"
+                style={{ height: '400px', objectFit: 'cover' }}
                 alt={p.name}
                 loading="lazy"
               />
