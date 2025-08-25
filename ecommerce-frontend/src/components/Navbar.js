@@ -23,16 +23,17 @@ function Navbar() {
     loadCart();
   }, [user]);
   return (
-    <nav className="navbar navbar-expand-lg bg-body">
+    <nav className="navbar navbar-expand-lg navbar-light border-bottom">
       <div className="container-fluid">
-        <Link className="navbar-brand" to="/" aria-label="Inicio">
+        <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="Inicio">
           <img
             src="/assets/logo.png"
             alt="Brick Market"
-            width="64"
-            height="64"
-            className="d-inline-block align-text-top"
+            width="48"
+            height="48"
+            className="d-inline-block align-text-top me-2"
           />
+          <span className="fw-bold">Brick Market</span>
         </Link>
         <button
           className="navbar-toggler"

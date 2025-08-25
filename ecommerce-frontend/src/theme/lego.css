@@ -1,0 +1,89 @@
+/* Variables base */
+:root{
+  --lego-stud-gap: 36px;
+  --lego-surface: var(--bs-warning);
+  --lego-shadow: rgba(0,0,0,.28);
+  --lego-highlight: rgba(255,255,255,.35);
+}
+:root[data-theme="dark"]{ --lego-surface:#0f1115; }
+
+body.no-texture .lego-plate.tex,
+body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
+
+/* Placa con studs (texturizada) */
+.lego-plate{ background-color:var(--lego-surface); }
+.lego-plate.tex{
+  background-image:
+    radial-gradient(circle at 30% 30%, var(--lego-highlight), transparent 60%),
+    radial-gradient(circle at 70% 70%, var(--lego-shadow), transparent 60%);
+  background-size: var(--lego-stud-gap) var(--lego-stud-gap);
+}
+
+/* Marco “brick” con relieve */
+.lego-brick{
+  border-radius:.75rem;
+  border:1px solid rgba(0,0,0,.25);
+  background:var(--bs-primary);
+  box-shadow: inset 0 .12rem 0 rgba(255,255,255,.25),
+              inset 0 -.18rem 0 rgba(0,0,0,.25),
+              0 .35rem .75rem rgba(0,0,0,.25);
+}
+
+/* Botón “brick” con efecto presión */
+.btn-brick{
+  --bg: var(--bs-primary);
+  --edge: rgba(0,0,0,.35);
+  background:var(--bg); color:#fff; border:0; border-radius:.6rem;
+  padding:.6rem 1rem;
+  box-shadow: inset 0 .15rem 0 rgba(255,255,255,.28),
+              inset 0 -.25rem 0 var(--edge),
+              0 .25rem 0 var(--edge);
+  transform:translateY(0);
+  transition:transform 80ms, box-shadow 80ms, filter .2s;
+}
+.btn-brick:active{
+  transform:translateY(.25rem);
+  box-shadow: inset 0 .05rem 0 rgba(255,255,255,.2),
+              inset 0 -.1rem 0 var(--edge),
+              0 .05rem 0 var(--edge);
+}
+.btn-brick.yellow{ --bg:var(--bs-warning); color:#111; }
+.btn-brick.blue  { --bg:var(--bs-info); }
+.btn-brick.red   { --bg:var(--bs-danger); }
+
+/* Card tipo placa */
+.card.brick-card{
+  border-radius:1rem; overflow:hidden;
+  border:1px solid var(--bs-border-color); background:none;
+}
+.card.brick-card .card-header{
+  background:var(--bs-primary); color:#fff; font-weight:600; border-bottom:none;
+}
+.card.brick-card .card-body{ background:var(--lego-surface); }
+.card.brick-card .card-body.tex{
+  background-image:
+    radial-gradient(circle at 30% 30%, var(--lego-highlight), transparent 60%),
+    radial-gradient(circle at 70% 70%, var(--lego-shadow), transparent 60%);
+  background-size: var(--lego-stud-gap) var(--lego-stud-gap);
+}
+
+/* Modal brick */
+.modal-content.brick-modal{
+  border-radius:1rem; border:2px solid rgba(0,0,0,.25);
+  box-shadow:0 .75rem 2rem rgba(0,0,0,.35);
+}
+.modal-header.brick{ background:var(--bs-secondary); color:#fff; border-bottom:none; }
+.modal-body.plate{ background:var(--lego-surface); }
+
+/* Badge tile */
+.badge.tile{
+  border-radius:.35rem; padding:.4rem .55rem;
+  border:1px solid rgba(0,0,0,.25);
+  box-shadow: inset 0 .05rem 0 rgba(255,255,255,.25);
+}
+
+/* Enlaces del footer */
+footer a.text-light{ color:#f8f9fa; text-decoration:none; }
+footer a.text-light:hover{ color:var(--bs-danger); }
+.footer-social a{ color:#fff; font-size:1.25rem; transition:color .15s; }
+.footer-social a:hover{ color:var(--bs-danger); }

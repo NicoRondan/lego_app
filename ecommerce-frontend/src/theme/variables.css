@@ -1,13 +1,17 @@
 :root {
-  --color-primary-hsl: 348 84% 48%;
+  --font-base: 'Montserrat', sans-serif;
+  --bs-body-font-family: var(--font-base);
+  --bs-body-font-size: 1rem;
+  --bs-body-line-height: 1.5;
+  --color-primary-hsl: 357 100% 44%;
   --color-primary: hsl(var(--color-primary-hsl));
-  --color-secondary-hsl: 45 100% 50%;
+  --color-secondary-hsl: 56 100% 50%;
   --color-secondary: hsl(var(--color-secondary-hsl));
   --color-accent-hsl: 211 100% 33%;
   --color-accent: hsl(var(--color-accent-hsl));
   --color-success-hsl: 142 72% 45%;
   --color-success: hsl(var(--color-success-hsl));
-  --color-warning-hsl: 35 92% 56%;
+  --color-warning-hsl: 56 100% 50%;
   --color-warning: hsl(var(--color-warning-hsl));
   --color-danger-hsl: 0 84% 60%;
   --color-danger: hsl(var(--color-danger-hsl));
@@ -63,6 +67,9 @@
 body {
   background-color: var(--bg);
   color: var(--fg);
+  font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size);
+  line-height: var(--bs-body-line-height);
 }
 
  a {
@@ -72,12 +79,37 @@ body {
  color: var(--link-hover);
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+p {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
 .navbar {
   --bs-navbar-color: var(--fg);
   --bs-navbar-hover-color: var(--link);
   --bs-navbar-brand-color: var(--fg);
   --bs-navbar-brand-hover-color: var(--link);
   --bs-navbar-active-color: var(--link);
+  --bs-navbar-bg: var(--bg);
+}
+
+.navbar .nav-link:hover {
+  text-decoration: underline;
 }
 
 .card {
