@@ -67,13 +67,15 @@ body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
   background-size: var(--lego-stud-gap) var(--lego-stud-gap);
 }
 
-/* Modal brick */
+/* Modal general */
 .modal-content.brick-modal{
-  border-radius:1rem; border:2px solid rgba(0,0,0,.25);
-  box-shadow:0 .75rem 2rem rgba(0,0,0,.35);
+  background:#fff;
+  border-radius:.375rem;
+  border:1px solid rgba(0,0,0,.1);
+  box-shadow:0 .5rem 1rem rgba(0,0,0,.15);
 }
-.modal-header.brick{ background:var(--bs-secondary); color:#fff; border-bottom:none; }
-.modal-body.plate{ background:var(--lego-surface); }
+.brick-modal .modal-title{ color:#000; }
+.modal-backdrop.show{ opacity:.5; }
 
 /* Badge tile */
 .badge.tile{
