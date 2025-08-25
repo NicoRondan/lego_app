@@ -51,9 +51,9 @@ function ProductCarousel() {
       <div className="carousel-inner">
         {products.map((p, idx) => (
           <div className={`carousel-item ${idx === 0 ? 'active' : ''}`} key={p.id}>
-            {p.image ? (
+            {p.imageUrl ? (
               <div className="image-frame" style={{ height: '400px' }}>
-                <img src={p.image} alt={p.name} loading="lazy" />
+                <img src={p.imageUrl} alt={p.name} loading="lazy" />
               </div>
             ) : (
               <div className="image-frame bg-secondary" style={{ height: '300px' }} />

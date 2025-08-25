@@ -98,7 +98,7 @@ async function seed() {
       price: set.price.toFixed(2),
       currency: set.currency,
       stock: set.stock,
-      image: set.images[0],
+      imageUrl: set.images[0],
       isNew: !!set.isNew,
       isOnSale: !!set.isOnSale,
     });

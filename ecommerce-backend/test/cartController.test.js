@@ -88,9 +88,10 @@ test('removeItem deletes an item from the cart', async () => {
 // Obtener carrito con estructura simplificada de ítems
 test('getCart returns items with expected shape', async () => {
   const item = {
+    id: 42,
     quantity: 3,
     unitPrice: '5.00',
-    Product: { name: 'Brick', image: 'brick.png' },
+    Product: { name: 'Brick', imageUrl: 'brick.png' },
   };
   mockModels.Cart.findOne = async () => ({
     toJSON() {
@@ -104,10 +105,13 @@ test('getCart returns items with expected shape', async () => {
   await getCart(req, res, (err) => { if (err) throw err; });
 
   assert.deepStrictEqual(output.items, [
-    { name: 'Brick', thumbnailUrl: 'brick.png', unitPrice: 5, quantity: 3 },
+    { id: 42, name: 'Brick', imageUrl: 'brick.png', unitPrice: 5, quantity: 3 },
   ]);
   assert.strictEqual(output.total, 15);
   // Ensure no extra properties like Product are leaked
-  assert.deepStrictEqual(Object.keys(output.items[0]).sort(), ['name', 'quantity', 'thumbnailUrl', 'unitPrice'].sort());
+  assert.deepStrictEqual(
+    Object.keys(output.items[0]).sort(),
+    ['id', 'imageUrl', 'name', 'quantity', 'unitPrice'].sort()
+  );
 });
 
