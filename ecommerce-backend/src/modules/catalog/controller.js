@@ -3,7 +3,7 @@
 // Sequelize ORM for data related to products and categories. Filters are
 // applied based on query parameters.
 
-const { Op } = require('sequelize');
+const { Op, fn, col, where: sequelizeWhere } = require('sequelize');
 const { Product, Category, Review, User } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 const { logger } = require('../../shared/logger');
@@ -26,12 +26,23 @@ exports.getProducts = async (req, res, next) => {
 
     const where = {};
     const include = [];
+    const dialect = Product.sequelize ? Product.sequelize.getDialect() : 'sqlite';
 
     if (search) {
-      where[Op.or] = [
-        { name: { [Op.iLike]: `%${search}%` } },
-        { description: { [Op.iLike]: `%${search}%` } },
-      ];
+      const searchPattern = `%${search}%`;
+      if (dialect === 'sqlite') {
+        const lowerPattern = `%${search.toLowerCase()}%`;
+        where[Op.or] = [
+          sequelizeWhere(fn('lower', col('Product.name')), { [Op.like]: lowerPattern }),
+          sequelizeWhere(fn('lower', col('Product.description')), { [Op.like]: lowerPattern }),
+        ];
+      } else {
+        const likeOp = dialect === 'postgres' ? Op.iLike : Op.like;
+        where[Op.or] = [
+          { name: { [likeOp]: searchPattern } },
+          { description: { [likeOp]: searchPattern } },
+        ];
+      }
     }
 
     if (minPrice || maxPrice) {
@@ -41,15 +52,26 @@ exports.getProducts = async (req, res, next) => {
     }
 
     if (theme) {
+      const themePattern = `%${theme}%`;
+      let categoryWhere;
+      if (dialect === 'sqlite') {
+        categoryWhere = sequelizeWhere(
+          fn('lower', col('categories.name')),
+          { [Op.like]: `%${theme.toLowerCase()}%` }
+        );
+      } else {
+        const likeOp = dialect === 'postgres' ? Op.iLike : Op.like;
+        categoryWhere = { name: { [likeOp]: themePattern } };
+      }
       include.push({
         model: Category,
         as: 'categories',
-        where: { name: { [Op.iLike]: `%${theme}%` } },
+        where: categoryWhere,
         through: { attributes: [] },
       });
+    } else {
+      include.push({ model: Category, as: 'categories', through: { attributes: [] } });
     }
-
-    include.push({ model: Category, as: 'categories', through: { attributes: [] } });
     include.push({ model: Review, as: 'reviews', include: [{ model: User, attributes: ['id', 'name'] }] });
 
     const pageNum = parseInt(page, 10) || 1;
