@@ -10,6 +10,7 @@
   scroll-snap-type: x mandatory;
   gap: var(--rail-gap, 16px);
   scrollbar-width: none;
+  touch-action: pan-y;
 }
 
 .lego-rail-track::-webkit-scrollbar {

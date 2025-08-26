@@ -69,6 +69,7 @@ function LegoProductRail({
   };
   const onPointerMove = (e) => {
     if (!drag.active) return;
+    e.preventDefault();
     const el = trackRef.current;
     if (!el) return;
     const dx = e.clientX - drag.startX;
@@ -76,6 +77,12 @@ function LegoProductRail({
   };
   const endDrag = (e) => {
     if (!drag.active) return;
+    const el = trackRef.current;
+    if (el) {
+      const pageWidth = el.clientWidth + gap;
+      const page = Math.round(el.scrollLeft / pageWidth);
+      el.scrollTo({ left: page * pageWidth, behavior: 'smooth' });
+    }
     setDrag({ active: false, startX: 0, scroll: 0 });
     trackRef.current?.releasePointerCapture?.(e.pointerId);
   };
