@@ -1,0 +1,10 @@
+.filters-bar{
+  min-width:260px;
+  position:sticky;
+  top:1rem;
+  margin-bottom:0;
+}
+
+.filters-bar > * + *{
+  margin-top:0.75rem;
+}

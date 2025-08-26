@@ -26,7 +26,7 @@ function MultiItemCarousel({ id, items = [], renderItem, auto = false }) {
   const rideProps = auto ? { 'data-bs-ride': 'carousel' } : { 'data-bs-interval': 'false' };
 
   return (
-    <div className="carousel-wrapper">
+    <div className="carousel-wrapper lego-container">
       <div id={id} className="carousel slide lego-carousel" {...rideProps}>
         <div className="carousel-inner">
           {slides.map((group, idx) => (

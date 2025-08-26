@@ -1,4 +1,5 @@
 import React from 'react';
+import './FiltersBar.css';
 
 // Accessible filters bar for product listings
 function FiltersBar({
@@ -15,8 +16,13 @@ function FiltersBar({
   onSubmit,
 }) {
   return (
-    <form className="row g-3 mb-4" onSubmit={onSubmit} role="search" aria-label="Filtros de productos">
-      <div className="col-md-3">
+    <form
+      className="lego-container filters-bar"
+      onSubmit={onSubmit}
+      role="search"
+      aria-label="Filtros de productos"
+    >
+      <div>
         <input
           type="text"
           className="form-control"
@@ -26,7 +32,7 @@ function FiltersBar({
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
-      <div className="col-md-2">
+      <div>
         <input
           type="text"
           className="form-control"
@@ -36,7 +42,7 @@ function FiltersBar({
           onChange={(e) => onThemeChange(e.target.value)}
         />
       </div>
-      <div className="col-md-2">
+      <div>
         <input
           type="number"
           className="form-control"
@@ -47,7 +53,7 @@ function FiltersBar({
           onChange={(e) => onMinPriceChange(e.target.value)}
         />
       </div>
-      <div className="col-md-2">
+      <div>
         <input
           type="number"
           className="form-control"
@@ -58,7 +64,7 @@ function FiltersBar({
           onChange={(e) => onMaxPriceChange(e.target.value)}
         />
       </div>
-      <div className="col-md-2">
+      <div>
         <select
           className="form-select"
           aria-label="Orden"
@@ -69,8 +75,8 @@ function FiltersBar({
           <option value="price_desc">Precio ↓</option>
         </select>
       </div>
-      <div className="col-md-1 d-grid">
-        <button type="submit" className="btn btn-primary">
+      <div className="d-grid">
+        <button type="submit" className="btn btn-primary w-100">
           Filtrar
         </button>
       </div>

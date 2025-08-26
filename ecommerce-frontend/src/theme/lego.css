@@ -10,6 +10,16 @@
 body.no-texture .lego-plate.tex,
 body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
 
+/* Contenedor oscuro con borde amarillo reutilizable */
+.lego-container{
+  background-color:#111827;
+  color:#f8f9fa;
+  border:4px solid var(--bs-warning);
+  border-radius:.5rem;
+  padding:1rem;
+  margin-bottom:1rem;
+}
+
 /* Placa con studs (texturizada) */
 .lego-plate{ background-color:var(--lego-surface); }
 .lego-plate.tex{

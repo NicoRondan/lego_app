@@ -1,9 +1,4 @@
 .carousel-wrapper {
-  background-color: #111827;
-  color: #f8f9fa;
-  border: 4px solid var(--bs-warning);
-  border-radius: 0.5rem;
-  padding: 1rem;
   margin-bottom: 1rem;
 }
 
