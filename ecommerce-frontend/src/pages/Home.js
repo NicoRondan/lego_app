@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PromoStrip from '../components/home/PromoStrip';
 import Hero from '../components/home/Hero';
+import BenefitsBar from '../components/home/BenefitsBar';
 import MultiItemCarousel from '../components/home/MultiItemCarousel';
 import CategoryCarousel from '../components/home/CategoryCarousel';
 import ReviewsCarousel from '../components/home/ReviewsCarousel';
@@ -57,6 +58,7 @@ function Home() {
         title="Bienvenido a Brick Market"
         subtitle="Descubre sets increíbles y coleccionables"
       />
+      <BenefitsBar />
       <div className="container my-5">
         <h2 className="mb-4">Destacados</h2>
         <MultiItemCarousel id="featuredCarousel" items={featured || []} renderItem={renderProduct} auto />
