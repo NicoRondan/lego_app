@@ -60,13 +60,13 @@ function Home() {
       />
       <div className="container my-5">
         <h2 className="mb-4">Destacados</h2>
-        <MultiItemCarousel id="featuredCarousel" items={featured || []} renderItem={renderProduct} />
+        <MultiItemCarousel id="featuredCarousel" items={featured || []} renderItem={renderProduct} auto />
         <h2 className="mt-5 mb-4">Categorías</h2>
         <CategoryCarousel />
         <h2 className="mt-5 mb-4">Más vendidos</h2>
         <MultiItemCarousel id="topCarousel" items={top || []} renderItem={renderProduct} />
         <h2 className="mt-5 mb-4">Novedades</h2>
-        <MultiItemCarousel id="newCarousel" items={news || []} renderItem={renderProduct} auto />
+        <MultiItemCarousel id="newCarousel" items={news || []} renderItem={renderProduct} />
         <BenefitsBar />
         <h2 className="mt-5 mb-4">Reseñas</h2>
         <ReviewsCarousel />

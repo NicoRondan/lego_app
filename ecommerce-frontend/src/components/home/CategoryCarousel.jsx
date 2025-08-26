@@ -10,7 +10,7 @@ function CategoryCarousel() {
       className="text-decoration-none"
     >
       <div className="image-frame" style={{ height: '150px' }}>
-        <img src={cat.image} alt={cat.name} loading="lazy" />
+        <img src={cat.image} alt={cat.name} loading="lazy" style={{ objectFit: 'contain' }} />
       </div>
     </Link>
   );
