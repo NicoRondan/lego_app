@@ -5,22 +5,27 @@ const mockReviews = [
   {
     name: 'Ana',
     comment: 'Excelente servicio y productos.',
+    rating: 5,
   },
   {
     name: 'Luis',
     comment: 'Muy buena calidad, volveré a comprar.',
+    rating: 4,
   },
   {
     name: 'María',
     comment: 'Entrega rápida y sin problemas.',
+    rating: 5,
   },
   {
     name: 'Juan',
     comment: 'Gran variedad de sets.',
+    rating: 3,
   },
   {
     name: 'Carla',
     comment: 'Me encantó el soporte recibido.',
+    rating: 4,
   },
 ];
 
@@ -30,7 +35,15 @@ function ReviewsCarousel() {
   useEffect(() => {
     api
       .getReviews({ limit: 10 })
-      .then((data) => setReviews(data.items || data))
+      .then((data) =>
+        setReviews(
+          (data.items || data).map((r) => ({
+            name: r.name || r.user?.name,
+            comment: r.comment,
+            rating: r.rating || 0,
+          }))
+        )
+      )
       .catch(() => setReviews(mockReviews));
   }, []);
 
@@ -52,7 +65,15 @@ function ReviewsCarousel() {
             >
               <div className="p-4 text-center">
                 <p className="mb-1">"{r.comment}"</p>
-                <small className="d-block mb-2">- {r.name}</small>
+                <small className="d-block mb-2">
+                  - {r.name}
+                  {Array.from({ length: r.rating }).map((_, i) => (
+                    <i
+                      key={i}
+                      className="bi bi-star-fill text-warning ms-1"
+                    />
+                  ))}
+                </small>
               </div>
             </div>
           ))}
