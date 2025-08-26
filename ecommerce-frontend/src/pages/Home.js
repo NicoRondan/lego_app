@@ -4,7 +4,6 @@ import PromoStrip from '../components/home/PromoStrip';
 import Hero from '../components/home/Hero';
 import MultiItemCarousel from '../components/home/MultiItemCarousel';
 import CategoryCarousel from '../components/home/CategoryCarousel';
-import BenefitsBar from '../components/home/BenefitsBar';
 import ReviewsCarousel from '../components/home/ReviewsCarousel';
 import Newsletter from '../components/home/Newsletter';
 import TrustBadges from '../components/home/TrustBadges';
@@ -67,7 +66,6 @@ function Home() {
         <MultiItemCarousel id="topCarousel" items={top || []} renderItem={renderProduct} />
         <h2 className="mt-5 mb-4">Novedades</h2>
         <MultiItemCarousel id="newCarousel" items={news || []} renderItem={renderProduct} />
-        <BenefitsBar />
         <h2 className="mt-5 mb-4">Reseñas</h2>
         <ReviewsCarousel />
         <div className="my-5">
