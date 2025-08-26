@@ -119,6 +119,12 @@ footer a.text-light:hover{ color:var(--bs-danger); }
     background-color:#f8f9fa;
     box-shadow:none;
     border-radius:.25rem;
+    transition:transform .2s, box-shadow .2s;
+  }
+
+  .image-frame:hover img{
+    transform:scale(1.05);
+    box-shadow:0 .5rem 1rem rgba(0,0,0,.15);
   }
 
 /* Formularios */
