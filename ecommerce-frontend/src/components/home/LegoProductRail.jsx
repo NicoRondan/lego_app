@@ -25,18 +25,20 @@ function LegoProductRail({
     const el = trackRef.current;
     if (!el) return undefined;
     const handleScroll = () => {
-      const page = Math.round(el.scrollLeft / el.clientWidth);
+      const pageWidth = el.clientWidth + gap;
+      const page = Math.round(el.scrollLeft / pageWidth);
       setCurrent(page);
     };
     el.addEventListener('scroll', handleScroll);
     return () => el.removeEventListener('scroll', handleScroll);
-  }, [items, perView]);
+  }, [items, perView, gap]);
 
   const scrollToPage = (p) => {
     const el = trackRef.current;
     if (!el) return;
     const page = Math.max(0, Math.min(p, totalPages - 1));
-    el.scrollTo({ left: page * el.clientWidth, behavior: 'smooth' });
+    const pageWidth = el.clientWidth + gap;
+    el.scrollTo({ left: page * pageWidth, behavior: 'smooth' });
   };
 
   const onPrev = () => scrollToPage(current - 1);
