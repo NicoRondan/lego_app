@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import './MultiItemCarousel.css';
 
-function MultiItemCarousel({ id, items = [], renderItem }) {
+function MultiItemCarousel({ id, items = [], renderItem, auto = false }) {
   const getItemsPerSlide = () => (window.innerWidth >= 992 ? 3 : window.innerWidth >= 768 ? 2 : 1);
   const [itemsPerSlide, setItemsPerSlide] = useState(getItemsPerSlide());
 
@@ -23,9 +23,11 @@ function MultiItemCarousel({ id, items = [], renderItem }) {
     return null;
   }
 
+  const rideProps = auto ? { 'data-bs-ride': 'carousel' } : { 'data-bs-interval': 'false' };
+
   return (
     <div className="carousel-wrapper">
-      <div id={id} className="carousel slide lego-carousel" data-bs-ride="carousel">
+      <div id={id} className="carousel slide lego-carousel" {...rideProps}>
         <div className="carousel-inner">
           {slides.map((group, idx) => (
             <div className={`carousel-item ${idx === 0 ? 'active' : ''}`} key={idx}>

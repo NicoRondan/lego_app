@@ -66,7 +66,7 @@ function Home() {
         <h2 className="mt-5 mb-4">Más vendidos</h2>
         <MultiItemCarousel id="topCarousel" items={top || []} renderItem={renderProduct} />
         <h2 className="mt-5 mb-4">Novedades</h2>
-        <MultiItemCarousel id="newCarousel" items={news || []} renderItem={renderProduct} />
+        <MultiItemCarousel id="newCarousel" items={news || []} renderItem={renderProduct} auto />
         <BenefitsBar />
         <h2 className="mt-5 mb-4">Reseñas</h2>
         <ReviewsCarousel />
