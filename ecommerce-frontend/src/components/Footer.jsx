@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import BrickButton from './lego/BrickButton';
+import BenefitsBar from './home/BenefitsBar';
 
 export default function Footer(){
   return (
     <footer className="bg-dark text-light mt-5" role="contentinfo">
+      <BenefitsBar />
       <div className="container py-5">
         <div className="lego-plate p-4 text-center rounded mb-4">
           <h2 className="mb-3">¿Listo para construir?</h2>

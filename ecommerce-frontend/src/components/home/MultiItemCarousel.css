@@ -1,0 +1,23 @@
+.carousel-wrapper {
+  margin-bottom: 1rem;
+}
+
+.lego-carousel .carousel-control-prev,
+.lego-carousel .carousel-control-next {
+  width: 3rem;
+  height: 3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 1;
+  background-color: var(--bs-danger);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 0.25rem;
+  box-shadow: 0 0.25rem 0 rgba(0, 0, 0, 0.3);
+}
+
+
+.lego-carousel .carousel-control-prev-icon,
+.lego-carousel .carousel-control-next-icon {
+  filter: invert(1);
+  background-size: 50% 50%;
+}

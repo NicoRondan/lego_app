@@ -54,53 +54,61 @@ function ProductsPage() {
   return (
     <div>
       <h2 className="mb-4">Catálogo de productos</h2>
-      <FiltersBar
-        search={search}
-        theme={theme}
-        minPrice={minPrice}
-        maxPrice={maxPrice}
-        order={order}
-        onSearchChange={setSearch}
-        onThemeChange={setTheme}
-        onMinPriceChange={setMinPrice}
-        onMaxPriceChange={setMaxPrice}
-        onOrderChange={setOrder}
-        onSubmit={handleSubmit}
-      />
-      {loading ? (
-        <p>Cargando...</p>
-      ) : error ? (
-        <p className="text-danger">{error}</p>
-      ) : (
-        <div className="row">
-          {products && products.length > 0 ? (
-            products.map((prod) => <ProductCard key={prod.id} product={prod} />)
+      <div className="d-flex align-items-start gap-4">
+        <FiltersBar
+          search={search}
+          theme={theme}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          order={order}
+          onSearchChange={setSearch}
+          onThemeChange={setTheme}
+          onMinPriceChange={setMinPrice}
+          onMaxPriceChange={setMaxPrice}
+          onOrderChange={setOrder}
+          onSubmit={handleSubmit}
+        />
+        <div className="flex-grow-1">
+          {loading ? (
+            <p>Cargando...</p>
+          ) : error ? (
+            <p className="text-danger">{error}</p>
           ) : (
-            <p>No se encontraron productos.</p>
+            <div className="lego-container">
+              <div className="row g-3">
+                {products && products.length > 0 ? (
+                  products.map((prod) => (
+                    <ProductCard key={prod.id} product={prod} />
+                  ))
+                ) : (
+                  <p>No se encontraron productos.</p>
+                )}
+              </div>
+            </div>
+          )}
+          {total > limit && (
+            <div className="d-flex justify-content-between align-items-center mt-3">
+              <button
+                className="btn btn-secondary"
+                onClick={() => fetchProducts(page - 1)}
+                disabled={page <= 1 || loading}
+              >
+                Anterior
+              </button>
+              <span>
+                Página {page} de {Math.ceil(total / limit)}
+              </span>
+              <button
+                className="btn btn-secondary"
+                onClick={() => fetchProducts(page + 1)}
+                disabled={page >= Math.ceil(total / limit) || loading}
+              >
+                Siguiente
+              </button>
+            </div>
           )}
         </div>
-      )}
-      {total > limit && (
-        <div className="d-flex justify-content-between align-items-center mt-3">
-          <button
-            className="btn btn-secondary"
-            onClick={() => fetchProducts(page - 1)}
-            disabled={page <= 1 || loading}
-          >
-            Anterior
-          </button>
-          <span>
-            Página {page} de {Math.ceil(total / limit)}
-          </span>
-          <button
-            className="btn btn-secondary"
-            onClick={() => fetchProducts(page + 1)}
-            disabled={page >= Math.ceil(total / limit) || loading}
-          >
-            Siguiente
-          </button>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
