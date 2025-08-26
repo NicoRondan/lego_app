@@ -8,6 +8,7 @@ import ReviewsCarousel from '../components/home/ReviewsCarousel';
 import Newsletter from '../components/home/Newsletter';
 import TrustBadges from '../components/home/TrustBadges';
 import * as api from '../services/api';
+import SkeletonCard from '../components/home/SkeletonCard';
 
 function Home() {
   const [featured, setFeatured] = useState(null);
@@ -50,6 +51,16 @@ function Home() {
     </Link>
   );
 
+  const renderSkeletons = () => (
+    <div className="row g-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="col-12 col-md-6 col-lg-4">
+          <SkeletonCard height={200} />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div>
       <PromoStrip />
@@ -59,13 +70,25 @@ function Home() {
       />
       <div className="container my-5">
         <h2 className="mb-4">Destacados</h2>
-        <MultiItemCarousel id="featuredCarousel" items={featured || []} renderItem={renderProduct} auto />
+        {featured === null ? (
+          renderSkeletons()
+        ) : (
+          <MultiItemCarousel id="featuredCarousel" items={featured} renderItem={renderProduct} auto />
+        )}
         <h2 className="mt-5 mb-4">Categorías</h2>
         <CategoryCarousel />
         <h2 className="mt-5 mb-4">Más vendidos</h2>
-        <MultiItemCarousel id="topCarousel" items={top || []} renderItem={renderProduct} />
+        {top === null ? (
+          renderSkeletons()
+        ) : (
+          <MultiItemCarousel id="topCarousel" items={top} renderItem={renderProduct} />
+        )}
         <h2 className="mt-5 mb-4">Novedades</h2>
-        <MultiItemCarousel id="newCarousel" items={news || []} renderItem={renderProduct} />
+        {news === null ? (
+          renderSkeletons()
+        ) : (
+          <MultiItemCarousel id="newCarousel" items={news} renderItem={renderProduct} />
+        )}
         <h2 className="mt-5 mb-4">Reseñas</h2>
         <ReviewsCarousel />
         <div className="my-5">
