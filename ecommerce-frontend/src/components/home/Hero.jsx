@@ -11,14 +11,21 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
     >
       <VideoBackground
         className="position-absolute top-0 start-0 w-100 h-100"
-        style={{ objectFit: 'cover', objectPosition: 'center top' }}
+        style={{ objectFit: 'cover', objectPosition: 'center top', zIndex: 0 }}
         poster="/assets/home/hero-fallback.jpg"
         sources={[
           { src: '/assets/home/hero.webm', type: 'video/webm' },
           { src: '/assets/home/hero.mp4', type: 'video/mp4' },
         ]}
       />
-      <div className="position-absolute top-50 start-50 translate-middle">
+      <div
+        className="position-absolute top-0 start-0 w-100 h-100"
+        style={{ backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}
+      />
+      <div
+        className="position-absolute top-50 start-50 translate-middle"
+        style={{ zIndex: 2 }}
+      >
         <h1 className="display-4">{title}</h1>
         <p className="lead mb-4">{subtitle}</p>
         <Link to={ctaHref} className="text-decoration-none">
@@ -30,6 +37,7 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
         style={{
           height: '20%',
           background: 'linear-gradient(to bottom, rgba(0,0,0,0), var(--bs-body-bg))',
+          zIndex: 3,
         }}
       />
       <div
@@ -37,6 +45,7 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
         style={{
           height: '20%',
           background: 'linear-gradient(to bottom, var(--bs-body-bg), rgba(0,0,0,0))',
+          zIndex: 3,
         }}
       />
       <div
@@ -44,6 +53,7 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
         style={{
           width: '20%',
           background: 'linear-gradient(to right, var(--bs-body-bg), rgba(0,0,0,0))',
+          zIndex: 3,
         }}
       />
       <div
@@ -51,6 +61,7 @@ function Hero({ title, subtitle, ctaHref = '/products' }) {
         style={{
           width: '20%',
           background: 'linear-gradient(to left, var(--bs-body-bg), rgba(0,0,0,0))',
+          zIndex: 3,
         }}
       />
     </section>
