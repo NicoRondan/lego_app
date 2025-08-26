@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PromoStrip from '../components/home/PromoStrip';
 import Hero from '../components/home/Hero';
-import LegoProductRail from '../components/home/LegoProductRail';
+import MultiItemCarousel from '../components/home/MultiItemCarousel';
 import CategoryCarousel from '../components/home/CategoryCarousel';
 import BenefitsBar from '../components/home/BenefitsBar';
 import ReviewsCarousel from '../components/home/ReviewsCarousel';
@@ -36,26 +36,19 @@ function Home() {
   }, []);
 
   const renderProduct = (p) => (
-    <div className="card h-100">
-      {p.imageUrl ? (
-        <img
-          src={p.imageUrl}
-          alt={p.name}
-          className="card-img-top"
-          style={{ height: '150px', objectFit: 'cover' }}
-          loading="lazy"
-        />
-      ) : (
-        <div className="card-img-top bg-secondary" style={{ height: '150px' }} />
-      )}
-      <div className="card-body d-flex flex-column">
-        <h6 className="card-title">{p.name}</h6>
-        {p.price && <p className="fw-bold">${parseFloat(p.price).toFixed(2)}</p>}
-        <Link to={`/products/${p.id}`} className="btn btn-primary btn-sm mt-auto">
-          Ver
-        </Link>
+    <Link to={`/products/${p.id}`} className="text-decoration-none">
+      <div className="image-frame" style={{ height: '150px' }}>
+        {p.imageUrl ? (
+          <img src={p.imageUrl} alt={p.name} loading="lazy" />
+        ) : (
+          <div className="bg-secondary w-100 h-100" />
+        )}
       </div>
-    </div>
+      <div className="mt-2 text-center">
+        <h6 className="mb-1">{p.name}</h6>
+        {p.price && <p className="fw-bold mb-0">${parseFloat(p.price).toFixed(2)}</p>}
+      </div>
+    </Link>
   );
 
   return (
@@ -66,38 +59,14 @@ function Home() {
         subtitle="Descubre sets increíbles y coleccionables"
       />
       <div className="container my-5">
-        <LegoProductRail
-          title="Destacados"
-          items={featured}
-          renderItem={renderProduct}
-          ctaText="Ver todos"
-          ctaHref="/products"
-          id="featured-rail"
-          perView={3}
-          skeletonCount={3}
-        />
+        <h2 className="mb-4">Destacados</h2>
+        <MultiItemCarousel id="featuredCarousel" items={featured || []} renderItem={renderProduct} />
         <h2 className="mt-5 mb-4">Categorías</h2>
         <CategoryCarousel />
-        <LegoProductRail
-          title="Más vendidos"
-          items={top}
-          renderItem={renderProduct}
-          ctaText="Ver todos"
-          ctaHref="/products"
-          id="top-rail"
-          perView={3}
-          skeletonCount={3}
-        />
-        <LegoProductRail
-          title="Novedades"
-          items={news}
-          renderItem={renderProduct}
-          ctaText="Ver todos"
-          ctaHref="/products"
-          id="new-rail"
-          perView={3}
-          skeletonCount={3}
-        />
+        <h2 className="mt-5 mb-4">Más vendidos</h2>
+        <MultiItemCarousel id="topCarousel" items={top || []} renderItem={renderProduct} />
+        <h2 className="mt-5 mb-4">Novedades</h2>
+        <MultiItemCarousel id="newCarousel" items={news || []} renderItem={renderProduct} />
         <BenefitsBar />
         <h2 className="mt-5 mb-4">Reseñas</h2>
         <ReviewsCarousel />
@@ -111,3 +80,4 @@ function Home() {
 }
 
 export default Home;
+
