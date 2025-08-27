@@ -91,7 +91,7 @@ function ProductCard({ product }) {
             src={product.imageUrl}
             alt={product.name}
             className="card-img-top"
-            style={{ objectFit: "cover", height: "180px" }}
+            style={{ objectFit: "contain", height: "180px", width: "100%" }}
           />
         ) : (
           <div
