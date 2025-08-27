@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { createProduct } from '../../services/api';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 // Minimal resolver to integrate Zod with React Hook Form without extra deps
 const zodResolver = (schema) => async (values) => {
@@ -248,7 +249,7 @@ function NewProductPage() {
   const handleCancel = () => navigate('/admin');
 
   return (
-    <div>
+    <AdminLayout>
       <h2>Crear nuevo producto</h2>
       <form>
         <ul className="nav nav-tabs mb-3">
@@ -404,7 +405,7 @@ function NewProductPage() {
           </button>
         </div>
       </form>
-    </div>
+    </AdminLayout>
   );
 }
 
