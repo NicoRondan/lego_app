@@ -232,13 +232,15 @@ exports.getProducts = async (req, res, next) => {
     }
   };
 
-// GET /products/:id
+// GET /products/:idOrSlug
 exports.getProductById = async (req, res, next) => {
   const log = req.log || logger;
   try {
-    const { id } = req.params;
-    log.info({ id }, 'Fetching product by id');
-    const whereClause = isNaN(parseInt(id, 10)) ? { slug: id } : { id };
+    const { idOrSlug } = req.params;
+    log.info({ idOrSlug }, 'Fetching product');
+    const whereClause = isNaN(parseInt(idOrSlug, 10))
+      ? { slug: idOrSlug }
+      : { id: idOrSlug };
     const product = await Product.findOne({
       where: whereClause,
       include: [
@@ -247,7 +249,7 @@ exports.getProductById = async (req, res, next) => {
       ],
     });
     if (!product) throw new ApiError('Product not found', 404);
-    log.info({ id }, 'Product fetched');
+    log.info({ idOrSlug }, 'Product fetched');
     res.json(serializeProduct(product));
   } catch (err) {
     log.error({ err }, 'Error fetching product by id');

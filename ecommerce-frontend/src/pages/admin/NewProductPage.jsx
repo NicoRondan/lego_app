@@ -262,7 +262,9 @@ function NewProductPage() {
 
   const onSubmit = async (data, status) => {
     try {
-      const resp = await createProduct({ ...data, status });
+      const { images: imgs, ...rest } = data;
+      const primary = imgs?.find((img) => img.primary)?.url || imgs?.[0]?.url;
+      const resp = await createProduct({ ...rest, status, imageUrl: primary });
       toast.success('Producto creado');
       if (status === 'draft' && resp?.id) navigate(`/admin/products/${resp.id}`);
       else if (resp?.slug) navigate(`/products/${resp.slug}`);

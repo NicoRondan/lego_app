@@ -104,6 +104,7 @@ function parseCreateProduct(body) {
     status,
     code,
     currency,
+    imageUrl,
   } = body;
   if (!setNumber) throw new ApiError('setNumber is required', 400);
   if (!name) throw new ApiError('name is required', 400);
@@ -130,6 +131,7 @@ function parseCreateProduct(body) {
     result.categories = categories.map((c) => String(c));
   }
   if (status !== undefined) result.status = String(status);
+  if (imageUrl !== undefined) result.imageUrl = String(imageUrl);
   return result;
 }
 
