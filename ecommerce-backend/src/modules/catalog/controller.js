@@ -238,9 +238,9 @@ exports.getProductById = async (req, res, next) => {
   try {
     const { idOrSlug } = req.params;
     log.info({ idOrSlug }, 'Fetching product');
-    const whereClause = isNaN(parseInt(idOrSlug, 10))
-      ? { slug: idOrSlug }
-      : { id: idOrSlug };
+    const whereClause = /^\d+$/.test(idOrSlug)
+      ? { id: parseInt(idOrSlug, 10) }
+      : { slug: idOrSlug };
     const product = await Product.findOne({
       where: whereClause,
       include: [

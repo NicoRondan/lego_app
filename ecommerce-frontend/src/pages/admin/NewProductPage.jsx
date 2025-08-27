@@ -267,7 +267,7 @@ function NewProductPage() {
       const resp = await createProduct({ ...rest, status, imageUrl: primary });
       toast.success('Producto creado');
       if (status === 'draft' && resp?.id) navigate(`/admin/products/${resp.id}`);
-      else if (resp?.slug) navigate(`/products/${resp.slug}`);
+      else if (resp?.id) navigate(`/products/${resp.id}`);
       else navigate('/admin');
     } catch (err) {
       // error handled by api.js toast
