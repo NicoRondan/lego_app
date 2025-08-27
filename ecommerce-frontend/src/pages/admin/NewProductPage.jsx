@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { createProduct } from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout';
+import InfoTooltip from '../../components/InfoTooltip';
 
 // Minimal resolver to integrate Zod with React Hook Form without extra deps
 const zodResolver = (schema) => async (values) => {
@@ -324,7 +325,7 @@ function NewProductPage() {
               <div className="col-md-4">
                 <label className="form-label" htmlFor="setNumber">
                   Set # <span className="text-danger">*</span>
-                  <span title="Número oficial del set" className="ms-1">?</span>
+                  <InfoTooltip text="Número oficial del set" />
                 </label>
                 <input
                   id="setNumber"
@@ -339,7 +340,7 @@ function NewProductPage() {
               <div className="col-md-8">
                 <label className="form-label" htmlFor="name">
                   Nombre <span className="text-danger">*</span>
-                  <span title="Nombre del producto" className="ms-1">?</span>
+                  <InfoTooltip text="Nombre del producto" />
                 </label>
                 <input
                   id="name"
@@ -354,7 +355,7 @@ function NewProductPage() {
               <div className="col-md-8">
                 <label className="form-label" htmlFor="slug">
                   Slug <span className="text-danger">*</span>
-                  <span title="URL amigable" className="ms-1">?</span>
+                  <InfoTooltip text="URL amigable" />
                 </label>
                 <input
                   id="slug"
@@ -373,7 +374,8 @@ function NewProductPage() {
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label" htmlFor="pieces">
-                  Piezas <span title="Cantidad de piezas" className="ms-1">?</span>
+                  Piezas
+                  <InfoTooltip text="Cantidad de piezas" />
                 </label>
                 <input
                   id="pieces"
@@ -392,7 +394,7 @@ function NewProductPage() {
               <div className="col-md-4">
                 <label className="form-label" htmlFor="price">
                   Precio <span className="text-danger">*</span>
-                  <span title="Precio de venta" className="ms-1">?</span>
+                  <InfoTooltip text="Precio de venta" />
                 </label>
                 <input
                   id="price"
@@ -413,7 +415,7 @@ function NewProductPage() {
               <div className="col-md-4">
                 <label className="form-label" htmlFor="stock">
                   Stock <span className="text-danger">*</span>
-                  <span title="Cantidad disponible" className="ms-1">?</span>
+                  <InfoTooltip text="Cantidad disponible" />
                 </label>
                 <input
                   id="stock"

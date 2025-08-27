@@ -11,3 +11,12 @@
   background-color: var(--bs-warning);
   color: #111827;
 }
+
+.admin-sidebar h2 {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  word-break: break-word;
+}
