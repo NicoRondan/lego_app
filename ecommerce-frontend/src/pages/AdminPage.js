@@ -7,7 +7,7 @@ import AdminLayout from '../components/admin/AdminLayout';
 function AdminPage() {
   return (
     <AdminLayout>
-      <h2>Panel de administración</h2>
+      <h2>Admin</h2>
       <p>
         Esta sección está en construcción. Aquí podrás gestionar productos,
         categorías, inventario y pedidos.

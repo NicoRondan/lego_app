@@ -6,7 +6,7 @@ import './AdminSidebar.css';
 function AdminSidebar() {
   return (
     <aside className="admin-sidebar lego-container d-flex flex-column p-3">
-      <h2 className="mb-4">Panel de administración</h2>
+      <h2 className="mb-4">Admin</h2>
       <nav className="nav nav-pills flex-column">
         <NavLink
           end

@@ -92,4 +92,32 @@ function parseGetProducts(query) {
   return result;
 }
 
-module.exports = { parseGetProducts };
+function parseCreateProduct(body) {
+  const { setNumber, name, slug, price, stock, pieces, categories, status } = body;
+  if (!setNumber) throw new ApiError('setNumber is required', 400);
+  if (!name) throw new ApiError('name is required', 400);
+  if (!slug) throw new ApiError('slug is required', 400);
+  const priceNum = parseFloat(price);
+  if (isNaN(priceNum)) throw new ApiError('price must be a number', 400);
+  const stockNum = parseInt(stock, 10);
+  if (isNaN(stockNum)) throw new ApiError('stock must be an integer', 400);
+  const result = {
+    setNumber: String(setNumber),
+    name: String(name),
+    slug: String(slug),
+    price: priceNum,
+    stock: stockNum,
+  };
+  if (pieces !== undefined) {
+    const piecesNum = parseInt(pieces, 10);
+    if (isNaN(piecesNum)) throw new ApiError('pieces must be an integer', 400);
+    result.pieceCount = piecesNum;
+  }
+  if (Array.isArray(categories)) {
+    result.categories = categories.map((c) => String(c));
+  }
+  if (status !== undefined) result.status = String(status);
+  return result;
+}
+
+module.exports = { parseGetProducts, parseCreateProduct };

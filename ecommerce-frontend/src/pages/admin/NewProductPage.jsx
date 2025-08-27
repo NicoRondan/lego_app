@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { createProduct } from '../../services/api';
+import { createProduct, getCategories } from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout';
 import InfoTooltip from '../../components/InfoTooltip';
 
@@ -46,6 +46,7 @@ const schema = z.object({
       .int()
       .nonnegative('Stock inválido')
   ),
+  categories: z.array(z.string()).optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   images: z
@@ -219,11 +220,12 @@ function NewProductPage() {
     register,
     handleSubmit,
     watch,
+    getValues,
     setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { price: '', stock: '', images: [] },
+    defaultValues: { price: '', stock: '', images: [], categories: [] },
   });
 
   useEffect(() => {
@@ -233,6 +235,8 @@ function NewProductPage() {
   const name = watch('name');
   const setNumber = watch('setNumber');
   const [slugTouched, setSlugTouched] = useState(false);
+  const [allCategories, setAllCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
     if (!slugTouched) {
@@ -240,6 +244,21 @@ function NewProductPage() {
       setValue('slug', s);
     }
   }, [name, setNumber, slugTouched, setValue]);
+
+  useEffect(() => {
+    getCategories().then(setAllCategories).catch(() => {});
+  }, []);
+
+  const addCategory = () => {
+    const trimmed = newCategory.trim();
+    if (!trimmed) return;
+    if (!allCategories.find((c) => c.name === trimmed)) {
+      setAllCategories([...allCategories, { name: trimmed }]);
+    }
+    const current = getValues('categories') || [];
+    if (!current.includes(trimmed)) setValue('categories', [...current, trimmed]);
+    setNewCategory('');
+  };
 
   const onSubmit = async (data, status) => {
     try {
@@ -366,6 +385,40 @@ function NewProductPage() {
                   required
                 />
                 {errors.slug && <div className="text-danger small">{errors.slug.message}</div>}
+              </div>
+              <div className="col-md-8">
+                <label className="form-label" htmlFor="categories">
+                  Categorías
+                  <InfoTooltip text="Colecciones o temas" />
+                </label>
+                <select
+                  id="categories"
+                  multiple
+                  className="form-select"
+                  {...register('categories')}
+                >
+                  {allCategories.map((cat) => (
+                    <option key={cat.id || cat.name} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="input-group mt-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Agregar categoría"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={addCategory}
+                  >
+                    Agregar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
