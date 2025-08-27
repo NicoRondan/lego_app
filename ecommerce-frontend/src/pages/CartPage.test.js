@@ -46,12 +46,10 @@ describe('CartPage', () => {
         items: [
           {
             id: '1',
-            productId: 'p1',
-            name: 'Brick Set',
-            imageUrl: '/img.jpg',
+            displayName: 'Brick Set',
+            thumbnailUrl: '/img.jpg',
             quantity: 2,
             unitPrice: '10',
-            stock: 5,
           },
         ],
       },

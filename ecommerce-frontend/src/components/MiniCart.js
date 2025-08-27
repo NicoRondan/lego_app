@@ -20,8 +20,8 @@ function MiniCart() {
           role="menuitem"
         >
           <img
-            src={item.imageUrl || 'https://via.placeholder.com/64'}
-            alt={item.displayName || item.name}
+            src={item.thumbnailUrl || 'https://via.placeholder.com/64'}
+            alt={item.displayName || 'Producto'}
             width="64"
             height="64"
             className="flex-shrink-0 rounded"
