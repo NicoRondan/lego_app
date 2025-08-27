@@ -107,6 +107,7 @@ const Product = sequelize.define('Product', {
   isOnSale: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'active' },
   stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  maxQtyPerOrder: { type: DataTypes.INTEGER, field: 'max_qty_per_order' },
 }, {
   tableName: 'products',
   underscored: true,
@@ -155,6 +156,8 @@ const CartItem = sequelize.define('CartItem', {
   quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
   unitPrice: { type: DataTypes.DECIMAL(10,2), allowNull: false },
   subtotal: { type: DataTypes.DECIMAL(10,2) },
+  displayName: { type: DataTypes.STRING, field: 'display_name' },
+  thumbnailUrl: { type: DataTypes.STRING, field: 'thumbnail_url' },
 }, {
   tableName: 'cart_items',
   underscored: true,
