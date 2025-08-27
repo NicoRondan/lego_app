@@ -93,7 +93,18 @@ function parseGetProducts(query) {
 }
 
 function parseCreateProduct(body) {
-  const { setNumber, name, slug, price, stock, pieces, categories, status } = body;
+  const {
+    setNumber,
+    name,
+    slug,
+    price,
+    stock,
+    pieces,
+    categories,
+    status,
+    code,
+    currency,
+  } = body;
   if (!setNumber) throw new ApiError('setNumber is required', 400);
   if (!name) throw new ApiError('name is required', 400);
   if (!slug) throw new ApiError('slug is required', 400);
@@ -107,6 +118,8 @@ function parseCreateProduct(body) {
     slug: String(slug),
     price: priceNum,
     stock: stockNum,
+    code: String(code || setNumber),
+    currency: String(currency || 'USD'),
   };
   if (pieces !== undefined) {
     const piecesNum = parseInt(pieces, 10);
