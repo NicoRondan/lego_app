@@ -387,22 +387,26 @@ function NewProductPage() {
                 {errors.slug && <div className="text-danger small">{errors.slug.message}</div>}
               </div>
               <div className="col-md-8">
-                <label className="form-label" htmlFor="categories">
+                <label className="form-label">
                   Categorías
                   <InfoTooltip text="Colecciones o temas" />
                 </label>
-                <select
-                  id="categories"
-                  multiple
-                  className="form-select"
-                  {...register('categories')}
-                >
+                <div>
                   {allCategories.map((cat) => (
-                    <option key={cat.id || cat.name} value={cat.name}>
-                      {cat.name}
-                    </option>
+                    <div className="form-check" key={cat.id || cat.name}>
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        value={cat.name}
+                        id={`cat-${cat.id || cat.name}`}
+                        {...register('categories')}
+                      />
+                      <label className="form-check-label" htmlFor={`cat-${cat.id || cat.name}`}>
+                        {cat.name}
+                      </label>
+                    </div>
                   ))}
-                </select>
+                </div>
                 <div className="input-group mt-2">
                   <input
                     type="text"

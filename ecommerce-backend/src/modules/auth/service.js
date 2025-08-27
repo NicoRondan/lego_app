@@ -20,9 +20,9 @@ async function verifyPassword(password, hash) {
   return bcrypt.compare(password, hash);
 }
 
-async function issueTokens(userId) {
+async function issueTokens(userId, role) {
   const accessToken = jwt.sign(
-    { userId },
+    { userId, role },
     process.env.JWT_SECRET || 'secret',
     { expiresIn: process.env.ACCESS_TOKEN_TTL || '10m' },
   );

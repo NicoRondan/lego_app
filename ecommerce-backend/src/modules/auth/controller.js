@@ -22,7 +22,7 @@ exports.register = async (req, res, next) => {
     const passwordHash = await hashPassword(password);
     const user = await User.create({ name, email, passwordHash });
     const csrfToken = crypto.randomBytes(16).toString('hex');
-    const tokens = await issueTokens(user.id);
+    const tokens = await issueTokens(user.id, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
     res
       .status(201)
@@ -40,7 +40,7 @@ exports.login = async (req, res, next) => {
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) throw new ApiError('Invalid credentials', 401);
     const csrfToken = crypto.randomBytes(16).toString('hex');
-    const tokens = await issueTokens(user.id);
+    const tokens = await issueTokens(user.id, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
     res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
@@ -59,7 +59,8 @@ exports.refresh = async (req, res, next) => {
     }
     await stored.update({ revokedAt: new Date() });
     const csrfToken = crypto.randomBytes(16).toString('hex');
-    const tokens = await issueTokens(stored.userId);
+    const user = await User.findByPk(stored.userId);
+    const tokens = await issueTokens(stored.userId, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
     res.json({ ok: true });
   } catch (err) {
@@ -134,7 +135,7 @@ exports.oauthGoogleCallback = async (req, res, next) => {
     }
     await SocialIdentity.findOrCreate({ where: { provider: 'google', providerId, userId: user.id } });
     const csrfToken = crypto.randomBytes(16).toString('hex');
-    const tokens = await issueTokens(user.id);
+    const tokens = await issueTokens(user.id, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
     res.redirect(`${stored.redirect_uri}?ok=1`);
   } catch (err) {
