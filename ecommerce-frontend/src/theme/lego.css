@@ -104,24 +104,24 @@ h2:not(.accordion-header){
   border:4px solid #000;
   border-radius:.5rem;
   text-shadow:
-    /* yellow inner outline */
-    -1px -1px 0 #FFC700,
-    0 -1px 0 #FFC700,
-    1px -1px 0 #FFC700,
-    -1px 0 0 #FFC700,
-    1px 0 0 #FFC700,
-    -1px 1px 0 #FFC700,
-    0 1px 0 #FFC700,
-    1px 1px 0 #FFC700,
-    /* black outer outline */
-    -2px -2px 0 #000,
-    0 -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 0 0 #000,
-    2px 0 0 #000,
-    -2px 2px 0 #000,
-    0 2px 0 #000,
-    2px 2px 0 #000;
+    /* yellow outer outline */
+    -2px -2px 0 #FFC700,
+    0 -2px 0 #FFC700,
+    2px -2px 0 #FFC700,
+    -2px 0 0 #FFC700,
+    2px 0 0 #FFC700,
+    -2px 2px 0 #FFC700,
+    0 2px 0 #FFC700,
+    2px 2px 0 #FFC700,
+    /* black inner outline */
+    -1px -1px 0 #000,
+    0 -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 0 0 #000,
+    1px 0 0 #000,
+    -1px 1px 0 #000,
+    0 1px 0 #000,
+    1px 1px 0 #000;
 }
 
 .bg-lego-yellow{ background-color:#FFCF00!important; color:#000; }
