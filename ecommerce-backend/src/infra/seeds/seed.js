@@ -21,7 +21,7 @@ async function seed() {
       currency: 'USD',
       stock: 5,
       categories: ['Star Wars'],
-      images: ['https://picsum.photos/seed/lego-millennium-falcon/600/400'],
+      images: ['https://http2.mlstatic.com/D_NQ_NP_622899-MLA79622738790_102024-O.webp'],
       isNew: true,
     },
     {
@@ -32,7 +32,7 @@ async function seed() {
       currency: 'USD',
       stock: 10,
       categories: ['Technic'],
-      images: ['https://picsum.photos/seed/lego-bugatti/600/400'],
+      images: ['https://http2.mlstatic.com/D_NQ_NP_789320-CBT75582987554_042024-O.webp'],
       isOnSale: true,
     },
     {
@@ -43,7 +43,7 @@ async function seed() {
       currency: 'USD',
       stock: 20,
       categories: ['City'],
-      images: ['https://picsum.photos/seed/lego-police-station/600/400'],
+      images: ['https://http2.mlstatic.com/D_NQ_NP_870836-MLU70505580380_072023-O.webp'],
       isNew: true,
     },
     {
@@ -54,7 +54,7 @@ async function seed() {
       currency: 'USD',
       stock: 15,
       categories: ['Ideas'],
-      images: ['https://picsum.photos/seed/lego-tree-house/600/400'],
+      images: ['https://http2.mlstatic.com/D_NQ_NP_706384-MLA83330494387_032025-O.webp'],
     },
     {
       code: 'HP001',
@@ -64,7 +64,7 @@ async function seed() {
       currency: 'USD',
       stock: 8,
       categories: ['Harry Potter'],
-      images: ['https://picsum.photos/seed/lego-hogwarts/600/400'],
+      images: ['https://images-cdn.ubuy.com.ar/66f8ec24049a283fc72b94ce-lego-harry-potter-hogwarts-castle.jpg'],
       isOnSale: true,
     },
     {
@@ -75,7 +75,7 @@ async function seed() {
       currency: 'USD',
       stock: 25,
       categories: ['Creator'],
-      images: ['https://picsum.photos/seed/lego-beetle/600/400'],
+      images: ['https://http2.mlstatic.com/D_NQ_NP_918629-MLA50820227389_072022-O.webp'],
     },
     {
       code: 'SWCRE001',
@@ -85,7 +85,7 @@ async function seed() {
       currency: 'USD',
       stock: 30,
       categories: ['Star Wars', 'Creator'],
-      images: ['https://picsum.photos/seed/lego-vader-helmet/600/400'],
+      images: ['https://http2.mlstatic.com/D_Q_NP_954688-MLA84852351437_052025-O.webp'],
     },
   ];
 
