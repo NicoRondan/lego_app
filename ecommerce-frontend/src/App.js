@@ -17,6 +17,7 @@ import WishlistPage from './pages/WishlistPage';
 import Styleguide from './pages/Styleguide';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
+import NewProductPage from './pages/NewProductPage';
 
 function App() {
   return (
@@ -52,6 +53,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/products/new"
+            element={
+              <ProtectedRoute role="admin">
+                <NewProductPage />
               </ProtectedRoute>
             }
           />
