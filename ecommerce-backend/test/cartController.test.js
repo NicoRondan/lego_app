@@ -12,8 +12,8 @@ const { ApiError } = require('../src/shared/errors');
 
 // Añadir artículo nuevo al carrito
 test('addItem adds a new product to the cart', async () => {
-  const item = { quantity: 0, unitPrice: 0, subtotal: 0, save: async function(){ return this; }, cartId: 1, productId: 1 };
-  mockModels.Product.findByPk = async () => ({ id: 1, price: 10, stock: 5 });
+  const item = { quantity: 0, unitPrice: 0, subtotal: 0, displayName: '', thumbnailUrl: '', save: async function(){ return this; }, cartId: 1, productId: 1 };
+  mockModels.Product.findByPk = async () => ({ id: 1, price: 8, msrp: 10, stock: 5, name: 'Brick', imageUrl: 'brick.png', status: 'active' });
   mockModels.Cart.findOrCreate = async () => [{ id: 1 }];
   mockModels.CartItem.findOrCreate = async () => [item];
   mockModels.Cart.findByPk = async () => ({
@@ -28,14 +28,17 @@ test('addItem adds a new product to the cart', async () => {
   await addItem(req, res, (err) => { if (err) throw err; });
 
   assert.strictEqual(item.quantity, 2);
-  assert.strictEqual(item.subtotal, 20);
-  assert.strictEqual(output.total, 20);
+  assert.strictEqual(item.unitPrice, 8);
+  assert.strictEqual(item.displayName, 'Brick');
+  assert.strictEqual(item.thumbnailUrl, 'brick.png');
+  assert.strictEqual(item.subtotal, 16);
+  assert.strictEqual(output.total, 16);
 });
 
 // Incrementar cantidad cuando el artículo ya existe en el carrito
 test('addItem increments quantity for an existing item', async () => {
-  const item = { quantity: 2, unitPrice: 10, subtotal: 20, save: async function(){ return this; }, cartId: 1, productId: 1 };
-  mockModels.Product.findByPk = async () => ({ id: 1, price: 10, stock: 10 });
+  const item = { quantity: 2, unitPrice: 10, subtotal: 20, displayName: 'Brick', thumbnailUrl: 'brick.png', save: async function(){ return this; }, cartId: 1, productId: 1 };
+  mockModels.Product.findByPk = async () => ({ id: 1, price: 10, msrp: 12, stock: 10, name: 'Brick', imageUrl: 'brick.png', status: 'active' });
   mockModels.Cart.findOrCreate = async () => [{ id: 1 }];
   mockModels.CartItem.findOrCreate = async () => [item];
   mockModels.Cart.findByPk = async () => ({
@@ -63,6 +66,34 @@ test('addItem rejects negative quantities', async () => {
 
   assert.ok(error instanceof ApiError);
   assert.match(error.message, /quantity must be positive/);
+});
+
+// Validar maxQtyPerOrder
+test('addItem respects maxQtyPerOrder', async () => {
+  const item = { quantity: 0, unitPrice: 0, subtotal: 0, displayName: '', thumbnailUrl: '', save: async function(){ return this; }, cartId: 1, productId: 1 };
+  mockModels.Product.findByPk = async () => ({ id: 1, price: 10, stock: 10, maxQtyPerOrder: 2, name: 'Brick', imageUrl: 'brick.png', status: 'active' });
+  mockModels.Cart.findOrCreate = async () => [{ id: 1 }];
+  mockModels.CartItem.findOrCreate = async () => [item];
+  let error;
+  const req = { user: { id: 1 }, body: { productId: 1, quantity: 3 } };
+  const res = { json: () => {} };
+  await addItem(req, res, (err) => { error = err; });
+  assert.ok(error instanceof ApiError);
+  assert.match(error.message, /max qty per order/i);
+});
+
+// Validar status discontinued
+test('addItem rejects discontinued products', async () => {
+  const item = { quantity: 0, unitPrice: 0, subtotal: 0, displayName: '', thumbnailUrl: '', save: async function(){ return this; }, cartId: 1, productId: 1 };
+  mockModels.Product.findByPk = async () => ({ id: 1, price: 10, stock: 5, status: 'discontinued', name: 'Brick', imageUrl: 'brick.png' });
+  mockModels.Cart.findOrCreate = async () => [{ id: 1 }];
+  mockModels.CartItem.findOrCreate = async () => [item];
+  let error;
+  const req = { user: { id: 1 }, body: { productId: 1, quantity: 1 } };
+  const res = { json: () => {} };
+  await addItem(req, res, (err) => { error = err; });
+  assert.ok(error instanceof ApiError);
+  assert.match(error.message, /discontinued/);
 });
 
 // Eliminar artículo del carrito
@@ -109,9 +140,11 @@ test('clearCart removes all items from the cart', async () => {
 test('getCart returns items with expected shape', async () => {
   const item = {
     id: 42,
+    productId: 7,
     quantity: 3,
     unitPrice: '5.00',
-    Product: { name: 'Brick', imageUrl: 'brick.png' },
+    displayName: 'Brick',
+    thumbnailUrl: 'brick.png',
   };
   mockModels.Cart.findOne = async () => ({
     toJSON() {
@@ -125,13 +158,13 @@ test('getCart returns items with expected shape', async () => {
   await getCart(req, res, (err) => { if (err) throw err; });
 
   assert.deepStrictEqual(output.items, [
-    { id: 42, name: 'Brick', imageUrl: 'brick.png', unitPrice: 5, quantity: 3 },
+    { id: 42, productId: 7, displayName: 'Brick', thumbnailUrl: 'brick.png', unitPrice: 5, quantity: 3 },
   ]);
   assert.strictEqual(output.total, 15);
-  // Ensure no extra properties like Product are leaked
+  // Ensure no extra properties are leaked
   assert.deepStrictEqual(
     Object.keys(output.items[0]).sort(),
-    ['id', 'imageUrl', 'name', 'quantity', 'unitPrice'].sort()
+    ['displayName', 'id', 'productId', 'quantity', 'thumbnailUrl', 'unitPrice'].sort()
   );
 });
 

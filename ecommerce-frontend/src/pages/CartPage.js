@@ -92,16 +92,21 @@ function CartPage() {
                 <tbody>
                   {cart.items.map((item) => (
                     <tr key={item.id}>
-                      <td><img src={item.imageUrl} alt={item.name} width="60" /></td>
                       <td>
-                        <Link to={`/products/${item.productId || item.product?.id}`}>{item.name}</Link>
+                        <Link to={`/products/${item.productId}`}>
+                          <img src={item.thumbnailUrl} alt={item.displayName} width="60" />
+                        </Link>
+                      </td>
+                      <td>
+                        <Link to={`/products/${item.productId}`} className="text-decoration-none">
+                          {item.displayName}
+                        </Link>
                       </td>
                       <td>
                         <QuantityStepper
                           value={item.quantity}
                           onChange={(qty) => handleUpdate(item.id, qty)}
                           min={1}
-                          max={item.stock}
                         />
                       </td>
                       <td>${parseFloat(item.unitPrice).toFixed(2)}</td>
@@ -125,18 +130,19 @@ function CartPage() {
                 <div className="card mb-3" key={item.id}>
                   <div className="row g-0">
                     <div className="col-4">
-                      <img src={item.imageUrl} alt={item.name} className="img-fluid rounded-start" />
+                      <Link to={`/products/${item.productId}`}>
+                        <img src={item.thumbnailUrl} alt={item.displayName} className="img-fluid rounded-start" />
+                      </Link>
                     </div>
                     <div className="col-8">
                       <div className="card-body">
-                        <Link to={`/products/${item.productId || item.product?.id}`} className="card-title h6 d-block">
-                          {item.name}
+                        <Link to={`/products/${item.productId}`} className="card-title h6 d-block text-decoration-none">
+                          {item.displayName}
                         </Link>
                         <QuantityStepper
                           value={item.quantity}
                           onChange={(qty) => handleUpdate(item.id, qty)}
                           min={1}
-                          max={item.stock}
                         />
                         <p className="card-text mt-2 mb-1">
                           <small className="text-muted">${parseFloat(item.unitPrice).toFixed(2)} c/u</small>

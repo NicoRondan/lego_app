@@ -5,16 +5,24 @@
 const { Cart, CartItem, Product } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 
+// Determine a product's effective unit price based on sale price vs MSRP
+function getEffectivePrice(product) {
+  const salePrice = product.price != null ? parseFloat(product.price) : null;
+  const msrp = product.msrp != null ? parseFloat(product.msrp) : null;
+  return salePrice != null ? salePrice : msrp;
+}
+
 // Helper to attach cart total and expose a simplified item structure
 function attachTotal(cart) {
   if (!cart) return null;
   const data = cart.toJSON();
 
-  // Map items to only expose required fields and avoid leaking the Product model
+  // Map items to only expose required fields
   const items = (data.items || []).map((it) => ({
     id: it.id,
-    name: it.Product ? it.Product.name : undefined,
-    imageUrl: it.Product ? it.Product.imageUrl : undefined,
+    productId: it.productId,
+    displayName: it.displayName,
+    thumbnailUrl: it.thumbnailUrl,
     unitPrice: parseFloat(it.unitPrice),
     quantity: it.quantity,
   }));
@@ -33,7 +41,7 @@ exports.getCart = async (req, res, next) => {
     if (!user) throw new ApiError('Not authenticated', 401);
     const cart = await Cart.findOne({
       where: { userId: user.id },
-      include: { model: CartItem, as: 'items', include: [Product] },
+      include: { model: CartItem, as: 'items' },
     });
     res.json(attachTotal(cart));
   } catch (err) {
@@ -50,22 +58,29 @@ exports.addItem = async (req, res, next) => {
     const { productId, quantity } = dto.parseAddItem(req.body);
     const product = await Product.findByPk(productId);
     if (!product) throw new ApiError('Product not found', 404);
+    if (product.status === 'discontinued') throw new ApiError('Product discontinued', 400);
     const [cart] = await Cart.findOrCreate({
       where: { userId: user.id },
       defaults: {},
     });
     const [item] = await CartItem.findOrCreate({
       where: { cartId: cart.id, productId: product.id },
-      defaults: { quantity: 0, unitPrice: product.price },
+      defaults: { quantity: 0, unitPrice: 0 },
     });
     const newQty = item.quantity + parseInt(quantity, 10);
+    if (product.maxQtyPerOrder && newQty > product.maxQtyPerOrder) {
+      throw new ApiError('Exceeds max qty per order', 400);
+    }
     if (newQty > product.stock) throw new ApiError('Insufficient stock', 400);
+    const price = getEffectivePrice(product);
     item.quantity = newQty;
-    item.unitPrice = product.price;
+    item.unitPrice = price;
+    item.displayName = product.name;
+    item.thumbnailUrl = product.imageUrl;
     item.subtotal = item.quantity * item.unitPrice;
     await item.save();
     const refreshed = await Cart.findByPk(cart.id, {
-      include: { model: CartItem, as: 'items', include: [Product] },
+      include: { model: CartItem, as: 'items' },
     });
     res.json(attachTotal(refreshed));
   } catch (err) {
@@ -93,16 +108,23 @@ exports.updateItem = async (req, res, next) => {
     } else {
       const product = await Product.findByPk(item.productId);
       if (!product) throw new ApiError('Product not found', 404);
+      if (product.status === 'discontinued') throw new ApiError('Product discontinued', 400);
       const newQty = parseInt(quantity, 10);
+      if (product.maxQtyPerOrder && newQty > product.maxQtyPerOrder) {
+        throw new ApiError('Exceeds max qty per order', 400);
+      }
       if (newQty > product.stock) throw new ApiError('Insufficient stock', 400);
+      const price = getEffectivePrice(product);
       item.quantity = newQty;
-      item.unitPrice = product.price;
+      item.unitPrice = price;
+      item.displayName = product.name;
+      item.thumbnailUrl = product.imageUrl;
       item.subtotal = item.quantity * item.unitPrice;
       await item.save();
     }
     const cart = await Cart.findOne({
       where: { id: item.cartId, userId: user.id },
-      include: { model: CartItem, as: 'items', include: [Product] },
+      include: { model: CartItem, as: 'items' },
     });
     res.json(attachTotal(cart));
   } catch (err) {
@@ -126,7 +148,7 @@ exports.removeItem = async (req, res, next) => {
     await item.destroy();
     const cart = await Cart.findOne({
       where: { id: cartId, userId: user.id },
-      include: { model: CartItem, as: 'items', include: [Product] },
+      include: { model: CartItem, as: 'items' },
     });
     res.json(attachTotal(cart));
   } catch (err) {
@@ -145,7 +167,7 @@ exports.clearCart = async (req, res, next) => {
     });
     await CartItem.destroy({ where: { cartId: cart.id } });
     const refreshed = await Cart.findByPk(cart.id, {
-      include: { model: CartItem, as: 'items', include: [Product] },
+      include: { model: CartItem, as: 'items' },
     });
     res.json(attachTotal(refreshed));
   } catch (err) {
