@@ -140,6 +140,7 @@ test('clearCart removes all items from the cart', async () => {
 test('getCart returns items with expected shape', async () => {
   const item = {
     id: 42,
+    productId: 7,
     quantity: 3,
     unitPrice: '5.00',
     displayName: 'Brick',
@@ -157,13 +158,13 @@ test('getCart returns items with expected shape', async () => {
   await getCart(req, res, (err) => { if (err) throw err; });
 
   assert.deepStrictEqual(output.items, [
-    { id: 42, displayName: 'Brick', thumbnailUrl: 'brick.png', unitPrice: 5, quantity: 3 },
+    { id: 42, productId: 7, displayName: 'Brick', thumbnailUrl: 'brick.png', unitPrice: 5, quantity: 3 },
   ]);
   assert.strictEqual(output.total, 15);
   // Ensure no extra properties are leaked
   assert.deepStrictEqual(
     Object.keys(output.items[0]).sort(),
-    ['displayName', 'id', 'quantity', 'thumbnailUrl', 'unitPrice'].sort()
+    ['displayName', 'id', 'productId', 'quantity', 'thumbnailUrl', 'unitPrice'].sort()
   );
 });
 

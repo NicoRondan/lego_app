@@ -20,6 +20,7 @@ function attachTotal(cart) {
   // Map items to only expose required fields
   const items = (data.items || []).map((it) => ({
     id: it.id,
+    productId: it.productId,
     displayName: it.displayName,
     thumbnailUrl: it.thumbnailUrl,
     unitPrice: parseFloat(it.unitPrice),

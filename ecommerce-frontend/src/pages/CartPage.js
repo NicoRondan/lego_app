@@ -92,8 +92,16 @@ function CartPage() {
                 <tbody>
                   {cart.items.map((item) => (
                     <tr key={item.id}>
-                      <td><img src={item.thumbnailUrl} alt={item.displayName} width="60" /></td>
-                      <td>{item.displayName}</td>
+                      <td>
+                        <Link to={`/products/${item.productId}`}>
+                          <img src={item.thumbnailUrl} alt={item.displayName} width="60" />
+                        </Link>
+                      </td>
+                      <td>
+                        <Link to={`/products/${item.productId}`} className="text-decoration-none">
+                          {item.displayName}
+                        </Link>
+                      </td>
                       <td>
                         <QuantityStepper
                           value={item.quantity}
@@ -122,11 +130,15 @@ function CartPage() {
                 <div className="card mb-3" key={item.id}>
                   <div className="row g-0">
                     <div className="col-4">
-                      <img src={item.thumbnailUrl} alt={item.displayName} className="img-fluid rounded-start" />
+                      <Link to={`/products/${item.productId}`}>
+                        <img src={item.thumbnailUrl} alt={item.displayName} className="img-fluid rounded-start" />
+                      </Link>
                     </div>
                     <div className="col-8">
                       <div className="card-body">
-                        <span className="card-title h6 d-block">{item.displayName}</span>
+                        <Link to={`/products/${item.productId}`} className="card-title h6 d-block text-decoration-none">
+                          {item.displayName}
+                        </Link>
                         <QuantityStepper
                           value={item.quantity}
                           onChange={(qty) => handleUpdate(item.id, qty)}
