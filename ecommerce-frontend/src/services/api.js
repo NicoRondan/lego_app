@@ -97,6 +97,9 @@ export const getProductById = (id) => request(`/products/${id}`);
 
 export const getCategories = () => request('/categories');
 
+export const createProduct = (data) =>
+  request('/products', { method: 'POST', body: data });
+
 // Reviews
 export const getReviews = ({ limit = 10 } = {}) => {
   const params = new URLSearchParams();

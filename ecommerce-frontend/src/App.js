@@ -17,7 +17,7 @@ import WishlistPage from './pages/WishlistPage';
 import Styleguide from './pages/Styleguide';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
-import NewProductPage from './pages/NewProductPage';
+import NewProductPage from './pages/admin/NewProductPage';
 
 function App() {
   return (
