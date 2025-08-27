@@ -1,14 +1,29 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-// Component to protect routes that require authentication. If the
-// user is not logged in, redirect to the login page.
-const ProtectedRoute = ({ children }) => {
+// Component to protect routes that require authentication and optionally check
+// for a specific user role. Unauthenticated users are redirected to the login
+// page with the intended destination preserved. When a role is provided and the
+// authenticated user's role does not match, a 403 message is displayed.
+const ProtectedRoute = ({ children, role }) => {
   const { user } = useAuth();
+  const location = useLocation();
+
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={{ redirectTo: location.pathname + location.search }}
+        replace
+      />
+    );
   }
+
+  if (role && user.role !== role) {
+    return <div>403 - Forbidden</div>;
+  }
+
   return children;
 };
 
