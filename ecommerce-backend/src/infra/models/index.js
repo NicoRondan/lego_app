@@ -81,11 +81,28 @@ const WishlistItem = sequelize.define('WishlistItem', {
 const Product = sequelize.define('Product', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   code: { type: DataTypes.STRING, allowNull: false, unique: true },
+  // identity
+  slug: { type: DataTypes.STRING, unique: true },
+  setNumber: { type: DataTypes.STRING, unique: true, field: 'set_number' },
   name: { type: DataTypes.STRING, allowNull: false },
   description: { type: DataTypes.TEXT },
   price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
   currency: { type: DataTypes.STRING(3), allowNull: false },
   imageUrl: { type: DataTypes.STRING },
+  instructionsUrl: { type: DataTypes.STRING, field: 'instructions_url' },
+  // construction
+  pieceCount: { type: DataTypes.INTEGER, field: 'piece_count', defaultValue: 0 },
+  minifigCount: { type: DataTypes.INTEGER, field: 'minifig_count', defaultValue: 0 },
+  // logistics
+  weightGrams: { type: DataTypes.INTEGER, field: 'weight_grams' },
+  boxWidthMm: { type: DataTypes.INTEGER, field: 'box_width_mm' },
+  boxHeightMm: { type: DataTypes.INTEGER, field: 'box_height_mm' },
+  boxDepthMm: { type: DataTypes.INTEGER, field: 'box_depth_mm' },
+  // commercial
+  releaseYear: { type: DataTypes.INTEGER, field: 'release_year' },
+  retiredYear: { type: DataTypes.INTEGER, field: 'retired_year' },
+  // pricing
+  msrp: { type: DataTypes.DECIMAL(10,2) },
   isNew: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   isOnSale: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'active' },
@@ -97,6 +114,8 @@ const Product = sequelize.define('Product', {
     { fields: ['code'] },
     { fields: ['status'] },
     { fields: ['price'] },
+    { unique: true, fields: ['slug'] },
+    { unique: true, fields: ['set_number'] },
   ],
 });
 
@@ -207,6 +226,33 @@ const Review = sequelize.define('Review', {
   underscored: true,
 });
 
+// Product media (multiple images, instructions, etc)
+const ProductMedia = sequelize.define('ProductMedia', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  productId: { type: DataTypes.INTEGER, allowNull: false, field: 'product_id' },
+  url: { type: DataTypes.STRING, allowNull: false },
+  type: { type: DataTypes.STRING },
+}, {
+  tableName: 'product_media',
+  underscored: true,
+  indexes: [{ fields: ['product_id'] }],
+});
+
+// Product price history
+const ProductPriceHistory = sequelize.define('ProductPriceHistory', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  productId: { type: DataTypes.INTEGER, allowNull: false, field: 'product_id' },
+  price: { type: DataTypes.DECIMAL(10,2), allowNull: false },
+  recordedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: 'recorded_at' },
+}, {
+  tableName: 'product_price_history',
+  underscored: true,
+  indexes: [
+    { fields: ['product_id'] },
+    { fields: ['recorded_at'] },
+  ],
+});
+
 /*
  * Associations
  */
@@ -283,6 +329,24 @@ Coupon.hasMany(Order);
 Product.hasMany(Review, { as: 'reviews' });
 Review.belongsTo(Product);
 
+// Product media relations
+Product.hasMany(ProductMedia, { as: 'media', foreignKey: 'productId' });
+ProductMedia.belongsTo(Product, { foreignKey: 'productId' });
+
+// Product price history relations
+Product.hasMany(ProductPriceHistory, { as: 'priceHistory', foreignKey: 'productId' });
+ProductPriceHistory.belongsTo(Product, { foreignKey: 'productId' });
+
+// Hook to record price changes
+Product.addHook('afterUpdate', async (product, options) => {
+  if (product.previous('price') !== product.price) {
+    await ProductPriceHistory.create(
+      { productId: product.id, price: product.price },
+      { transaction: options.transaction }
+    );
+  }
+});
+
 // Export models and sync helper
 module.exports = {
   sequelize,
@@ -304,4 +368,6 @@ module.exports = {
   Review,
   RefreshToken,
   IdempotencyKey,
+  ProductMedia,
+  ProductPriceHistory,
 };
