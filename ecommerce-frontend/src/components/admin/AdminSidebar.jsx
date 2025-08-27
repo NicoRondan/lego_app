@@ -2,11 +2,11 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './AdminSidebar.css';
 
-// Sidebar navigation for admin pages with LEGO-styled logo
+// Sidebar navigation for admin pages
 function AdminSidebar() {
   return (
-    <aside className="admin-sidebar d-flex flex-column p-3">
-      <div className="lego-logo mb-4 text-center">LEGO</div>
+    <aside className="admin-sidebar lego-container d-flex flex-column p-3">
+      <h2 className="mb-4">Panel de administración</h2>
       <nav className="nav nav-pills flex-column">
         <NavLink
           end

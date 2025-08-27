@@ -8,7 +8,9 @@ function AdminLayout({ children }) {
       <div className="col-12 col-md-3 col-lg-2 mb-4 mb-md-0">
         <AdminSidebar />
       </div>
-      <div className="col">{children}</div>
+      <div className="col">
+        <div className="lego-container">{children}</div>
+      </div>
     </div>
   );
 }

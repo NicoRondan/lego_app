@@ -35,8 +35,16 @@ const schema = z.object({
   slug: z.string().min(1, 'Slug requerido'),
   pieces: z
     .preprocess((v) => (v === '' ? undefined : Number(v)), z.number().int().positive().optional()),
-  price: z.preprocess((v) => Number(v), z.number().nonnegative('Precio inválido')),
-  stock: z.preprocess((v) => Number(v), z.number().int().nonnegative()),
+  price: z.preprocess(
+    (v) => (v === '' ? undefined : Number(v)),
+    z.number({ required_error: 'Precio requerido' }).nonnegative('Precio inválido')
+  ),
+  stock: z.preprocess(
+    (v) => (v === '' ? undefined : Number(v)),
+    z.number({ required_error: 'Stock requerido' })
+      .int()
+      .nonnegative('Stock inválido')
+  ),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   images: z
@@ -214,7 +222,7 @@ function NewProductPage() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { price: 0, stock: 0, images: [] },
+    defaultValues: { price: '', stock: '', images: [] },
   });
 
   useEffect(() => {
@@ -244,8 +252,9 @@ function NewProductPage() {
     }
   };
 
-  const handleDraft = handleSubmit((data) => onSubmit(data, 'draft'));
-  const handlePublish = handleSubmit((data) => onSubmit(data, 'published'));
+  const onError = () => toast.error('Revisa los campos obligatorios');
+  const handleDraft = handleSubmit((data) => onSubmit(data, 'draft'), onError);
+  const handlePublish = handleSubmit((data) => onSubmit(data, 'published'), onError);
   const handleCancel = () => navigate('/admin');
 
   return (
@@ -314,27 +323,46 @@ function NewProductPage() {
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label" htmlFor="setNumber">
-                  Set # <span title="Número oficial del set">?</span>
+                  Set # <span className="text-danger">*</span>
+                  <span title="Número oficial del set" className="ms-1">?</span>
                 </label>
-                <input id="setNumber" type="text" className="form-control" {...register('setNumber')} />
+                <input
+                  id="setNumber"
+                  type="text"
+                  className="form-control"
+                  placeholder="Ej: 12345"
+                  {...register('setNumber')}
+                  required
+                />
                 {errors.setNumber && <div className="text-danger small">{errors.setNumber.message}</div>}
               </div>
               <div className="col-md-8">
                 <label className="form-label" htmlFor="name">
-                  Nombre <span title="Nombre del producto">?</span>
+                  Nombre <span className="text-danger">*</span>
+                  <span title="Nombre del producto" className="ms-1">?</span>
                 </label>
-                <input id="name" type="text" className="form-control" {...register('name')} />
+                <input
+                  id="name"
+                  type="text"
+                  className="form-control"
+                  placeholder="Nombre del producto"
+                  {...register('name')}
+                  required
+                />
                 {errors.name && <div className="text-danger small">{errors.name.message}</div>}
               </div>
               <div className="col-md-8">
                 <label className="form-label" htmlFor="slug">
-                  Slug <span title="URL amigable">?</span>
+                  Slug <span className="text-danger">*</span>
+                  <span title="URL amigable" className="ms-1">?</span>
                 </label>
                 <input
                   id="slug"
                   type="text"
                   className="form-control"
+                  placeholder="set-nombre"
                   {...register('slug', { onChange: () => setSlugTouched(true) })}
+                  required
                 />
                 {errors.slug && <div className="text-danger small">{errors.slug.message}</div>}
               </div>
@@ -345,9 +373,15 @@ function NewProductPage() {
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label" htmlFor="pieces">
-                  Piezas <span title="Cantidad de piezas">?</span>
+                  Piezas <span title="Cantidad de piezas" className="ms-1">?</span>
                 </label>
-                <input id="pieces" type="number" className="form-control" {...register('pieces')} />
+                <input
+                  id="pieces"
+                  type="number"
+                  className="form-control"
+                  placeholder="Ej: 500"
+                  {...register('pieces')}
+                />
                 {errors.pieces && <div className="text-danger small">{errors.pieces.message}</div>}
               </div>
             </div>
@@ -357,9 +391,18 @@ function NewProductPage() {
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label" htmlFor="price">
-                  Precio <span title="Precio de venta">?</span>
+                  Precio <span className="text-danger">*</span>
+                  <span title="Precio de venta" className="ms-1">?</span>
                 </label>
-                <input id="price" type="number" step="0.01" className="form-control" {...register('price')} />
+                <input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  className="form-control"
+                  placeholder="0.00"
+                  {...register('price')}
+                  required
+                />
                 {errors.price && <div className="text-danger small">{errors.price.message}</div>}
               </div>
             </div>
@@ -369,9 +412,17 @@ function NewProductPage() {
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label" htmlFor="stock">
-                  Stock <span title="Cantidad disponible">?</span>
+                  Stock <span className="text-danger">*</span>
+                  <span title="Cantidad disponible" className="ms-1">?</span>
                 </label>
-                <input id="stock" type="number" className="form-control" {...register('stock')} />
+                <input
+                  id="stock"
+                  type="number"
+                  className="form-control"
+                  placeholder="0"
+                  {...register('stock')}
+                  required
+                />
                 {errors.stock && <div className="text-danger small">{errors.stock.message}</div>}
               </div>
             </div>
@@ -384,11 +435,23 @@ function NewProductPage() {
           <div className={`tab-pane fade ${activeTab === 'seo' ? 'show active' : ''}`}>
             <div className="mb-3">
               <label className="form-label" htmlFor="metaTitle">Meta título</label>
-              <input id="metaTitle" type="text" className="form-control" {...register('metaTitle')} />
+              <input
+                id="metaTitle"
+                type="text"
+                className="form-control"
+                placeholder="Título para SEO"
+                {...register('metaTitle')}
+              />
             </div>
             <div className="mb-3">
               <label className="form-label" htmlFor="metaDescription">Meta descripción</label>
-              <textarea id="metaDescription" className="form-control" rows="3" {...register('metaDescription')}></textarea>
+              <textarea
+                id="metaDescription"
+                className="form-control"
+                rows="3"
+                placeholder="Descripción para motores de búsqueda"
+                {...register('metaDescription')}
+              ></textarea>
             </div>
           </div>
         </div>
