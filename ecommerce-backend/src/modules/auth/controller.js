@@ -24,7 +24,9 @@ exports.register = async (req, res, next) => {
     const csrfToken = crypto.randomBytes(16).toString('hex');
     const tokens = await issueTokens(user.id);
     setAuthCookies(res, { ...tokens, csrfToken });
-    res.status(201).json({ id: user.id, name: user.name, email: user.email });
+    res
+      .status(201)
+      .json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
     next(err);
   }
@@ -40,7 +42,7 @@ exports.login = async (req, res, next) => {
     const csrfToken = crypto.randomBytes(16).toString('hex');
     const tokens = await issueTokens(user.id);
     setAuthCookies(res, { ...tokens, csrfToken });
-    res.json({ id: user.id, name: user.name, email: user.email });
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
     next(err);
   }
@@ -146,12 +148,12 @@ exports.me = async (req, res, next) => {
       throw new ApiError('Unauthorized', 401);
     }
     const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'name', 'email'],
+      attributes: ['id', 'name', 'email', 'role'],
     });
     if (!user) {
       throw new ApiError('User not found', 404);
     }
-    res.json({ id: user.id, name: user.name, email: user.email });
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
     next(err);
   }
