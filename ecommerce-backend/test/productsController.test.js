@@ -35,12 +35,17 @@ test('getProducts applies filters, pagination and ordering', async () => {
   const res = { json: (data) => { output = data; } };
   await getProducts(req, res, (err) => { if (err) throw err; });
 
-  assert.deepStrictEqual(output, {
-    total: 1,
-    limit: 5,
-    page: 2,
-    items: [{ id: 1, name: 'Mock', price: 150 }],
-  });
+  assert.strictEqual(output.total, 1);
+  assert.strictEqual(output.limit, 5);
+  assert.strictEqual(output.page, 2);
+  assert.ok(Array.isArray(output.items));
+  assert.strictEqual(output.items.length, 1);
+  assert.strictEqual(output.items[0].id, 1);
+  assert.strictEqual(output.items[0].name, 'Mock');
+  assert.strictEqual(output.items[0].salePrice, 150);
+  assert.strictEqual(output.items[0].priceEffective, 150);
+  assert.strictEqual(output.items[0].isOnSale, false);
+  assert.ok(output.facets);
 
   assert.strictEqual(Product.lastArgs.limit, 5);
   assert.strictEqual(Product.lastArgs.offset, 5);

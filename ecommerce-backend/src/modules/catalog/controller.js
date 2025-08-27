@@ -8,6 +8,28 @@ const { Product, Category, Review, User } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 const { logger } = require('../../shared/logger');
 
+// Helper to enrich product responses with derived fields
+function serializeProduct(product) {
+  const plain = typeof product.toJSON === 'function' ? product.toJSON() : product;
+  const msrp = plain.msrp != null ? parseFloat(plain.msrp) : null;
+  const salePrice = plain.price != null ? parseFloat(plain.price) : null;
+  const priceEffective = salePrice != null ? salePrice : msrp;
+  const isOnSale =
+    salePrice != null && msrp != null ? salePrice < msrp : !!plain.isOnSale;
+  const currentYear = new Date().getFullYear();
+  const isNew =
+    plain.isNew || (plain.releaseYear && plain.releaseYear >= currentYear - 1);
+  return {
+    ...plain,
+    msrp,
+    salePrice,
+    priceEffective,
+    isOnSale,
+    isNew,
+    primaryImageUrl: plain.imageUrl,
+  };
+}
+
 // GET /products
 exports.getProducts = async (req, res, next) => {
   const log = req.log || logger;
@@ -19,6 +41,16 @@ exports.getProducts = async (req, res, next) => {
       theme,
       minPrice,
       maxPrice,
+      slug,
+      setNumber,
+      minPieces,
+      maxPieces,
+      ageMin,
+      ageMax,
+      status,
+      visibility,
+      isOnSale,
+      isNew,
       page = 1,
       limit = 10,
       order = 'price_asc',
@@ -45,11 +77,34 @@ exports.getProducts = async (req, res, next) => {
       }
     }
 
-    if (minPrice || maxPrice) {
+    if (minPrice !== undefined || maxPrice !== undefined) {
       where.price = {};
-      if (minPrice) where.price[Op.gte] = parseFloat(minPrice);
-      if (maxPrice) where.price[Op.lte] = parseFloat(maxPrice);
+      if (minPrice !== undefined) where.price[Op.gte] = parseFloat(minPrice);
+      if (maxPrice !== undefined) where.price[Op.lte] = parseFloat(maxPrice);
     }
+
+    if (slug) where.slug = slug;
+    if (setNumber) where.setNumber = setNumber;
+
+    if (minPieces !== undefined || maxPieces !== undefined) {
+      where.pieceCount = {};
+      if (minPieces !== undefined) where.pieceCount[Op.gte] = minPieces;
+      if (maxPieces !== undefined) where.pieceCount[Op.lte] = maxPieces;
+    }
+
+    if (ageMin !== undefined || ageMax !== undefined) {
+      const currentYear = new Date().getFullYear();
+      where.releaseYear = where.releaseYear || {};
+      if (ageMin !== undefined)
+        where.releaseYear[Op.lte] = currentYear - ageMin;
+      if (ageMax !== undefined)
+        where.releaseYear[Op.gte] = currentYear - ageMax;
+    }
+
+    if (status) where.status = status;
+    if (visibility && Product.rawAttributes.visibility) where.visibility = visibility;
+    if (typeof isOnSale === 'boolean') where.isOnSale = isOnSale;
+    if (typeof isNew === 'boolean') where.isNew = isNew;
 
     if (theme) {
       const themePattern = `%${theme}%`;
@@ -79,9 +134,41 @@ exports.getProducts = async (req, res, next) => {
     const offset = (pageNum - 1) * limitNum;
 
     let orderBy = [];
-    if (order === 'price_desc') orderBy = [['price', 'DESC']];
-    else if (order === 'price_asc') orderBy = [['price', 'ASC']];
-    else orderBy = [['id', 'ASC']];
+    switch (order) {
+      case 'price_desc':
+        orderBy = [['price', 'DESC']];
+        break;
+      case 'price_asc':
+        orderBy = [['price', 'ASC']];
+        break;
+      case 'msrp_desc':
+        orderBy = [['msrp', 'DESC']];
+        break;
+      case 'msrp_asc':
+        orderBy = [['msrp', 'ASC']];
+        break;
+      case 'newest':
+        orderBy = [['releaseYear', 'DESC']];
+        break;
+      case 'oldest':
+        orderBy = [['releaseYear', 'ASC']];
+        break;
+      case 'name_desc':
+        orderBy = [['name', 'DESC']];
+        break;
+      case 'name_asc':
+        orderBy = [['name', 'ASC']];
+        break;
+      case 'pieces_desc':
+        orderBy = [['pieceCount', 'DESC']];
+        break;
+      case 'pieces_asc':
+        orderBy = [['pieceCount', 'ASC']];
+        break;
+      default:
+        orderBy = [['id', 'ASC']];
+        break;
+    }
 
     const result = await Product.findAndCountAll({
       where,
@@ -92,12 +179,27 @@ exports.getProducts = async (req, res, next) => {
       distinct: true,
     });
 
+      const items = result.rows.map(serializeProduct);
+
+      // simple facet counts based on returned items
+      const facets = { status: {}, visibility: {}, isOnSale: {}, isNew: {} };
+      for (const p of items) {
+        if (p.status) facets.status[p.status] = (facets.status[p.status] || 0) + 1;
+        if (p.visibility)
+          facets.visibility[p.visibility] = (facets.visibility[p.visibility] || 0) + 1;
+        facets.isOnSale[p.isOnSale ? 'true' : 'false'] =
+          (facets.isOnSale[p.isOnSale ? 'true' : 'false'] || 0) + 1;
+        facets.isNew[p.isNew ? 'true' : 'false'] =
+          (facets.isNew[p.isNew ? 'true' : 'false'] || 0) + 1;
+      }
+
       log.info({ total: result.count }, 'Products fetched');
       res.json({
         total: result.count,
         limit: limitNum,
         page: pageNum,
-        items: result.rows,
+        items,
+        facets,
       });
     } catch (err) {
       log.error({ err }, 'Error fetching products');
@@ -111,7 +213,9 @@ exports.getProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
     log.info({ id }, 'Fetching product by id');
-    const product = await Product.findByPk(id, {
+    const whereClause = isNaN(parseInt(id, 10)) ? { slug: id } : { id };
+    const product = await Product.findOne({
+      where: whereClause,
       include: [
         { model: Category, as: 'categories', through: { attributes: [] } },
         { model: Review, as: 'reviews', include: [{ model: User, attributes: ['id', 'name'] }] },
@@ -119,7 +223,7 @@ exports.getProductById = async (req, res, next) => {
     });
     if (!product) throw new ApiError('Product not found', 404);
     log.info({ id }, 'Product fetched');
-    res.json(product);
+    res.json(serializeProduct(product));
   } catch (err) {
     log.error({ err }, 'Error fetching product by id');
     next(err);
