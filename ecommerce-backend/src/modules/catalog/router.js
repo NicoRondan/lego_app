@@ -1,7 +1,7 @@
 // src/modules/catalog/router.js
-// Routes related to product catalog and categories. Provides endpoints
+// Routes related to product catalog. Provides endpoints
 // for listing products with optional filters and retrieving individual
-// products or categories. These routes are unauthenticated.
+// products. These routes are unauthenticated.
 
 const express = require('express');
 const router = express.Router();
@@ -10,10 +10,7 @@ const controller = require('./controller');
 // GET /products?search=&theme=&minPrice=&maxPrice=&page=&limit=&order=
 router.get('/', controller.getProducts);
 
-// GET /products/:id
-router.get('/:id', controller.getProductById);
-
-// GET /categories (aliased to /categories path in server.js)
-router.get('/categories', controller.getCategories);
+// GET /products/:idOrSlug
+router.get('/:idOrSlug', controller.getProductById);
 
 module.exports = router;
