@@ -113,4 +113,4 @@ exports.create = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { computeSegmentSize };
+module.exports = { list: exports.list, create: exports.create, computeSegmentSize };
