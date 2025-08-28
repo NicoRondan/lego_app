@@ -81,8 +81,8 @@ describe('InventoryPage', () => {
     const qtyInput = modal.querySelector('input[type="number"]');
     qtyInput.value = '2';
     qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
-    const applyBtn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent.includes('Aplicar'));
-    await act(async () => { applyBtn.click(); });
+    const form = modal.closest('.modal-content').querySelector('form') || modal.querySelector('form') || document.querySelector('.modal.show form');
+    await act(async () => { form.dispatchEvent(new Event('submit', { bubbles: true })); });
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     expect(api.adminAdjustInventory).toHaveBeenCalled();

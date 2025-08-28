@@ -49,7 +49,7 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
   };
   const submitAdjust = async (e) => {
     e.preventDefault();
-    const n = parseInt(adjustQty, 10);
+    const n = parseInt(adjustQty || e?.currentTarget?.form?.qty?.value || e?.target?.form?.qty?.value, 10);
     if (!Number.isInteger(n) || n <= 0) return alert('Ingrese un entero mayor a 0');
     const qty = adjustSign * n;
     await adminAdjustInventory(item.productId, { qty, reason: adjustReason || '' });
@@ -60,7 +60,7 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
   const openSafety = () => { setSafetyVal(String(item.safetyStock || 0)); setSafetyOpen(true); };
   const submitSafety = async (e) => {
     e.preventDefault();
-    const safetyStock = parseInt(safetyVal, 10);
+    const safetyStock = parseInt(safetyVal || e?.currentTarget?.form?.safetyStock?.value || e?.target?.form?.safetyStock?.value, 10);
     if (!Number.isInteger(safetyStock) || safetyStock < 0) return alert('Valor inválido');
     await adminUpdateSafetyStock(item.productId, { safetyStock });
     setSafetyOpen(false);
