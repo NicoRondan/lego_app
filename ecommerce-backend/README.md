@@ -308,6 +308,27 @@ Endpoints disponibles:
 | POST   | `/payments/mp/preference` | Genera una preferencia de pago en Mercado Pago |
 | POST   | `/webhooks/mp` | Recibe notificaciones de Mercado Pago |
 
+### Reportes (Admin)
+
+Endpoints bajo `/admin/reports` protegidos con rol `admin`.
+
+- `GET /admin/reports/sales/summary?from=&to=&groupBy=day|week|month&status=paid,shipped,delivered&format=csv`
+  - Devuelve `buckets[]` con: `periodStart`, `orders`, `qty`, `gross`, `discount`, `net`, `avgOrderValue`.
+  - `groupBy=week` agrupa por semana iniciando en lunes.
+  - `from`/`to` aceptan `YYYY-MM-DD`. Si `format=csv` responde como `text/csv` para descarga.
+
+- `GET /admin/reports/sales/by-theme?from=&to=&status=&format=csv`
+  - Devuelve `rows[]` por tema (categoría): `theme`, `orders`, `qty`, `net`.
+  - El neto se prorratea por línea en función del subtotal de cada pedido.
+
+- `GET /admin/reports/sales/top-products?from=&to=&status=&limit=10&format=csv`
+  - Devuelve `rows[]` con `productId`, `setNumber`, `name`, `qty`, `net`, ordenado por `qty desc`.
+
+- `GET /admin/reports/stock/low?threshold=&format=csv`
+  - Devuelve `rows[]` con `productId`, `name`, `stock`, `reserved`, `safetyStock` y filtra `stock - reserved <= safetyStock`.
+
+Índices usados: `orders(status)`, `orders(created_at)`, `order_items(order_id)`. Para SQLite se utilizan expresiones `date()` con parámetros `YYYY-MM-DD` para asegurar comparaciones correctas.
+
 Los campos monetarios como `subtotal` y `total` se devuelven como cadenas con dos decimales,
 por ejemplo `"19.99"`.
 

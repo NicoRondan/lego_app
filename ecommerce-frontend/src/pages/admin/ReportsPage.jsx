@@ -61,7 +61,10 @@ function ReportsPage() {
   const [pageTheme, setPageTheme] = useState(1);
   const [pageTop, setPageTop] = useState(1);
   const [pageStock, setPageStock] = useState(1);
-  const pageSize = 20;
+  const [pageSizeSummary, setPageSizeSummary] = useState(20);
+  const [pageSizeTheme, setPageSizeTheme] = useState(20);
+  const [pageSizeTop, setPageSizeTop] = useState(20);
+  const [pageSizeStock, setPageSizeStock] = useState(20);
 
   const statusParam = useMemo(() => (statuses.length ? statuses.join(',') : ''), [statuses]);
 
@@ -123,31 +126,31 @@ function ReportsPage() {
   // Paged slices
   const pagedBuckets = useMemo(() => {
     const all = summary?.buckets || [];
-    const start = (pageSummary - 1) * pageSize;
-    return all.slice(start, start + pageSize);
-  }, [summary, pageSummary]);
-  const totalPagesSummary = useMemo(() => Math.max(1, Math.ceil((summary?.buckets?.length || 0) / pageSize)), [summary]);
+    const start = (pageSummary - 1) * pageSizeSummary;
+    return all.slice(start, start + pageSizeSummary);
+  }, [summary, pageSummary, pageSizeSummary]);
+  const totalPagesSummary = useMemo(() => Math.max(1, Math.ceil((summary?.buckets?.length || 0) / pageSizeSummary)), [summary, pageSizeSummary]);
 
   const pagedTheme = useMemo(() => {
     const all = byTheme?.rows || [];
-    const start = (pageTheme - 1) * pageSize;
-    return all.slice(start, start + pageSize);
-  }, [byTheme, pageTheme]);
-  const totalPagesTheme = useMemo(() => Math.max(1, Math.ceil((byTheme?.rows?.length || 0) / pageSize)), [byTheme]);
+    const start = (pageTheme - 1) * pageSizeTheme;
+    return all.slice(start, start + pageSizeTheme);
+  }, [byTheme, pageTheme, pageSizeTheme]);
+  const totalPagesTheme = useMemo(() => Math.max(1, Math.ceil((byTheme?.rows?.length || 0) / pageSizeTheme)), [byTheme, pageSizeTheme]);
 
   const pagedTop = useMemo(() => {
     const all = topSets?.rows || [];
-    const start = (pageTop - 1) * pageSize;
-    return all.slice(start, start + pageSize);
-  }, [topSets, pageTop]);
-  const totalPagesTop = useMemo(() => Math.max(1, Math.ceil((topSets?.rows?.length || 0) / pageSize)), [topSets]);
+    const start = (pageTop - 1) * pageSizeTop;
+    return all.slice(start, start + pageSizeTop);
+  }, [topSets, pageTop, pageSizeTop]);
+  const totalPagesTop = useMemo(() => Math.max(1, Math.ceil((topSets?.rows?.length || 0) / pageSizeTop)), [topSets, pageSizeTop]);
 
   const pagedStock = useMemo(() => {
     const all = lowStock?.rows || [];
-    const start = (pageStock - 1) * pageSize;
-    return all.slice(start, start + pageSize);
-  }, [lowStock, pageStock]);
-  const totalPagesStock = useMemo(() => Math.max(1, Math.ceil((lowStock?.rows?.length || 0) / pageSize)), [lowStock]);
+    const start = (pageStock - 1) * pageSizeStock;
+    return all.slice(start, start + pageSizeStock);
+  }, [lowStock, pageStock, pageSizeStock]);
+  const totalPagesStock = useMemo(() => Math.max(1, Math.ceil((lowStock?.rows?.length || 0) / pageSizeStock)), [lowStock, pageSizeStock]);
 
   const exportCsv = (endpoint) => {
     const params = new URLSearchParams();
@@ -238,12 +241,12 @@ function ReportsPage() {
                 <thead>
                   <tr>
                     <th>Periodo</th>
-                    <th>Pedidos</th>
-                    <th>Qty</th>
-                    <th>Gross</th>
-                    <th>Desc.</th>
-                    <th>Net</th>
-                    <th>AOV</th>
+                    <th>Pedidos<InfoTooltip text="Número de órdenes en el período" /></th>
+                    <th>Qty<InfoTooltip text="Unidades vendidas" /></th>
+                    <th>Gross<InfoTooltip text="Suma de (precio x cantidad)" /></th>
+                    <th>Desc.<InfoTooltip text="Total de descuentos aplicados (cupones/ofertas)" /></th>
+                    <th>Net<InfoTooltip text="Gross - Descuentos" /></th>
+                    <th>AOV<InfoTooltip text="Average Order Value" /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -262,10 +265,18 @@ function ReportsPage() {
               </table>
               <div className="d-flex justify-content-between align-items-center">
                 <div>Mostrando {pagedBuckets.length} de {summary?.buckets?.length || 0}</div>
-                <div className="btn-group">
-                  <button className="btn btn-outline-secondary" disabled={pageSummary<=1} onClick={()=>setPageSummary(pageSummary-1)}>«</button>
-                  <span className="btn btn-outline-secondary disabled">{pageSummary} / {totalPagesSummary}</span>
-                  <button className="btn btn-outline-secondary" disabled={pageSummary>=totalPagesSummary} onClick={()=>setPageSummary(pageSummary+1)}>»</button>
+                <div className="d-flex align-items-center gap-2">
+                  <label className="form-label m-0">Por página</label>
+                  <select className="form-select form-select-sm" style={{width: 'auto'}} value={pageSizeSummary} onChange={(e)=>{setPageSizeSummary(parseInt(e.target.value,10)); setPageSummary(1);}}>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <div className="btn-group">
+                    <button className="btn btn-outline-secondary" disabled={pageSummary<=1} onClick={()=>setPageSummary(pageSummary-1)}>«</button>
+                    <span className="btn btn-outline-secondary disabled">{pageSummary} / {totalPagesSummary}</span>
+                    <button className="btn btn-outline-secondary" disabled={pageSummary>=totalPagesSummary} onClick={()=>setPageSummary(pageSummary+1)}>»</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -285,9 +296,9 @@ function ReportsPage() {
                 <thead>
                   <tr>
                     <th>Tema</th>
-                    <th>Pedidos</th>
-                    <th>Qty</th>
-                    <th>Net</th>
+                    <th>Pedidos<InfoTooltip text="Órdenes que incluyen productos del tema" /></th>
+                    <th>Qty<InfoTooltip text="Unidades vendidas (acumulado del tema)" /></th>
+                    <th>Net<InfoTooltip text="Ingresos netos atribuidos al tema" /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -304,10 +315,18 @@ function ReportsPage() {
               </table>
               <div className="d-flex justify-content-between align-items-center">
                 <div>Mostrando {pagedTheme.length} de {byTheme?.rows?.length || 0}</div>
-                <div className="btn-group">
-                  <button className="btn btn-outline-secondary" disabled={pageTheme<=1} onClick={()=>setPageTheme(pageTheme-1)}>«</button>
-                  <span className="btn btn-outline-secondary disabled">{pageTheme} / {totalPagesTheme}</span>
-                  <button className="btn btn-outline-secondary" disabled={pageTheme>=totalPagesTheme} onClick={()=>setPageTheme(pageTheme+1)}>»</button>
+                <div className="d-flex align-items-center gap-2">
+                  <label className="form-label m-0">Por página</label>
+                  <select className="form-select form-select-sm" style={{width: 'auto'}} value={pageSizeTheme} onChange={(e)=>{setPageSizeTheme(parseInt(e.target.value,10)); setPageTheme(1);}}>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <div className="btn-group">
+                    <button className="btn btn-outline-secondary" disabled={pageTheme<=1} onClick={()=>setPageTheme(pageTheme-1)}>«</button>
+                    <span className="btn btn-outline-secondary disabled">{pageTheme} / {totalPagesTheme}</span>
+                    <button className="btn btn-outline-secondary" disabled={pageTheme>=totalPagesTheme} onClick={()=>setPageTheme(pageTheme+1)}>»</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -328,8 +347,8 @@ function ReportsPage() {
                   <tr>
                     <th>Set</th>
                     <th>Nombre</th>
-                    <th>Qty</th>
-                    <th>Net</th>
+                    <th>Qty<InfoTooltip text="Unidades vendidas del set" /></th>
+                    <th>Net<InfoTooltip text="Ingresos netos del set" /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -346,10 +365,18 @@ function ReportsPage() {
               </table>
               <div className="d-flex justify-content-between align-items-center">
                 <div>Mostrando {pagedTop.length} de {topSets?.rows?.length || 0}</div>
-                <div className="btn-group">
-                  <button className="btn btn-outline-secondary" disabled={pageTop<=1} onClick={()=>setPageTop(pageTop-1)}>«</button>
-                  <span className="btn btn-outline-secondary disabled">{pageTop} / {totalPagesTop}</span>
-                  <button className="btn btn-outline-secondary" disabled={pageTop>=totalPagesTop} onClick={()=>setPageTop(pageTop+1)}>»</button>
+                <div className="d-flex align-items-center gap-2">
+                  <label className="form-label m-0">Por página</label>
+                  <select className="form-select form-select-sm" style={{width: 'auto'}} value={pageSizeTop} onChange={(e)=>{setPageSizeTop(parseInt(e.target.value,10)); setPageTop(1);}}>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <div className="btn-group">
+                    <button className="btn btn-outline-secondary" disabled={pageTop<=1} onClick={()=>setPageTop(pageTop-1)}>«</button>
+                    <span className="btn btn-outline-secondary disabled">{pageTop} / {totalPagesTop}</span>
+                    <button className="btn btn-outline-secondary" disabled={pageTop>=totalPagesTop} onClick={()=>setPageTop(pageTop+1)}>»</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -378,10 +405,10 @@ function ReportsPage() {
                 <thead>
                   <tr>
                     <th>Producto</th>
-                    <th>Stock</th>
-                    <th>Reservado</th>
-                    <th>Safety</th>
-                    <th>Disponible</th>
+                    <th>Stock<InfoTooltip text="Stock actual en catálogo" /></th>
+                    <th>Reservado<InfoTooltip text="Unidades comprometidas en órdenes pendientes/pagadas/picking" /></th>
+                    <th>Safety<InfoTooltip text="Umbral de seguridad (parámetro del reporte)" /></th>
+                    <th>Disponible<InfoTooltip text="Stock - Reservado" /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -399,10 +426,18 @@ function ReportsPage() {
               </table>
               <div className="d-flex justify-content-between align-items-center">
                 <div>Mostrando {pagedStock.length} de {lowStock?.rows?.length || 0}</div>
-                <div className="btn-group">
-                  <button className="btn btn-outline-secondary" disabled={pageStock<=1} onClick={()=>setPageStock(pageStock-1)}>«</button>
-                  <span className="btn btn-outline-secondary disabled">{pageStock} / {totalPagesStock}</span>
-                  <button className="btn btn-outline-secondary" disabled={pageStock>=totalPagesStock} onClick={()=>setPageStock(pageStock+1)}>»</button>
+                <div className="d-flex align-items-center gap-2">
+                  <label className="form-label m-0">Por página</label>
+                  <select className="form-select form-select-sm" style={{width: 'auto'}} value={pageSizeStock} onChange={(e)=>{setPageSizeStock(parseInt(e.target.value,10)); setPageStock(1);}}>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <div className="btn-group">
+                    <button className="btn btn-outline-secondary" disabled={pageStock<=1} onClick={()=>setPageStock(pageStock-1)}>«</button>
+                    <span className="btn btn-outline-secondary disabled">{pageStock} / {totalPagesStock}</span>
+                    <button className="btn btn-outline-secondary" disabled={pageStock>=totalPagesStock} onClick={()=>setPageStock(pageStock+1)}>»</button>
+                  </div>
                 </div>
               </div>
             </div>

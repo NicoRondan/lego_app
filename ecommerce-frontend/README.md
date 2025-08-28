@@ -99,6 +99,17 @@ los colores semánticos o ajustar valores específicos.
 
 - Página de cupones: `/admin/coupons` para crear, editar y filtrar cupones (requiere usuario con rol `admin`).
 
+### Reportes
+
+- Página: `/admin/reports` (solo `admin`).
+- Tabs: Ventas, Por tema, Top sets, Bajo stock.
+- Filtros:
+  - Rango de fechas (`Desde/Hasta`) con presets: Últimos 7 días, Últimos 30 días, Este mes, Mes anterior.
+  - Estados por defecto: `pending, picking, paid, shipped, delivered` (multi toggle).
+  - Agrupar por: día, semana (lunes), mes.
+- KPIs con tooltips: Pedidos, Net, AOV (Net/Órdenes), % OFF prom. (Descuento/Gross).
+- Tablas con paginación en cliente (10/20/50 por página) y exportación CSV.
+
 ## Carrito y cupones
 
 - En Checkout se puede aplicar/quitar un cupón y ver el descuento reflejado en el total.
