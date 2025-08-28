@@ -22,9 +22,11 @@ exports.register = async (req, res, next) => {
     const passwordHash = await hashPassword(password);
     const user = await User.create({ name, email, passwordHash });
     const csrfToken = crypto.randomBytes(16).toString('hex');
-    const tokens = await issueTokens(user.id);
+    const tokens = await issueTokens(user.id, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
-    res.status(201).json({ id: user.id, name: user.name, email: user.email });
+    res
+      .status(201)
+      .json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
     next(err);
   }
@@ -38,9 +40,9 @@ exports.login = async (req, res, next) => {
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) throw new ApiError('Invalid credentials', 401);
     const csrfToken = crypto.randomBytes(16).toString('hex');
-    const tokens = await issueTokens(user.id);
+    const tokens = await issueTokens(user.id, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
-    res.json({ id: user.id, name: user.name, email: user.email });
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
     next(err);
   }
@@ -57,7 +59,8 @@ exports.refresh = async (req, res, next) => {
     }
     await stored.update({ revokedAt: new Date() });
     const csrfToken = crypto.randomBytes(16).toString('hex');
-    const tokens = await issueTokens(stored.userId);
+    const user = await User.findByPk(stored.userId);
+    const tokens = await issueTokens(stored.userId, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
     res.json({ ok: true });
   } catch (err) {
@@ -132,7 +135,7 @@ exports.oauthGoogleCallback = async (req, res, next) => {
     }
     await SocialIdentity.findOrCreate({ where: { provider: 'google', providerId, userId: user.id } });
     const csrfToken = crypto.randomBytes(16).toString('hex');
-    const tokens = await issueTokens(user.id);
+    const tokens = await issueTokens(user.id, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
     res.redirect(`${stored.redirect_uri}?ok=1`);
   } catch (err) {
@@ -146,12 +149,12 @@ exports.me = async (req, res, next) => {
       throw new ApiError('Unauthorized', 401);
     }
     const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'name', 'email'],
+      attributes: ['id', 'name', 'email', 'role'],
     });
     if (!user) {
       throw new ApiError('User not found', 404);
     }
-    res.json({ id: user.id, name: user.name, email: user.email });
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
     next(err);
   }

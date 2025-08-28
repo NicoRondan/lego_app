@@ -62,8 +62,23 @@ function ProductDetailPage() {
   }
   return (
     <div>
+      {product.primaryImageUrl && (
+        <img
+          src={product.primaryImageUrl}
+          alt={product.name}
+          className="img-fluid mb-3"
+        />
+      )}
       <h2>{product.name}</h2>
       <p>{product.description}</p>
+      {product.recommendedAgeMin != null && product.recommendedAgeMax != null && (
+        <p>
+          Edad recomendada: {product.recommendedAgeMin}
+          {product.recommendedAgeMax !== product.recommendedAgeMin
+            ? `-${product.recommendedAgeMax}`
+            : '+'}
+        </p>
+      )}
       <p className="fw-bold">Precio: ${parseFloat(product.price).toFixed(2)}</p>
       <p>
         Categorías: {product.categories && product.categories.map((c) => c.name).join(', ')}

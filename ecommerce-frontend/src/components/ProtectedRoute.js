@@ -10,6 +10,13 @@ const ProtectedRoute = ({ children, role }) => {
   const { user } = useAuth();
   const location = useLocation();
 
+  // While the authentication status is loading (`user` is `undefined`),
+  // avoid redirecting the user. This prevents flickering and unwanted
+  // redirects when the user actually has an active session.
+  if (user === undefined) {
+    return null;
+  }
+
   if (!user) {
     return (
       <Navigate

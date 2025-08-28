@@ -24,13 +24,20 @@ function generateVerifier() {
 }
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  // `user` starts as `undefined` so consumers can distinguish between
+  // the initial loading state and an unauthenticated session. This
+  // allows protected routes to wait for `fetchMe` to resolve instead of
+  // immediately redirecting to the login page.
+  const [user, setUser] = useState();
 
   const fetchMe = async () => {
     try {
       const u = await api.getMe();
       setUser(u);
     } catch {
+      // When the request fails (e.g. unauthenticated), explicitly set
+      // the user to `null` to indicate the absence of an authenticated
+      // session.
       setUser(null);
     }
   };

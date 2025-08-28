@@ -6,6 +6,10 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
+const { requireRole } = require('../../shared/middlewares');
+
+// POST /products
+router.post('/', requireRole('admin'), controller.createProduct);
 
 // GET /products?search=&theme=&minPrice=&maxPrice=&page=&limit=&order=
 router.get('/', controller.getProducts);

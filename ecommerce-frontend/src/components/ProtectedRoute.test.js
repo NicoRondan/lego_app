@@ -20,6 +20,27 @@ describe('ProtectedRoute', () => {
     mockUser = null;
   });
 
+  it('renders nothing while auth status is loading', () => {
+    mockUser = undefined;
+    const container = document.createElement('div');
+    ReactDOM.render(
+      <MemoryRouter initialEntries={['/secret']}>
+        <Routes>
+          <Route
+            path="/secret"
+            element={
+              <ProtectedRoute>
+                <div>Secret</div>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+      container,
+    );
+    expect(container.textContent).toBe('');
+  });
+
   it('redirects unauthenticated users to login preserving redirect', () => {
     const container = document.createElement('div');
     act(() => {

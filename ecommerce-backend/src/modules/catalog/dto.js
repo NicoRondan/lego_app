@@ -92,4 +92,108 @@ function parseGetProducts(query) {
   return result;
 }
 
-module.exports = { parseGetProducts };
+function parseCreateProduct(body) {
+  const {
+    setNumber,
+    name,
+    slug,
+    price,
+    stock,
+    pieces,
+    description,
+    releaseYear,
+    categories,
+    status,
+    code,
+    currency,
+    imageUrl,
+    recommendedAgeMin,
+    recommendedAgeMax,
+    minifigCount,
+    weightGrams,
+    boxWidthMm,
+    boxHeightMm,
+    boxDepthMm,
+  } = body;
+  if (!setNumber) throw new ApiError('setNumber is required', 400);
+  if (!name) throw new ApiError('name is required', 400);
+  if (!slug) throw new ApiError('slug is required', 400);
+  if (!description) throw new ApiError('description is required', 400);
+  if (releaseYear === undefined)
+    throw new ApiError('releaseYear is required', 400);
+  const priceNum = parseFloat(price);
+  if (isNaN(priceNum)) throw new ApiError('price must be a number', 400);
+  const stockNum = parseInt(stock, 10);
+  if (isNaN(stockNum)) throw new ApiError('stock must be an integer', 400);
+  if (recommendedAgeMin === undefined)
+    throw new ApiError('recommendedAgeMin is required', 400);
+  if (recommendedAgeMax === undefined)
+    throw new ApiError('recommendedAgeMax is required', 400);
+  const ageMinNum = parseInt(recommendedAgeMin, 10);
+  const ageMaxNum = parseInt(recommendedAgeMax, 10);
+  if (isNaN(ageMinNum) || ageMinNum < 0)
+    throw new ApiError('recommendedAgeMin must be a non-negative integer', 400);
+  if (isNaN(ageMaxNum) || ageMaxNum < 0)
+    throw new ApiError('recommendedAgeMax must be a non-negative integer', 400);
+  if (ageMaxNum < ageMinNum)
+    throw new ApiError('recommendedAgeMax must be greater or equal to recommendedAgeMin', 400);
+  const releaseYearNum = parseInt(releaseYear, 10);
+  if (isNaN(releaseYearNum))
+    throw new ApiError('releaseYear must be an integer', 400);
+  const result = {
+    setNumber: String(setNumber),
+    name: String(name),
+    slug: String(slug),
+    description: String(description),
+    price: priceNum,
+    stock: stockNum,
+    recommendedAgeMin: ageMinNum,
+    recommendedAgeMax: ageMaxNum,
+    releaseYear: releaseYearNum,
+    code: String(code || setNumber),
+    currency: String(currency || 'USD'),
+  };
+  if (pieces !== undefined) {
+    const piecesNum = parseInt(pieces, 10);
+    if (isNaN(piecesNum)) throw new ApiError('pieces must be an integer', 400);
+    result.pieceCount = piecesNum;
+  }
+  if (Array.isArray(categories)) {
+    result.categories = categories.map((c) => String(c));
+  }
+  if (minifigCount !== undefined) {
+    const miniNum = parseInt(minifigCount, 10);
+    if (isNaN(miniNum) || miniNum < 0)
+      throw new ApiError('minifigCount must be a non-negative integer', 400);
+    result.minifigCount = miniNum;
+  }
+  if (weightGrams !== undefined) {
+    const weightNum = parseInt(weightGrams, 10);
+    if (isNaN(weightNum) || weightNum < 0)
+      throw new ApiError('weightGrams must be a non-negative integer', 400);
+    result.weightGrams = weightNum;
+  }
+  if (boxWidthMm !== undefined) {
+    const widthNum = parseInt(boxWidthMm, 10);
+    if (isNaN(widthNum) || widthNum < 0)
+      throw new ApiError('boxWidthMm must be a non-negative integer', 400);
+    result.boxWidthMm = widthNum;
+  }
+  if (boxHeightMm !== undefined) {
+    const heightNum = parseInt(boxHeightMm, 10);
+    if (isNaN(heightNum) || heightNum < 0)
+      throw new ApiError('boxHeightMm must be a non-negative integer', 400);
+    result.boxHeightMm = heightNum;
+  }
+  if (boxDepthMm !== undefined) {
+    const depthNum = parseInt(boxDepthMm, 10);
+    if (isNaN(depthNum) || depthNum < 0)
+      throw new ApiError('boxDepthMm must be a non-negative integer', 400);
+    result.boxDepthMm = depthNum;
+  }
+  if (status !== undefined) result.status = String(status);
+  if (imageUrl !== undefined) result.imageUrl = String(imageUrl);
+  return result;
+}
+
+module.exports = { parseGetProducts, parseCreateProduct };

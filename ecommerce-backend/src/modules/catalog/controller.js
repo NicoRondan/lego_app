@@ -30,6 +30,31 @@ function serializeProduct(product) {
   };
 }
 
+// POST /products
+exports.createProduct = async (req, res, next) => {
+  const log = req.log || logger;
+  try {
+    log.info({ body: req.body }, 'Creating product');
+    const dto = require('./dto');
+    const data = dto.parseCreateProduct(req.body);
+    const { categories = [], ...productData } = data;
+    const product = await Product.create(productData);
+    if (categories.length) {
+      const cats = [];
+      for (const name of categories) {
+        const [cat] = await Category.findOrCreate({ where: { name } });
+        cats.push(cat);
+      }
+      await product.setCategories(cats);
+    }
+    log.info({ id: product.id }, 'Product created');
+    res.status(201).json(product);
+  } catch (err) {
+    log.error({ err }, 'Error creating product');
+    next(err);
+  }
+};
+
 // GET /products
 exports.getProducts = async (req, res, next) => {
   const log = req.log || logger;
@@ -207,13 +232,15 @@ exports.getProducts = async (req, res, next) => {
     }
   };
 
-// GET /products/:id
+// GET /products/:idOrSlug
 exports.getProductById = async (req, res, next) => {
   const log = req.log || logger;
   try {
-    const { id } = req.params;
-    log.info({ id }, 'Fetching product by id');
-    const whereClause = isNaN(parseInt(id, 10)) ? { slug: id } : { id };
+    const { idOrSlug } = req.params;
+    log.info({ idOrSlug }, 'Fetching product');
+    const whereClause = /^\d+$/.test(idOrSlug)
+      ? { id: parseInt(idOrSlug, 10) }
+      : { slug: idOrSlug };
     const product = await Product.findOne({
       where: whereClause,
       include: [
@@ -222,7 +249,7 @@ exports.getProductById = async (req, res, next) => {
       ],
     });
     if (!product) throw new ApiError('Product not found', 404);
-    log.info({ id }, 'Product fetched');
+    log.info({ idOrSlug }, 'Product fetched');
     res.json(serializeProduct(product));
   } catch (err) {
     log.error({ err }, 'Error fetching product by id');
