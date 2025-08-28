@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { createProduct, getCategories } from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout';
 import InfoTooltip from '../../components/InfoTooltip';
+import AgeRangeSlider from '../../components/AgeRangeSlider';
 
 // Minimal resolver to integrate Zod with React Hook Form without extra deps
 const zodResolver = (schema) => async (values) => {
@@ -458,40 +459,16 @@ function NewProductPage() {
                   Edad recomendada <span className="text-danger">*</span>
                   <InfoTooltip text="Rango de edades sugerido" />
                 </label>
-                <div className="px-2 position-relative" style={{ height: '38px' }}>
-                  <input
-                    type="range"
-                    min="0"
-                    max="99"
-                    value={watch('recommendedAgeMin')}
-                    onChange={(e) =>
-                      setValue(
-                        'recommendedAgeMin',
-                        Math.min(Number(e.target.value), watch('recommendedAgeMax'))
-                      )
-                    }
-                    className="form-range position-absolute top-0 start-0 w-100"
-                    style={{ zIndex: 5 }}
-                  />
-                  <input
-                    type="range"
-                    min="0"
-                    max="99"
-                    value={watch('recommendedAgeMax')}
-                    onChange={(e) =>
-                      setValue(
-                        'recommendedAgeMax',
-                        Math.max(Number(e.target.value), watch('recommendedAgeMin'))
-                      )
-                    }
-                    className="form-range position-absolute top-0 start-0 w-100"
-                    style={{ zIndex: 4 }}
-                  />
-                  <div className="d-flex justify-content-between small mt-1 position-absolute w-100" style={{ top: '30px' }}>
-                    <span>{watch('recommendedAgeMin')}</span>
-                    <span>{watch('recommendedAgeMax')}</span>
-                  </div>
-                </div>
+                <AgeRangeSlider
+                  minValue={watch('recommendedAgeMin')}
+                  maxValue={watch('recommendedAgeMax')}
+                  onChangeMin={(v) =>
+                    setValue('recommendedAgeMin', v)
+                  }
+                  onChangeMax={(v) =>
+                    setValue('recommendedAgeMax', v)
+                  }
+                />
                 {(errors.recommendedAgeMin || errors.recommendedAgeMax) && (
                   <div className="text-danger small">
                     {errors.recommendedAgeMin?.message ||
