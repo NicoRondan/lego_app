@@ -342,13 +342,32 @@ ProductMedia.belongsTo(Product, { foreignKey: 'productId' });
 Product.hasMany(ProductPriceHistory, { as: 'priceHistory', foreignKey: 'productId' });
 ProductPriceHistory.belongsTo(Product, { foreignKey: 'productId' });
 
-// Hook to record price changes
+// Hooks to record price history
+Product.addHook('afterCreate', async (product, options) => {
+  const entries = [];
+  if (product.msrp != null) entries.push({ productId: product.id, price: product.msrp });
+  if (product.price != null) entries.push({ productId: product.id, price: product.price });
+  if (entries.length) {
+    await ProductPriceHistory.bulkCreate(entries, { transaction: options.transaction });
+  }
+});
+
 Product.addHook('afterUpdate', async (product, options) => {
+  const entries = [];
+  if (product.previous('msrp') !== product.msrp) {
+    entries.push({ productId: product.id, price: product.msrp });
+  }
   if (product.previous('price') !== product.price) {
-    await ProductPriceHistory.create(
-      { productId: product.id, price: product.price },
-      { transaction: options.transaction }
-    );
+    entries.push({ productId: product.id, price: product.price });
+  }
+  const saleWindowChanged =
+    product.previous('saleStart') !== product.saleStart ||
+    product.previous('saleEnd') !== product.saleEnd;
+  if (saleWindowChanged && product.price != null) {
+    entries.push({ productId: product.id, price: product.price });
+  }
+  if (entries.length) {
+    await ProductPriceHistory.bulkCreate(entries, { transaction: options.transaction });
   }
 });
 
