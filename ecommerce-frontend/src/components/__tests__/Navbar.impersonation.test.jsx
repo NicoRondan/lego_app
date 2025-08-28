@@ -11,6 +11,7 @@ jest.mock('../../contexts/CartContext.jsx', () => ({
 jest.mock('../../contexts/WishlistContext.jsx', () => ({
   useWishlist: () => ({ count: 0 }),
 }));
+jest.mock('../ThemeToggle', () => () => null);
 
 import Navbar from '../Navbar';
 
