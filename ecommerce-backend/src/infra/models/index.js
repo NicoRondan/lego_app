@@ -210,6 +210,9 @@ const Order = sequelize.define('Order', {
 // OrderItem model with snapshot fields
 const OrderItem = sequelize.define('OrderItem', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  // Explicit FK fields so camelCase attributes map to snake_case columns
+  orderId: { type: DataTypes.INTEGER, allowNull: false, field: 'order_id' },
+  productId: { type: DataTypes.INTEGER, allowNull: false, field: 'product_id' },
   quantity: { type: DataTypes.INTEGER, allowNull: false },
   unitPrice: { type: DataTypes.DECIMAL(10,2), allowNull: false },
   subtotal: { type: DataTypes.DECIMAL(10,2), allowNull: false },
@@ -416,11 +419,11 @@ Product.hasMany(CartItem, { as: 'cartItems', foreignKey: 'productId' });
 CartItem.belongsTo(Product, { foreignKey: 'productId' });
 
 // Order relations
-Order.hasMany(OrderItem, { as: 'items' });
-OrderItem.belongsTo(Order);
+Order.hasMany(OrderItem, { as: 'items', foreignKey: 'orderId' });
+OrderItem.belongsTo(Order, { foreignKey: 'orderId' });
 
-Product.hasMany(OrderItem, { as: 'orderItems' });
-OrderItem.belongsTo(Product);
+Product.hasMany(OrderItem, { as: 'orderItems', foreignKey: 'productId' });
+OrderItem.belongsTo(Product, { foreignKey: 'productId' });
 
 Order.hasOne(Payment, { as: 'payment' });
 Payment.belongsTo(Order);

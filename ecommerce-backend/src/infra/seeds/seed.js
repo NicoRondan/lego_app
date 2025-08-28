@@ -274,46 +274,88 @@ async function seed() {
     status: 'active', stackable: false, perUserLimit: 1, maxUses: 50,
   }));
 
-  // Orders
-  for (let i = 1; i <= 15; i++) {
-    const user = users[Math.floor(Math.random() * users.length)];
-    const order = await Order.create({ userId: user.id, total: 0, status: 'pending', currency: 'USD' });
+  // Orders: generate over last ~60 days across statuses to exercise reports
+  const now = new Date();
+  const pickStatus = () => {
+    // Weights: pending 15%, picking 10%, paid 35%, shipped 25%, delivered 15%
+    const r = Math.random();
+    if (r < 0.15) return 'pending';
+    if (r < 0.25) return 'picking';
+    if (r < 0.60) return 'paid';
+    if (r < 0.85) return 'shipped';
+    return 'delivered';
+  };
 
-    let total = 0;
-    const itemsCount = Math.floor(Math.random() * 3) + 1;
-    for (let j = 0; j < itemsCount; j++) {
-      const product = products[Math.floor(Math.random() * products.length)];
-      const quantity = Math.floor(Math.random() * 3) + 1;
-      const unitPrice = parseFloat(product.price);
-      const subtotal = unitPrice * quantity;
-      total += subtotal;
-      await OrderItem.create({
-        orderId: order.id,
-        productId: product.id,
-        quantity,
-        unitPrice,
-        subtotal,
-        displayName: product.name,
-        thumbnailUrl: product.imageUrl,
-        currency: product.currency,
-        lineSubtotal: subtotal,
+  for (let dayOffset = 0; dayOffset < 60; dayOffset++) {
+    const ordersToday = 1 + Math.floor(Math.random() * 3); // 1..3
+    for (let k = 0; k < ordersToday; k++) {
+      const user = users[Math.floor(Math.random() * users.length)];
+      const ts = new Date(now.getTime() - dayOffset * 24 * 60 * 60 * 1000 + Math.floor(Math.random() * 12) * 60 * 60 * 1000);
+      const status = pickStatus();
+
+      const order = await Order.create({
+        userId: user.id,
+        total: 0,
+        grandTotal: 0,
+        discountTotal: 0,
+        status,
+        currency: 'USD',
+        createdAt: ts,
+        updatedAt: ts,
       });
-    }
 
-    if (Math.random() < 0.3) {
-      const coupon = coupons[Math.floor(Math.random() * coupons.length)];
-      await order.setCoupon(coupon);
-      const t = (coupon.type || '').toLowerCase();
-      if (t === 'percentage' || t === 'percent') {
-        total = total * (1 - parseFloat(coupon.value) / 100);
-      } else if (t === 'fixed') {
-        total = total - parseFloat(coupon.value);
+      let gross = 0;
+      const itemsCount = 1 + Math.floor(Math.random() * 3); // 1..3
+      const usedProductIds = new Set();
+      for (let j = 0; j < itemsCount; j++) {
+        // ensure some diversity and avoid duplicate same product occasionally
+        let product;
+        let guard = 0;
+        do {
+          product = products[Math.floor(Math.random() * products.length)];
+          guard++;
+        } while (usedProductIds.has(product.id) && guard < 5);
+        usedProductIds.add(product.id);
+        const quantity = 1 + Math.floor(Math.random() * 3);
+        const unitPrice = parseFloat(product.price);
+        const subtotal = unitPrice * quantity;
+        gross += subtotal;
+        await OrderItem.create({
+          orderId: order.id,
+          productId: product.id,
+          quantity,
+          unitPrice,
+          subtotal,
+          displayName: product.name,
+          thumbnailUrl: product.imageUrl,
+          currency: product.currency,
+          lineSubtotal: subtotal,
+          createdAt: ts,
+          updatedAt: ts,
+        });
       }
-    }
 
-    order.grandTotal = total.toFixed(2);
-    order.total = total.toFixed(2);
-    await order.save();
+      // Occasionally apply coupon and record discount_total for reports
+      let discount = 0;
+      if (Math.random() < 0.35) {
+        const coupon = coupons[Math.floor(Math.random() * coupons.length)];
+        await order.setCoupon(coupon);
+        order.couponCode = coupon.code;
+        const t = (coupon.type || '').toLowerCase();
+        if (t === 'percentage' || t === 'percent') {
+          discount = (gross * parseFloat(coupon.value)) / 100;
+        } else if (t === 'fixed') {
+          discount = parseFloat(coupon.value);
+        }
+        if (discount > gross) discount = gross;
+      }
+
+      const net = Math.max(0, gross - discount);
+      order.discountTotal = discount.toFixed(2);
+      order.grandTotal = net.toFixed(2);
+      order.total = net.toFixed(2);
+      await order.save({ silent: true });
+    }
   }
 
   console.log('Database seeded');

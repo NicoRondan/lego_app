@@ -21,6 +21,7 @@ import NewProductPage from './pages/admin/NewProductPage';
 import OrdersListPage from './pages/admin/OrdersListPage.jsx';
 import OrderDetailPage from './pages/admin/OrderDetailPage.jsx';
 import CouponsPage from './pages/admin/CouponsPage.jsx';
+import ReportsPage from './pages/admin/ReportsPage.jsx';
 
 function App() {
   return (
@@ -95,6 +96,14 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <CouponsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute role="admin">
+                <ReportsPage />
               </ProtectedRoute>
             }
           />

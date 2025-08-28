@@ -33,6 +33,12 @@ function AdminSidebar() {
         >
           Cupones
         </NavLink>
+        <NavLink
+          to="/admin/reports"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          Reportes
+        </NavLink>
       </nav>
     </aside>
   );

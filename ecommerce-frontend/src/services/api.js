@@ -207,3 +207,44 @@ export const adminListCouponUsages = (id, { page = 1, pageSize = 20 } = {}) => {
   const qs = params.toString();
   return request(`/admin/coupons/${id}/usages` + (qs ? `?${qs}` : ''));
 };
+
+// Admin - Reports
+export const adminReportSalesSummary = ({ from = '', to = '', groupBy = 'day', status = 'paid,shipped,delivered', format = '' } = {}) => {
+  const params = new URLSearchParams();
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  if (groupBy) params.set('groupBy', groupBy);
+  if (status) params.set('status', status);
+  if (format) params.set('format', format);
+  const qs = params.toString();
+  return request('/admin/reports/sales/summary' + (qs ? `?${qs}` : ''));
+};
+
+export const adminReportSalesByTheme = ({ from = '', to = '', status = 'paid,shipped,delivered', format = '' } = {}) => {
+  const params = new URLSearchParams();
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  if (status) params.set('status', status);
+  if (format) params.set('format', format);
+  const qs = params.toString();
+  return request('/admin/reports/sales/by-theme' + (qs ? `?${qs}` : ''));
+};
+
+export const adminReportTopProducts = ({ from = '', to = '', status = 'paid,shipped,delivered', limit = 10, format = '' } = {}) => {
+  const params = new URLSearchParams();
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  if (status) params.set('status', status);
+  if (limit) params.set('limit', limit);
+  if (format) params.set('format', format);
+  const qs = params.toString();
+  return request('/admin/reports/sales/top-products' + (qs ? `?${qs}` : ''));
+};
+
+export const adminReportLowStock = ({ threshold = 5, format = '' } = {}) => {
+  const params = new URLSearchParams();
+  if (threshold != null) params.set('threshold', threshold);
+  if (format) params.set('format', format);
+  const qs = params.toString();
+  return request('/admin/reports/stock/low' + (qs ? `?${qs}` : ''));
+};
