@@ -78,6 +78,7 @@ exports.logout = async (req, res, next) => {
       await RefreshToken.destroy({ where: { token: hashed } });
     }
     clearAuthCookies(res);
+    try { res.clearCookie('impersonation'); } catch {}
     res.json({ ok: true });
   } catch (err) {
     next(err);

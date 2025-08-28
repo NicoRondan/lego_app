@@ -40,7 +40,16 @@ async function request(path, { method = 'GET', headers = {}, body } = {}) {
     opts.body = JSON.stringify(body);
   }
   if (['POST', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
-    const csrf = getCsrfToken();
+    let csrf = getCsrfToken();
+    if (!csrf) {
+      try {
+        const res = await fetch(`${API_URL}/auth/csrf`, { credentials: 'include' });
+        const data = await res.json().catch(() => ({}));
+        csrf = data?.csrfToken || getCsrfToken();
+      } catch (_) {
+        // ignore; request will likely fail if server enforces CSRF
+      }
+    }
     if (csrf) opts.headers['X-CSRF-Token'] = csrf;
   }
   try {

@@ -100,13 +100,7 @@ function UserDetailPage() {
             <h5>Listado</h5>
             <ul className="list-group">
               {addresses.map(a => (
-                <li className="list-group-item d-flex justify-content-between align-items-center" key={a.id}>
-                  <div>
-                    <div className="fw-bold">{a.type || '—'} {a.isDefault ? <span className="badge bg-primary ms-1">Default</span> : null}</div>
-                    <div>{a.name || ''} {a.line1 || a.street || ''} {a.city || ''} {a.state || ''} {a.zip || ''} {a.country || ''}</div>
-                  </div>
-                  <button className="btn btn-sm btn-outline-danger" onClick={() => delAddress(a.id)}>Eliminar</button>
-                </li>
+                <AddressItem key={a.id} a={a} onDelete={() => delAddress(a.id)} onSaved={load} />
               ))}
             </ul>
           </div>
@@ -197,3 +191,91 @@ function UserDetailPage() {
 
 export default UserDetailPage;
 
+function AddressItem({ a, onDelete, onSaved }) {
+  const { id } = useParams();
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({
+    type: a.type || 'shipping',
+    name: a.name || '',
+    line1: a.line1 || a.street || '',
+    line2: a.line2 || '',
+    city: a.city || '',
+    state: a.state || '',
+    zip: a.zip || '',
+    country: a.country || '',
+    isDefault: !!a.isDefault,
+  });
+
+  const save = async () => {
+    await api.adminUpdateAddress(id, a.id, form);
+    setEditing(false);
+    onSaved?.();
+  };
+
+  if (!editing) {
+    return (
+      <li className="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <div className="fw-bold">{a.type || '—'} {a.isDefault ? <span className="badge bg-primary ms-1">Default</span> : null}</div>
+          <div>{a.name || ''} {a.line1 || a.street || ''} {a.city || ''} {a.state || ''} {a.zip || ''} {a.country || ''}</div>
+        </div>
+        <div className="btn-group">
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditing(true)}>Editar</button>
+          <button className="btn btn-sm btn-outline-danger" onClick={onDelete}>Eliminar</button>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li className="list-group-item">
+      <div className="row g-2 align-items-end">
+        <div className="col-4">
+          <label className="form-label">Tipo</label>
+          <select className="form-select" value={form.type} onChange={(e)=>setForm({...form,type:e.target.value})}>
+            <option value="shipping">Envío</option>
+            <option value="billing">Facturación</option>
+          </select>
+        </div>
+        <div className="col-8">
+          <label className="form-label">Nombre</label>
+          <input className="form-control" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} />
+        </div>
+        <div className="col-12">
+          <label className="form-label">Dirección</label>
+          <input className="form-control" value={form.line1} onChange={(e)=>setForm({...form,line1:e.target.value})} />
+        </div>
+        <div className="col-12">
+          <label className="form-label">Línea 2</label>
+          <input className="form-control" value={form.line2} onChange={(e)=>setForm({...form,line2:e.target.value})} />
+        </div>
+        <div className="col-4">
+          <label className="form-label">Ciudad</label>
+          <input className="form-control" value={form.city} onChange={(e)=>setForm({...form,city:e.target.value})} />
+        </div>
+        <div className="col-4">
+          <label className="form-label">Provincia/Estado</label>
+          <input className="form-control" value={form.state} onChange={(e)=>setForm({...form,state:e.target.value})} />
+        </div>
+        <div className="col-4">
+          <label className="form-label">CP</label>
+          <input className="form-control" value={form.zip} onChange={(e)=>setForm({...form,zip:e.target.value})} />
+        </div>
+        <div className="col-8">
+          <label className="form-label">País</label>
+          <input className="form-control" value={form.country} onChange={(e)=>setForm({...form,country:e.target.value})} />
+        </div>
+        <div className="col-4">
+          <div className="form-check">
+            <input id={`def-${a.id}`} type="checkbox" className="form-check-input" checked={form.isDefault} onChange={(e)=>setForm({...form,isDefault:e.target.checked})} />
+            <label htmlFor={`def-${a.id}`} className="form-check-label">Default</label>
+          </div>
+        </div>
+        <div className="col-12 d-flex gap-2">
+          <button className="btn btn-primary" onClick={save}>Guardar</button>
+          <button className="btn btn-outline-secondary" onClick={() => setEditing(false)}>Cancelar</button>
+        </div>
+      </div>
+    </li>
+  );
+}
