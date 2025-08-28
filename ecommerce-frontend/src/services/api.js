@@ -308,3 +308,13 @@ export const adminListUserAudit = (id, { limit = 50 } = {}) => {
 
 // Impersonation client-side helper
 export const impersonate = (token) => request('/auth/impersonate', { method: 'POST', body: { token } });
+
+// Admin - Segments
+export const adminListSegments = () => request('/admin/segments');
+export const adminCreateSegment = ({ name, definition, preview = false }) =>
+  request('/admin/segments', { method: 'POST', body: { name, definition, preview } });
+
+// Admin - Campaigns
+export const adminListCampaigns = () => request('/admin/campaigns');
+export const adminCreateCampaign = ({ name, segmentId, couponCode, startsAt, endsAt, status }) =>
+  request('/admin/campaigns', { method: 'POST', body: { name, segmentId, couponCode, startsAt, endsAt, status } });

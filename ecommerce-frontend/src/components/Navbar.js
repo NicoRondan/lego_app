@@ -1,15 +1,31 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import CartModal from './CartModal';
 import ThemeToggle from './ThemeToggle';
+import * as api from '../services/api';
 
 // Navigation bar component. Uses Bootstrap classes for styling.
 function Navbar() {
   const { user, logout } = useAuth();
   const { cart } = useCart();
   const itemsCount = cart?.summary?.itemsCount || 0;
+  const [wishlistCount, setWishlistCount] = useState(0);
+  useEffect(() => {
+    let active = true;
+    async function fetchWishlist() {
+      if (!user || user.role !== 'customer') { setWishlistCount(0); return; }
+      try {
+        const wl = await api.getWishlist();
+        if (active) setWishlistCount(wl?.items?.length || 0);
+      } catch (_) {
+        if (active) setWishlistCount(0);
+      }
+    }
+    fetchWishlist();
+    return () => { active = false; };
+  }, [user]);
   const allowGuestCart = process.env.REACT_APP_ALLOW_GUEST_CART === 'true';
   const isAdmin = useMemo(() => {
     const ADMIN_ROLES = ['superadmin','catalog_manager','oms','support','marketing'];
@@ -62,8 +78,17 @@ function Navbar() {
             )}
             {user?.role === 'customer' && (
               <li className="nav-item">
-                <Link className="nav-link" to="/wishlist">
-                  Mi wishlist
+                <Link className="nav-link d-flex align-items-center" to="/wishlist">
+                  <span className="position-relative me-1">
+                    <i className="fa-regular fa-heart" aria-hidden="true"></i>
+                    {wishlistCount > 0 && (
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {wishlistCount}
+                        <span className="visually-hidden">items in wishlist</span>
+                      </span>
+                    )}
+                  </span>
+                  <span>Wishlist</span>
                 </Link>
               </li>
             )}

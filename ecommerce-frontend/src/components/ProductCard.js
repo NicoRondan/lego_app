@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import QuantityStepper from "./QuantityStepper";
 import { toast } from "react-toastify";
 import "./ProductCard.css";
+import * as api from "../services/api";
 
 // Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
@@ -40,10 +41,31 @@ function ProductCard({ product }) {
     }
   };
 
-  const handleWishlist = (e) => {
+  const handleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setWish(!wish);
+    if (!user) {
+      navigate("/login", { state: { redirectTo: location.pathname + location.search } });
+      return;
+    }
+    try {
+      if (!wish) {
+        await api.addToWishlist(product.id);
+        setWish(true);
+        toast.success("Agregado a wishlist");
+      } else {
+        // find item in wishlist then remove
+        const wl = await api.getWishlist();
+        const item = wl?.items?.find((it) => (it.product?.id === product.id || it.productId === product.id));
+        if (item) {
+          await api.removeFromWishlist(item.id);
+          setWish(false);
+          toast.info("Quitado de wishlist");
+        }
+      }
+    } catch (err) {
+      // error handled by api toast
+    }
   };
   const avgRating =
     product.reviews && product.reviews.length > 0
