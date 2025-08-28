@@ -82,7 +82,10 @@ function rateLimit({ windowMs, limit }) {
   };
 }
 
-// Authorization middleware for role-based access control
+// RBAC helpers
+const ADMIN_ROLES = ['superadmin','catalog_manager','oms','support','marketing'];
+
+// Authorization middleware for role-based access control (legacy exact role)
 function requireRole(role) {
   return function (req, res, next) {
     if (!req.user || req.user.role !== role) {
@@ -91,6 +94,23 @@ function requireRole(role) {
         .json({ error: { code: ERROR_CODES[403], message: 'Forbidden' }, requestId: req.id });
     }
     next();
+  };
+}
+
+function isAdmin(req, res, next) {
+  const role = req.user?.role;
+  if (role === 'admin' || ADMIN_ROLES.includes(role)) return next();
+  return res.status(403).json({ error: { code: ERROR_CODES[403], message: 'Admin only' }, requestId: req.id });
+}
+
+function hasRole(...roles) {
+  return function (req, res, next) {
+    const role = req.user?.role;
+    if (!role) return res.status(401).json({ error: { code: ERROR_CODES[401], message: 'Unauthorized' }, requestId: req.id });
+    if (role === 'superadmin') return next();
+    if (role === 'admin' && roles.length === 0) return next();
+    if (ADMIN_ROLES.includes(role) && (roles.length === 0 || roles.includes(role))) return next();
+    return res.status(403).json({ error: { code: ERROR_CODES[403], message: 'Forbidden' }, requestId: req.id });
   };
 }
 
@@ -129,4 +149,6 @@ module.exports = {
   parseCookies,
   rateLimit,
   requireRole,
+  isAdmin,
+  hasRole,
 };

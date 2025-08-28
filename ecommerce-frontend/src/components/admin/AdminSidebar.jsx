@@ -34,6 +34,12 @@ function AdminSidebar() {
           Cupones
         </NavLink>
         <NavLink
+          to="/admin/users"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          Usuarios
+        </NavLink>
+        <NavLink
           to="/admin/inventory"
           className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
         >

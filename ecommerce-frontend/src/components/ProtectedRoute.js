@@ -27,8 +27,14 @@ const ProtectedRoute = ({ children, role }) => {
     );
   }
 
-  if (role && user.role !== role) {
-    return <div>403 - Forbidden</div>;
+  if (role) {
+    const ADMIN_ROLES = ['superadmin','catalog_manager','oms','support','marketing'];
+    if (role === 'admin') {
+      const isAdmin = user.role === 'admin' || ADMIN_ROLES.includes(user.role);
+      if (!isAdmin) return <div>403 - Forbidden</div>;
+    } else if (user.role !== role) {
+      return <div>403 - Forbidden</div>;
+    }
   }
 
   return children;

@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { User, SocialIdentity, RefreshToken } = require('../../infra/models');
+const { User, SocialIdentity, RefreshToken, AdminImpersonationToken, AdminAuditLog } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 const {
   hashPassword,
@@ -169,4 +169,35 @@ exports.csrfToken = (_req, res) => {
     domain: process.env.COOKIE_DOMAIN || undefined,
   });
   res.json({ csrfToken: token });
+};
+
+exports.impersonate = async (req, res, next) => {
+  try {
+    const token = req.method === 'GET' ? req.query.token : (req.body && req.body.token);
+    if (!token) throw new ApiError('Missing token', 400);
+    const rec = await AdminImpersonationToken.findByPk(token);
+    if (!rec) throw new ApiError('Invalid token', 400);
+    if (rec.usedAt) throw new ApiError('Token already used', 400);
+    if (rec.expiresAt < new Date()) throw new ApiError('Token expired', 400);
+    const user = await User.findByPk(rec.userId);
+    if (!user) throw new ApiError('User not found', 404);
+    // mark token used
+    rec.usedAt = new Date();
+    await rec.save();
+    const csrfToken = crypto.randomBytes(16).toString('hex');
+    const tokens = await issueTokens(user.id, user.role);
+    setAuthCookies(res, { ...tokens, csrfToken });
+    // lightweight flag to show banner in FE
+    res.cookie('impersonation', '1', {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      domain: process.env.COOKIE_DOMAIN || undefined,
+      maxAge: 15 * 60 * 1000,
+    });
+    await AdminAuditLog.create({ action: 'impersonate_login', targetUserId: user.id, ip: req.ip, detail: { token } });
+    res.json({ ok: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  } catch (err) {
+    next(err);
+  }
 };

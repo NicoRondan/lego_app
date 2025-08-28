@@ -23,6 +23,9 @@ import OrderDetailPage from './pages/admin/OrderDetailPage.jsx';
 import CouponsPage from './pages/admin/CouponsPage.jsx';
 import ReportsPage from './pages/admin/ReportsPage.jsx';
 import InventoryPage from './pages/admin/InventoryPage.jsx';
+import UsersPage from './pages/admin/UsersPage.jsx';
+import UserDetailPage from './pages/admin/UserDetailPage.jsx';
+import Impersonate from './pages/Impersonate.jsx';
 
 function App() {
   return (
@@ -109,6 +112,22 @@ function App() {
             }
           />
           <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute role="admin">
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users/:id"
+            element={
+              <ProtectedRoute role="admin">
+                <UserDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/reports"
             element={
               <ProtectedRoute role="admin">
@@ -125,6 +144,7 @@ function App() {
             }
           />
           <Route path="/styleguide" element={<Styleguide />} />
+          <Route path="/impersonate" element={<Impersonate />} />
         </Routes>
       </div>
       <Footer />

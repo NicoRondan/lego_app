@@ -41,6 +41,7 @@ const adminPaymentsRouter = require('../modules/admin/paymentsRouter');
 const adminCouponsRouter = require('../modules/admin/couponsRouter');
 const adminReportsRouter = require('../modules/admin/reportsRouter');
 const adminInventoryRouter = require('../modules/admin/inventoryRouter');
+const adminUsersRouter = require('../modules/admin/usersRouter');
 
 async function createApp() {
   const app = express();
@@ -117,12 +118,13 @@ async function createApp() {
   app.use('/uploads', uploadsRouter);
   app.use('/webhooks', webhookLimiter, webhooksRouter);
   // Admin (RBAC)
-  const { requireRole } = require('../shared/middlewares');
-  app.use('/admin/orders', requireRole('admin'), adminOrdersRouter);
-  app.use('/admin/payments', requireRole('admin'), adminPaymentsRouter);
-  app.use('/admin/coupons', requireRole('admin'), adminCouponsRouter);
-  app.use('/admin/reports', requireRole('admin'), adminReportsRouter);
-  app.use('/admin/inventory', requireRole('admin'), adminInventoryRouter);
+  const { isAdmin, hasRole } = require('../shared/middlewares');
+  app.use('/admin/orders', isAdmin, hasRole('oms','support'), adminOrdersRouter);
+  app.use('/admin/payments', isAdmin, hasRole('oms','support'), adminPaymentsRouter);
+  app.use('/admin/coupons', isAdmin, hasRole('marketing'), adminCouponsRouter);
+  app.use('/admin/reports', isAdmin, adminReportsRouter);
+  app.use('/admin/inventory', isAdmin, hasRole('catalog_manager'), adminInventoryRouter);
+  app.use('/admin/users', isAdmin, hasRole('support'), adminUsersRouter);
 
   // Configure Apollo Server for GraphQL (Apollo Server 5)
   const apolloServer = new ApolloServer({

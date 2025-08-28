@@ -272,3 +272,23 @@ export const adminListInventoryMovements = (productId, { limit = 20 } = {}) => {
   const qs = params.toString();
   return request(`/admin/inventory/${productId}/movements` + (qs ? `?${qs}` : ''));
 };
+
+// Admin - Users
+export const adminListUsers = ({ q = '', page = 1, pageSize = 20 } = {}) => {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (page) params.set('page', page);
+  if (pageSize) params.set('pageSize', pageSize);
+  const qs = params.toString();
+  return request('/admin/users' + (qs ? `?${qs}` : ''));
+};
+
+export const adminGetUser = (id) => request(`/admin/users/${id}`);
+export const adminUpdateUser = (id, data) => request(`/admin/users/${id}`, { method: 'PUT', body: data });
+export const adminListAddresses = (id) => request(`/admin/users/${id}/addresses`);
+export const adminCreateAddress = (id, data) => request(`/admin/users/${id}/addresses`, { method: 'POST', body: data });
+export const adminDeleteAddress = (id, addressId) => request(`/admin/users/${id}/addresses/${addressId}`, { method: 'DELETE' });
+export const adminImpersonateUser = (id) => request(`/admin/users/${id}/impersonate`, { method: 'POST' });
+
+// Impersonation client-side helper
+export const impersonate = (token) => request('/auth/impersonate', { method: 'POST', body: { token } });
