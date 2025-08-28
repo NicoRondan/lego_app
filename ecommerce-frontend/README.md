@@ -99,6 +99,23 @@ los colores semánticos o ajustar valores específicos.
 
 - Página de cupones: `/admin/coupons` para crear, editar y filtrar cupones (requiere usuario con rol `admin`).
 
+### Usuarios, Direcciones e Impersonación
+
+- Página: `/admin/users` (roles: support, superadmin y compatibilidad con `admin`).
+- Listado con filtros y badges: “Nuevo”, “Con pedidos”, “Opt‑in”.
+- Detalle con pestañas: Perfil, Direcciones, Pedidos, Actividad (incluye auditoría admin) e Impersonar.
+- Direcciones:
+  - Crear/editar/borrar.
+  - Validaciones en modal (requeridos y patrón básico de CP por país: US, AR, BR, MX, ES, CL).
+  - `isDefault` exclusivo por tipo (`shipping`/`billing`).
+- Impersonación:
+  - Genera un token one‑time y abre `/impersonate?token=...` para intercambiarlo por sesión.
+  - Se muestra un banner “Impersonando a un cliente” hasta cerrar sesión.
+  - El logout limpia también la cookie `impersonation`.
+
+CSRF en cliente
+- Para métodos mutables, si no hay cookie `csrfToken`, el cliente hace `GET /auth/csrf` y reintenta con `X-CSRF-Token`.
+
 ### Inventario
 
 - Página: `/admin/inventory` (solo `admin`).

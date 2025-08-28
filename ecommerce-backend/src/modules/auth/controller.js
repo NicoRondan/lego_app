@@ -42,7 +42,11 @@ exports.login = async (req, res, next) => {
     const csrfToken = crypto.randomBytes(16).toString('hex');
     const tokens = await issueTokens(user.id, user.role);
     setAuthCookies(res, { ...tokens, csrfToken });
-    try { if (['superadmin','catalog_manager','oms','support','marketing','admin'].includes(user.role)) { await AdminAuditLog.create({ action: 'admin_login', targetUserId: user.id, ip: req.ip }); } } catch {}
+    try {
+      if (['superadmin','catalog_manager','oms','support','marketing','admin'].includes(user.role)) {
+        await AdminAuditLog.create({ action: 'admin_login', targetUserId: user.id, ip: req.ip, detail: { actorUserId: user.id, actorName: user.name, actorRole: user.role } });
+      }
+    } catch {}
     res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
     next(err);

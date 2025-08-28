@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import * as api from '../../services/api';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
+import BrickModal from '../../components/lego/BrickModal.jsx';
 
 function TabNav({ tab, setTab }) {
   return (
@@ -223,6 +224,19 @@ function AddressItem({ a, onDelete, onSaved }) {
     if (!form.line1) e.line1 = 'Requerido';
     if (!form.city) e.city = 'Requerido';
     if (!form.country) e.country = 'Requerido';
+    if (form.zip) {
+      const cc = (form.country || '').toUpperCase();
+      const patterns = {
+        US: /^\d{5}(-\d{4})?$/,
+        AR: /^[A-Z]?\d{4}[A-Z]{0,3}$/,
+        BR: /^\d{5}-?\d{3}$/,
+        MX: /^\d{5}$/,
+        ES: /^\d{5}$/,
+        CL: /^\d{7}$/,
+      };
+      const p = patterns[cc];
+      if (p && !p.test(form.zip)) e.zip = 'Formato de CP inválido para ' + cc;
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -234,9 +248,9 @@ function AddressItem({ a, onDelete, onSaved }) {
     onSaved?.();
   };
 
-  if (!editing) {
-    return (
-      <li className="list-group-item d-flex justify-content-between align-items-center">
+  return (
+    <li className="list-group-item">
+      <div className="d-flex justify-content-between align-items-center">
         <div>
           <div className="fw-bold">{a.type || '—'} {a.isDefault ? <span className="badge bg-primary ms-1">Default</span> : null}</div>
           <div>{a.name || ''} {a.line1 || a.street || ''} {a.city || ''} {a.state || ''} {a.zip || ''} {a.country || ''}</div>
@@ -245,63 +259,62 @@ function AddressItem({ a, onDelete, onSaved }) {
           <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditing(true)}>Editar</button>
           <button className="btn btn-sm btn-outline-danger" onClick={onDelete}>Eliminar</button>
         </div>
-      </li>
-    );
-  }
+      </div>
 
-  return (
-    <li className="list-group-item">
-      <div className="row g-2 align-items-end">
-        <div className="col-4">
-          <label className="form-label">Tipo</label>
-          <select className="form-select" value={form.type} onChange={(e)=>setForm({...form,type:e.target.value})}>
-            <option value="shipping">Envío</option>
-            <option value="billing">Facturación</option>
-          </select>
-        </div>
-        <div className="col-8">
-          <label className="form-label">Nombre</label>
-          <input className={`form-control ${errors.name?'is-invalid':''}`} placeholder="Casa / Trabajo" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} />
-          {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-        </div>
-        <div className="col-12">
-          <label className="form-label">Dirección</label>
-          <input className={`form-control ${errors.line1?'is-invalid':''}`} placeholder="Av. Siempre Viva 742" value={form.line1} onChange={(e)=>setForm({...form,line1:e.target.value})} />
-          {errors.line1 && <div className="invalid-feedback">{errors.line1}</div>}
-        </div>
-        <div className="col-12">
-          <label className="form-label">Línea 2</label>
-          <input className="form-control" value={form.line2} onChange={(e)=>setForm({...form,line2:e.target.value})} />
-        </div>
-        <div className="col-4">
-          <label className="form-label">Ciudad</label>
-          <input className={`form-control ${errors.city?'is-invalid':''}`} placeholder="CABA" value={form.city} onChange={(e)=>setForm({...form,city:e.target.value})} />
-          {errors.city && <div className="invalid-feedback">{errors.city}</div>}
-        </div>
-        <div className="col-4">
-          <label className="form-label">Provincia/Estado</label>
-          <input className="form-control" value={form.state} onChange={(e)=>setForm({...form,state:e.target.value})} />
-        </div>
-        <div className="col-4">
-          <label className="form-label">CP</label>
-          <input className="form-control" value={form.zip} onChange={(e)=>setForm({...form,zip:e.target.value})} />
-        </div>
-        <div className="col-8">
-          <label className="form-label">País</label>
-          <input className={`form-control ${errors.country?'is-invalid':''}`} placeholder="AR" value={form.country} onChange={(e)=>setForm({...form,country:e.target.value})} />
-          {errors.country && <div className="invalid-feedback">{errors.country}</div>}
-        </div>
-        <div className="col-4">
-          <div className="form-check">
-            <input id={`def-${a.id}`} type="checkbox" className="form-check-input" checked={form.isDefault} onChange={(e)=>setForm({...form,isDefault:e.target.checked})} />
-            <label htmlFor={`def-${a.id}`} className="form-check-label">Default</label>
+      <BrickModal id={`addr-${a.id}`} title={`Editar dirección • ${a.name || ''}`} open={editing} onClose={() => setEditing(false)}>
+        <div className="row g-2 align-items-end">
+          <div className="col-4">
+            <label className="form-label">Tipo</label>
+            <select className="form-select" value={form.type} onChange={(e)=>setForm({...form,type:e.target.value})}>
+              <option value="shipping">Envío</option>
+              <option value="billing">Facturación</option>
+            </select>
+          </div>
+          <div className="col-8">
+            <label className="form-label">Nombre</label>
+            <input className={`form-control ${errors.name?'is-invalid':''}`} placeholder="Casa / Trabajo" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} />
+            {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+          </div>
+          <div className="col-12">
+            <label className="form-label">Dirección</label>
+            <input className={`form-control ${errors.line1?'is-invalid':''}`} placeholder="Av. Siempre Viva 742" value={form.line1} onChange={(e)=>setForm({...form,line1:e.target.value})} />
+            {errors.line1 && <div className="invalid-feedback">{errors.line1}</div>}
+          </div>
+          <div className="col-12">
+            <label className="form-label">Línea 2</label>
+            <input className="form-control" value={form.line2} onChange={(e)=>setForm({...form,line2:e.target.value})} />
+          </div>
+          <div className="col-4">
+            <label className="form-label">Ciudad</label>
+            <input className={`form-control ${errors.city?'is-invalid':''}`} placeholder="CABA" value={form.city} onChange={(e)=>setForm({...form,city:e.target.value})} />
+            {errors.city && <div className="invalid-feedback">{errors.city}</div>}
+          </div>
+          <div className="col-4">
+            <label className="form-label">Provincia/Estado</label>
+            <input className="form-control" value={form.state} onChange={(e)=>setForm({...form,state:e.target.value})} />
+          </div>
+          <div className="col-4">
+            <label className="form-label">CP</label>
+            <input className={`form-control ${errors.zip?'is-invalid':''}`} placeholder="C1000 / 12345-678" value={form.zip} onChange={(e)=>setForm({...form,zip:e.target.value})} />
+            {errors.zip && <div className="invalid-feedback">{errors.zip}</div>}
+          </div>
+          <div className="col-8">
+            <label className="form-label">País</label>
+            <input className={`form-control ${errors.country?'is-invalid':''}`} placeholder="AR" value={form.country} onChange={(e)=>setForm({...form,country:e.target.value})} />
+            {errors.country && <div className="invalid-feedback">{errors.country}</div>}
+          </div>
+          <div className="col-4">
+            <div className="form-check">
+              <input id={`def-${a.id}`} type="checkbox" className="form-check-input" checked={form.isDefault} onChange={(e)=>setForm({...form,isDefault:e.target.checked})} />
+              <label htmlFor={`def-${a.id}`} className="form-check-label">Default</label>
+            </div>
+          </div>
+          <div className="col-12 d-flex gap-2 justify-content-end">
+            <button className="btn btn-outline-secondary" onClick={() => setEditing(false)}>Cancelar</button>
+            <button className="btn btn-primary" onClick={save}>Guardar</button>
           </div>
         </div>
-        <div className="col-12 d-flex gap-2">
-          <button className="btn btn-primary" onClick={save}>Guardar</button>
-          <button className="btn btn-outline-secondary" onClick={() => setEditing(false)}>Cancelar</button>
-        </div>
-      </div>
+      </BrickModal>
     </li>
   );
 }

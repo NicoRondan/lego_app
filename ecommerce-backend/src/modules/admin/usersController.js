@@ -106,12 +106,14 @@ exports.updateUser = async (req, res, next) => {
     if (marketingOptIn != null) user.marketingOptIn = !!marketingOptIn;
     await user.save();
     // audit
+    let actor = null;
+    if (req.user?.id) actor = await User.findByPk(req.user.id).catch(() => null);
     await AdminAuditLog.create({
       adminUserId: null,
       action: 'user_update',
       targetUserId: user.id,
       ip: req.ip,
-      detail: { actorUserId: req.user?.id, changes: Object.keys(req.body || {}) },
+      detail: { actorUserId: req.user?.id, actorName: actor?.name, actorRole: actor?.role, changes: Object.keys(req.body || {}) },
     });
     const role = req.user?.role;
     res.json(sanitizeUserForRole(user, role));
@@ -139,7 +141,9 @@ exports.createAddress = async (req, res, next) => {
     }
     const addr = await Address.create({ UserId: userId, type, name, line1, line2, city, state, zip, country, isDefault: !!isDefault, street: line1 || null });
     // audit
-    await AdminAuditLog.create({ adminUserId: null, action: 'address_create', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, addressId: addr.id } });
+    let actor = null;
+    if (req.user?.id) actor = await User.findByPk(req.user.id).catch(() => null);
+    await AdminAuditLog.create({ adminUserId: null, action: 'address_create', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, actorName: actor?.name, actorRole: actor?.role, addressId: addr.id } });
     res.status(201).json(addr);
   } catch (err) {
     next(err);
@@ -153,7 +157,9 @@ exports.deleteAddress = async (req, res, next) => {
     const addr = await Address.findOne({ where: { id: addressId, UserId: userId } });
     if (!addr) return res.status(404).json({ error: { message: 'Address not found' } });
     await addr.destroy();
-    await AdminAuditLog.create({ adminUserId: null, action: 'address_delete', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, addressId } });
+    let actor = null;
+    if (req.user?.id) actor = await User.findByPk(req.user.id).catch(() => null);
+    await AdminAuditLog.create({ adminUserId: null, action: 'address_delete', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, actorName: actor?.name, actorRole: actor?.role, addressId } });
     res.json({ ok: true });
   } catch (err) {
     next(err);
@@ -183,7 +189,9 @@ exports.updateAddress = async (req, res, next) => {
     if (country != null) addr.country = country;
     if (line1 != null) addr.street = line1; // keep legacy in sync
     await addr.save();
-    await AdminAuditLog.create({ adminUserId: null, action: 'address_update', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, addressId } });
+    let actor = null;
+    if (req.user?.id) actor = await User.findByPk(req.user.id).catch(() => null);
+    await AdminAuditLog.create({ adminUserId: null, action: 'address_update', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, actorName: actor?.name, actorRole: actor?.role, addressId } });
     res.json(addr);
   } catch (err) {
     next(err);
@@ -213,7 +221,9 @@ exports.impersonate = async (req, res, next) => {
     const token = crypto.randomBytes(24).toString('hex');
     const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
     await AdminImpersonationToken.create({ token, adminUserId: null, userId, expiresAt, ip: req.ip });
-    await AdminAuditLog.create({ adminUserId: null, action: 'impersonate_token', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id } });
+    let actor = null;
+    if (req.user?.id) actor = await User.findByPk(req.user.id).catch(() => null);
+    await AdminAuditLog.create({ adminUserId: null, action: 'impersonate_token', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, actorName: actor?.name, actorRole: actor?.role } });
     res.json({ token, expiresAt });
   } catch (err) {
     next(err);
