@@ -58,6 +58,31 @@ test('parseCreateProduct accepts imageUrl', () => {
   assert.strictEqual(data.releaseYear, 2024);
 });
 
+test('parseCreateProduct parses construction and logistics fields', () => {
+  const data = parseCreateProduct({
+    setNumber: '123',
+    name: 'Brick Set',
+    slug: '123-brick-set',
+    price: '19.99',
+    stock: '5',
+    recommendedAge: '8',
+    description: 'A cool set',
+    releaseYear: '2024',
+    pieces: '1000',
+    minifigCount: '3',
+    weightGrams: '500',
+    boxWidthMm: '100',
+    boxHeightMm: '50',
+    boxDepthMm: '80',
+  });
+  assert.strictEqual(data.pieceCount, 1000);
+  assert.strictEqual(data.minifigCount, 3);
+  assert.strictEqual(data.weightGrams, 500);
+  assert.strictEqual(data.boxWidthMm, 100);
+  assert.strictEqual(data.boxHeightMm, 50);
+  assert.strictEqual(data.boxDepthMm, 80);
+});
+
 test('parseCreateProduct requires recommendedAge', () => {
     assert.throws(
       () =>

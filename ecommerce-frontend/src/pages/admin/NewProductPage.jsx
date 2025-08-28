@@ -44,6 +44,21 @@ const schema = z.object({
   ),
   pieces: z
     .preprocess((v) => (v === '' ? undefined : Number(v)), z.number().int().positive().optional()),
+  minifigCount: z
+    .preprocess((v) => (v === '' ? undefined : Number(v)),
+      z.number().int().nonnegative().optional()),
+  weightGrams: z
+    .preprocess((v) => (v === '' ? undefined : Number(v)),
+      z.number().int().nonnegative().optional()),
+  boxWidthMm: z
+    .preprocess((v) => (v === '' ? undefined : Number(v)),
+      z.number().int().nonnegative().optional()),
+  boxHeightMm: z
+    .preprocess((v) => (v === '' ? undefined : Number(v)),
+      z.number().int().nonnegative().optional()),
+  boxDepthMm: z
+    .preprocess((v) => (v === '' ? undefined : Number(v)),
+      z.number().int().nonnegative().optional()),
   price: z.preprocess(
     (v) => (v === '' ? undefined : Number(v)),
     z.number({ required_error: 'Precio requerido' }).nonnegative('Precio inválido')
@@ -246,6 +261,12 @@ function NewProductPage() {
       images: [],
       categories: [],
       recommendedAge: '',
+      pieces: '',
+      minifigCount: '',
+      weightGrams: '',
+      boxWidthMm: '',
+      boxHeightMm: '',
+      boxDepthMm: '',
     },
   });
 
@@ -503,6 +524,86 @@ function NewProductPage() {
                   {...register('pieces')}
                 />
                 {errors.pieces && <div className="text-danger small">{errors.pieces.message}</div>}
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" htmlFor="minifigCount">
+                  Minifigs
+                  <InfoTooltip text="Cantidad de minifiguras" />
+                </label>
+                <input
+                  id="minifigCount"
+                  type="number"
+                  className="form-control"
+                  placeholder="Ej: 3"
+                  {...register('minifigCount')}
+                />
+                {errors.minifigCount && (
+                  <div className="text-danger small">{errors.minifigCount.message}</div>
+                )}
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" htmlFor="weightGrams">
+                  Peso (g)
+                  <InfoTooltip text="Peso en gramos" />
+                </label>
+                <input
+                  id="weightGrams"
+                  type="number"
+                  className="form-control"
+                  placeholder="Ej: 500"
+                  {...register('weightGrams')}
+                />
+                {errors.weightGrams && (
+                  <div className="text-danger small">{errors.weightGrams.message}</div>
+                )}
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" htmlFor="boxWidthMm">
+                  Ancho caja (mm)
+                  <InfoTooltip text="Ancho de la caja en milímetros" />
+                </label>
+                <input
+                  id="boxWidthMm"
+                  type="number"
+                  className="form-control"
+                  placeholder="Ej: 100"
+                  {...register('boxWidthMm')}
+                />
+                {errors.boxWidthMm && (
+                  <div className="text-danger small">{errors.boxWidthMm.message}</div>
+                )}
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" htmlFor="boxHeightMm">
+                  Alto caja (mm)
+                  <InfoTooltip text="Alto de la caja en milímetros" />
+                </label>
+                <input
+                  id="boxHeightMm"
+                  type="number"
+                  className="form-control"
+                  placeholder="Ej: 50"
+                  {...register('boxHeightMm')}
+                />
+                {errors.boxHeightMm && (
+                  <div className="text-danger small">{errors.boxHeightMm.message}</div>
+                )}
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" htmlFor="boxDepthMm">
+                  Profundidad caja (mm)
+                  <InfoTooltip text="Profundidad de la caja en milímetros" />
+                </label>
+                <input
+                  id="boxDepthMm"
+                  type="number"
+                  className="form-control"
+                  placeholder="Ej: 80"
+                  {...register('boxDepthMm')}
+                />
+                {errors.boxDepthMm && (
+                  <div className="text-danger small">{errors.boxDepthMm.message}</div>
+                )}
               </div>
             </div>
           </div>

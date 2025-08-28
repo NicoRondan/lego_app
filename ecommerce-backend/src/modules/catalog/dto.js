@@ -108,6 +108,11 @@ function parseCreateProduct(body) {
     currency,
     imageUrl,
     recommendedAge,
+    minifigCount,
+    weightGrams,
+    boxWidthMm,
+    boxHeightMm,
+    boxDepthMm,
   } = body;
   if (!setNumber) throw new ApiError('setNumber is required', 400);
   if (!name) throw new ApiError('name is required', 400);
@@ -146,6 +151,36 @@ function parseCreateProduct(body) {
   }
   if (Array.isArray(categories)) {
     result.categories = categories.map((c) => String(c));
+  }
+  if (minifigCount !== undefined) {
+    const miniNum = parseInt(minifigCount, 10);
+    if (isNaN(miniNum) || miniNum < 0)
+      throw new ApiError('minifigCount must be a non-negative integer', 400);
+    result.minifigCount = miniNum;
+  }
+  if (weightGrams !== undefined) {
+    const weightNum = parseInt(weightGrams, 10);
+    if (isNaN(weightNum) || weightNum < 0)
+      throw new ApiError('weightGrams must be a non-negative integer', 400);
+    result.weightGrams = weightNum;
+  }
+  if (boxWidthMm !== undefined) {
+    const widthNum = parseInt(boxWidthMm, 10);
+    if (isNaN(widthNum) || widthNum < 0)
+      throw new ApiError('boxWidthMm must be a non-negative integer', 400);
+    result.boxWidthMm = widthNum;
+  }
+  if (boxHeightMm !== undefined) {
+    const heightNum = parseInt(boxHeightMm, 10);
+    if (isNaN(heightNum) || heightNum < 0)
+      throw new ApiError('boxHeightMm must be a non-negative integer', 400);
+    result.boxHeightMm = heightNum;
+  }
+  if (boxDepthMm !== undefined) {
+    const depthNum = parseInt(boxDepthMm, 10);
+    if (isNaN(depthNum) || depthNum < 0)
+      throw new ApiError('boxDepthMm must be a non-negative integer', 400);
+    result.boxDepthMm = depthNum;
   }
   if (status !== undefined) result.status = String(status);
   if (imageUrl !== undefined) result.imageUrl = String(imageUrl);
