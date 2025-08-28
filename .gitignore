@@ -2,4 +2,4 @@
 
 # Local env
 **/.env
-
+ecommerce-backend/data/*.sqlite*
