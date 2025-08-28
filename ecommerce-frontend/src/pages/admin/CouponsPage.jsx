@@ -4,6 +4,17 @@ import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 
+function toYMD(v) {
+  if (!v) return '';
+  try {
+    const d = new Date(v);
+    if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+  } catch {}
+  const s = String(v);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return s.slice(0, 10);
+}
+
 function normalizeInitial(i = {}) {
   const toStr = (v) => (v === null || v === undefined ? '' : v);
   return {
@@ -11,8 +22,8 @@ function normalizeInitial(i = {}) {
     type: toStr(i.type || 'percent'),
     value: toStr(i.value ?? 10),
     status: toStr(i.status || 'active'),
-    validFrom: toStr(i.validFrom || ''),
-    validTo: toStr(i.validTo || ''),
+    validFrom: toYMD(i.validFrom || ''),
+    validTo: toYMD(i.validTo || ''),
     minSubtotal: toStr(i.minSubtotal ?? ''),
     maxUses: toStr(i.maxUses ?? ''),
     perUserLimit: toStr(i.perUserLimit ?? ''),
@@ -260,21 +271,12 @@ export default function CouponsPage() {
   const [activeTab, setActiveTab] = useState('crear');
 
   // Modal helpers
+  const [editOpen, setEditOpen] = useState(false);
   const openEditModal = (coupon) => {
     setEditing(coupon);
-    const el = document.getElementById('couponEditModal');
-    if (window.bootstrap && el) {
-      const modal = window.bootstrap.Modal.getOrCreateInstance(el);
-      modal.show();
-    }
+    setEditOpen(true);
   };
-  const closeEditModal = () => {
-    const el = document.getElementById('couponEditModal');
-    if (window.bootstrap && el) {
-      const modal = window.bootstrap.Modal.getOrCreateInstance(el);
-      modal.hide();
-    }
-  };
+  const closeEditModal = () => setEditOpen(false);
 
   return (
     <AdminLayout>
@@ -422,7 +424,7 @@ export default function CouponsPage() {
             </BrickModal>
           </div>
         </div>
-        <BrickModal id="couponEditModal" title={`Editar cupón ${editing?.code || ''}`}>
+        <BrickModal id="couponEditModal" title={`Editar cupón ${editing?.code || ''}`} open={editOpen} onClose={closeEditModal}>
           {editing && (
             <CouponForm
               categories={categories}
