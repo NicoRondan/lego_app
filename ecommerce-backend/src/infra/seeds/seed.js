@@ -126,6 +126,7 @@ async function seed() {
       categories: ['Harry Potter'],
       images: ['https://images-cdn.ubuy.com.ar/66f8ec24049a283fc72b94ce-lego-harry-potter-hogwarts-castle.jpg'],
       isOnSale: true,
+      allowCoupon: false,
     },
     {
       code: 'CRE001',
@@ -202,6 +203,7 @@ async function seed() {
       isOnSale: !!set.isOnSale,
       ageMinYears: set.ageMin,
       ageMaxYears: set.ageMax,
+      allowCoupon: set.allowCoupon === false ? false : true,
     });
 
     const cats = set.categories.map((name) => categories[name]).filter(Boolean);
@@ -242,15 +244,27 @@ async function seed() {
     );
   }
 
-  // Coupons
+  // Coupons (sample)
   const coupons = [];
-  for (let i = 1; i <= 5; i++) {
-    coupons.push(await Coupon.create({
-      code: `COUPON${i}`,
-      type: 'percentage',
-      value: 5 * i,
-    }));
-  }
+  coupons.push(await Coupon.create({
+    code: 'TENOFF', type: 'percent', value: 10,
+    status: 'active', maxUses: 100, perUserLimit: 2,
+    validFrom: new Date(Date.now() - 24*60*60*1000),
+    validTo: new Date(Date.now() + 30*24*60*60*1000),
+  }));
+  coupons.push(await Coupon.create({
+    code: 'STAR20', type: 'fixed', value: 20,
+    status: 'active', minSubtotal: 100,
+    allowedThemes: ['Star Wars'],
+  }));
+  coupons.push(await Coupon.create({
+    code: 'NOCITY15', type: 'percent', value: 15,
+    status: 'active', disallowProducts: ['CITY001'],
+  }));
+  coupons.push(await Coupon.create({
+    code: 'EXPIRED5', type: 'percent', value: 5,
+    status: 'active', validTo: new Date(Date.now() - 24*60*60*1000),
+  }));
 
   // Orders
   for (let i = 1; i <= 15; i++) {
@@ -281,9 +295,10 @@ async function seed() {
     if (Math.random() < 0.3) {
       const coupon = coupons[Math.floor(Math.random() * coupons.length)];
       await order.setCoupon(coupon);
-      if (coupon.type === 'percentage') {
+      const t = (coupon.type || '').toLowerCase();
+      if (t === 'percentage' || t === 'percent') {
         total = total * (1 - parseFloat(coupon.value) / 100);
-      } else if (coupon.type === 'fixed') {
+      } else if (t === 'fixed') {
         total = total - parseFloat(coupon.value);
       }
     }

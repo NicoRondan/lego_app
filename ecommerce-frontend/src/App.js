@@ -20,6 +20,7 @@ import Footer from './components/Footer';
 import NewProductPage from './pages/admin/NewProductPage';
 import OrdersListPage from './pages/admin/OrdersListPage.jsx';
 import OrderDetailPage from './pages/admin/OrderDetailPage.jsx';
+import CouponsPage from './pages/admin/CouponsPage.jsx';
 
 function App() {
   return (
@@ -79,6 +80,14 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <OrdersListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/coupons"
+            element={
+              <ProtectedRoute role="admin">
+                <CouponsPage />
               </ProtectedRoute>
             }
           />

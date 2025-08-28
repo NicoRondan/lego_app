@@ -27,6 +27,12 @@ function AdminSidebar() {
         >
           Agregar producto
         </NavLink>
+        <NavLink
+          to="/admin/coupons"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          Cupones
+        </NavLink>
       </nav>
     </aside>
   );

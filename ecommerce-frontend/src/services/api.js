@@ -126,6 +126,12 @@ export const removeCartItem = (itemId) =>
 
 export const clearCart = () => request('/cart', { method: 'DELETE' });
 
+// Cart coupons
+export const cartApplyCoupon = (code) =>
+  request('/cart/apply-coupon', { method: 'POST', body: { code } });
+
+export const cartRemoveCoupon = () => request('/cart/coupon', { method: 'DELETE' });
+
 // Orders
 export const createOrder = ({ couponCode } = {}) =>
   request('/orders', { method: 'POST', body: { couponCode } });
@@ -178,3 +184,24 @@ export const adminRefundOrder = (id, { amount, reason }) =>
   request(`/admin/orders/${id}/refund`, { method: 'POST', body: { amount, reason } });
 
 export const adminGetPaymentAudit = (idOrExtId) => request(`/admin/payments/${idOrExtId}`);
+
+// Admin - Coupons
+export const adminListCoupons = ({ q = '', status = '', page = 1, pageSize = 20 } = {}) => {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (status) params.set('status', status);
+  if (page) params.set('page', page);
+  if (pageSize) params.set('pageSize', pageSize);
+  const qs = params.toString();
+  return request('/admin/coupons' + (qs ? `?${qs}` : ''));
+};
+
+export const adminCreateCoupon = (data) => request('/admin/coupons', { method: 'POST', body: data });
+export const adminUpdateCoupon = (id, data) => request(`/admin/coupons/${id}`, { method: 'PUT', body: data });
+export const adminListCouponUsages = (id, { page = 1, pageSize = 20 } = {}) => {
+  const params = new URLSearchParams();
+  if (page) params.set('page', page);
+  if (pageSize) params.set('pageSize', pageSize);
+  const qs = params.toString();
+  return request(`/admin/coupons/${id}/usages` + (qs ? `?${qs}` : ''));
+};

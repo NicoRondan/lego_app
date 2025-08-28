@@ -48,9 +48,10 @@ function CheckoutPage() {
     fetchCart();
   }, [user]);
 
-  const subtotal = cart?.items?.reduce((sum, it) => sum + it.quantity * parseFloat(it.unitPrice), 0) || 0;
-  const couponCode = watch('coupon');
-  const discount = couponCode ? subtotal * 0.1 : 0;
+  const subtotal = cart?.subtotal != null
+    ? parseFloat(cart.subtotal)
+    : (cart?.items?.reduce((sum, it) => sum + it.quantity * parseFloat(it.unitPrice), 0) || 0);
+  const discount = cart?.discountTotal ? parseFloat(cart.discountTotal) : 0;
   const tax = subtotal * 0.21;
 
   const onSubmit = async (data) => {
@@ -90,7 +91,7 @@ function CheckoutPage() {
             <tbody>
               {cart.items.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.product?.name}</td>
+                  <td>{item.displayName}</td>
                   <td>{item.quantity}</td>
                   <td>${parseFloat(item.unitPrice).toFixed(2)}</td>
                   <td>${(item.quantity * parseFloat(item.unitPrice)).toFixed(2)}</td>
@@ -118,7 +119,50 @@ function CheckoutPage() {
             </div>
             <div className="mb-3">
               <label className="form-label">Cupón</label>
-              <input type="text" className="form-control" {...register('coupon')} />
+              <div className="d-flex gap-2">
+                <input type="text" className="form-control" {...register('coupon')} />
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  onClick={async () => {
+                    const code = (watch('coupon') || '').trim();
+                    if (!code) return setMessage('Ingresa un código');
+                    try {
+                      setMessage(null);
+                      const updated = await api.cartApplyCoupon(code);
+                      setCart(withItemsCount(updated));
+                      setMessage('Cupón aplicado');
+                    } catch (err) {
+                      try {
+                        const data = JSON.parse(err.message);
+                        const reason = data?.error?.code || 'COUPON_INVALID';
+                        setMessage(`Cupón rechazado: ${reason}`);
+                      } catch {
+                        setMessage('Cupón rechazado');
+                      }
+                    }
+                  }}
+                >
+                  Aplicar
+                </button>
+                {cart?.discountTotal > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={async () => {
+                      try {
+                        const updated = await api.cartRemoveCoupon();
+                        setCart(withItemsCount(updated));
+                        setMessage('Cupón removido');
+                      } catch (err) {
+                        setMessage('No se pudo remover el cupón');
+                      }
+                    }}
+                  >
+                    Quitar
+                  </button>
+                )}
+              </div>
             </div>
             <OrderSummary subtotal={subtotal} tax={tax} discount={discount} />
             <button className="btn btn-primary mt-3" disabled={loading} type="submit">

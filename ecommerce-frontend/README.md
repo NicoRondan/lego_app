@@ -95,3 +95,10 @@ node ../scripts/extract-palette.mjs
 
 Esto generará `src/theme/tokens.json`. Podés editar este archivo para extender
 los colores semánticos o ajustar valores específicos.
+## Admin
+
+- Página de cupones: `/admin/coupons` para crear, editar y filtrar cupones (requiere usuario con rol `admin`).
+
+## Carrito y cupones
+
+- En Checkout se puede aplicar/quitar un cupón y ver el descuento reflejado en el total.

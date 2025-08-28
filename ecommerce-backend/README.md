@@ -115,6 +115,7 @@ erDiagram
     string status
     int stock
     int max_qty_per_order
+    boolean allow_coupon
   }
   categories {
     int id PK
@@ -128,6 +129,8 @@ erDiagram
   carts {
     int id PK
     int user_id FK
+    string coupon_code
+    decimal discount_total
   }
   cart_items {
     int id PK
@@ -142,9 +145,15 @@ erDiagram
   orders {
     int id PK
     int user_id FK
-    decimal total
+    decimal subtotal
+    decimal discount_total
+    decimal shipping_total
+    decimal tax_total
+    decimal grand_total
+    decimal total (alias)
     string status
     int coupon_id FK
+    string coupon_code
   }
   order_items {
     int id PK
@@ -173,8 +182,25 @@ erDiagram
   coupons {
     int id PK
     string code
-    string type
+    string type (percent|fixed)
     decimal value
+    datetime valid_from
+    datetime valid_to
+    decimal min_subtotal
+    int max_uses
+    int per_user_limit
+    json allowed_themes
+    json disallow_products
+    string status (active|paused)
+    boolean stackable
+    int created_by FK(users)
+  }
+  coupon_usages {
+    int id PK
+    int coupon_id FK
+    int user_id FK
+    int order_id FK
+    datetime used_at
   }
   reviews {
     int id PK
@@ -217,6 +243,7 @@ erDiagram
   orders ||--o| payments : tiene
   orders ||--o| shipments : tiene
   coupons ||--o{ orders : aplica
+  coupons ||--o{ coupon_usages : registra
   products ||--o{ reviews : recibe
 ```
 
@@ -238,6 +265,31 @@ erDiagram
 - Mutaciones disponibles:
   - `addToCart`
   - `updateCartItem`
+
+## Cupones y reglas de carrito
+
+- Endpoints REST:
+  - `POST /cart/apply-coupon` body: `{ code }` — valida reglas y aplica el descuento al carrito.
+  - `DELETE /cart/coupon` — remueve el cupón aplicado.
+  - `POST /orders` — persiste `couponCode` y `discountTotal` en la orden y registra `coupon_usages`.
+- Endpoints Admin:
+  - `GET /admin/coupons?q=&status=&page=` — listar cupones con filtros.
+  - `POST /admin/coupons` — crear cupón.
+  - `PUT /admin/coupons/:id` — actualizar cupón.
+  - `GET /admin/coupons/:id/usages` — usos por cupón.
+- Reglas de validación:
+  - `status = active` y fecha actual dentro de `[validFrom, validTo]` (UTC).
+  - `uses < maxUses` y `usesByUser < perUserLimit` (según `coupon_usages`).
+  - `cart.subtotal >= minSubtotal`.
+  - Ningún ítem en `disallowProducts` y todos con `allowCoupon=true`.
+  - Si `allowedThemes` no está vacío ⇒ al menos un ítem con ese tema.
+- Tipos y cálculo:
+  - `fixed`: descuenta hasta el subtotal (nunca negativo).
+  - `percent`: descuento proporcional, con redondeo financiero (banker's rounding).
+- Errores estructurados:
+  - `COUPON_INVALID`, `COUPON_EXPIRED`, `COUPON_LIMIT_REACHED`, `COUPON_NOT_APPLICABLE`, `COUPON_MIN_SUBTOTAL`.
+
+Consulta `src/app/openapi.yaml` para el detalle de contratos OpenAPI actualizados.
   - `createOrder`
   - `createMpPreference`
 

@@ -54,7 +54,11 @@ function CartPage() {
     }
   };
 
-  const total = cart?.items?.reduce((sum, it) => sum + it.quantity * parseFloat(it.unitPrice), 0) || 0;
+  const subtotal = cart?.subtotal != null
+    ? parseFloat(cart.subtotal)
+    : (cart?.items?.reduce((sum, it) => sum + it.quantity * parseFloat(it.unitPrice), 0) || 0);
+  const discount = cart?.discountTotal ? parseFloat(cart.discountTotal) : 0;
+  const grand = Math.max(0, subtotal - discount);
 
   if (!user) {
     return (
@@ -167,8 +171,9 @@ function CartPage() {
           <div className="col-md-4">
             <div className="position-sticky top-0 p-3 bg-body-tertiary rounded border">
               <h5 className="mb-3">Resumen</h5>
-              <p className="mb-1">Subtotal: ${total.toFixed(2)}</p>
-              <p className="mb-3">Total: ${total.toFixed(2)}</p>
+              <p className="mb-1">Subtotal: ${subtotal.toFixed(2)}</p>
+              {discount > 0 && <p className="mb-1 text-success">Descuento: -${discount.toFixed(2)}</p>}
+              <p className="mb-3">Total: ${grand.toFixed(2)}</p>
               <button
                 className="btn btn-outline-danger w-100 mb-2 d-flex align-items-center justify-content-center"
                 onClick={handleClear}

@@ -2,7 +2,7 @@
 // Controller functions for cart routes. Performs CRUD operations on
 // Cart and CartItem models. Authentication is required on all actions.
 
-const { Cart, CartItem, Product } = require('../../infra/models');
+const { Cart, CartItem, Product, Category, Coupon } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 
 // Determine a product's effective unit price based on sale price vs MSRP
@@ -12,7 +12,7 @@ function getEffectivePrice(product) {
   return salePrice != null ? salePrice : msrp;
 }
 
-// Helper to attach cart total and expose a simplified item structure
+// Helper to attach cart totals and expose a simplified item structure
 function attachTotal(cart) {
   if (!cart) return null;
   const data = cart.toJSON();
@@ -27,10 +27,14 @@ function attachTotal(cart) {
     quantity: it.quantity,
   }));
 
-  const total = items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0);
+  const subtotal = items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0);
+  const discount = data.discountTotal ? parseFloat(data.discountTotal) : 0;
+  const grand = Math.max(0, subtotal - discount);
 
   data.items = items;
-  data.total = total;
+  data.subtotal = subtotal;
+  data.discountTotal = discount;
+  data.total = grand;
   return data;
 }
 
@@ -41,7 +45,7 @@ exports.getCart = async (req, res, next) => {
     if (!user) throw new ApiError('Not authenticated', 401);
     const cart = await Cart.findOne({
       where: { userId: user.id },
-      include: { model: CartItem, as: 'items' },
+      include: { model: CartItem, as: 'items', include: [Product] },
     });
     res.json(attachTotal(cart));
   } catch (err) {
@@ -80,7 +84,7 @@ exports.addItem = async (req, res, next) => {
     item.subtotal = item.quantity * item.unitPrice;
     await item.save();
     const refreshed = await Cart.findByPk(cart.id, {
-      include: { model: CartItem, as: 'items' },
+      include: { model: CartItem, as: 'items', include: [Product] },
     });
     res.json(attachTotal(refreshed));
   } catch (err) {
@@ -124,7 +128,7 @@ exports.updateItem = async (req, res, next) => {
     }
     const cart = await Cart.findOne({
       where: { id: item.cartId, userId: user.id },
-      include: { model: CartItem, as: 'items' },
+      include: { model: CartItem, as: 'items', include: [Product] },
     });
     res.json(attachTotal(cart));
   } catch (err) {
@@ -148,7 +152,7 @@ exports.removeItem = async (req, res, next) => {
     await item.destroy();
     const cart = await Cart.findOne({
       where: { id: cartId, userId: user.id },
-      include: { model: CartItem, as: 'items' },
+      include: { model: CartItem, as: 'items', include: [Product] },
     });
     res.json(attachTotal(cart));
   } catch (err) {
@@ -166,9 +170,63 @@ exports.clearCart = async (req, res, next) => {
       defaults: {},
     });
     await CartItem.destroy({ where: { cartId: cart.id } });
+    cart.couponCode = null;
+    cart.discountTotal = 0;
+    if (typeof cart.save === 'function') {
+      await cart.save();
+    }
+    const refreshed = await Cart.findByPk(cart.id, {
+      include: { model: CartItem, as: 'items', include: [Product] },
+    });
+    res.json(attachTotal(refreshed));
+  } catch (err) {
+    next(err);
+  }
+};
+
+// POST /cart/apply-coupon
+exports.applyCoupon = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) throw new ApiError('Not authenticated', 401);
+    const codeRaw = (req.body && req.body.code) || '';
+    const code = String(codeRaw).trim().toUpperCase();
+    if (!code) throw new ApiError('code is required', 400, 'BAD_REQUEST');
+
+    const cart = await Cart.findOrCreate({ where: { userId: user.id }, defaults: {} }).then(([c]) => c);
+    const cartWithItems = await Cart.findByPk(cart.id, {
+      include: { model: CartItem, as: 'items', include: [{ model: Product, include: [{ model: Category, as: 'categories', through: { attributes: [] } }] }] },
+    });
+    const coupon = await Coupon.findOne({ where: { code } });
+    if (!coupon) throw new ApiError('Cupón inválido', 400, 'COUPON_INVALID');
+
+    const { validateAndPriceCoupon } = require('../promotions/engine');
+    const result = await validateAndPriceCoupon({ coupon, userId: user.id, cart: cartWithItems, models: require('../../infra/models') });
+    if (!result.ok) {
+      throw new ApiError(result.message || 'Cupón no aplicable', 400, result.code || 'COUPON_NOT_APPLICABLE');
+    }
+    cart.couponCode = code;
+    cart.discountTotal = result.discount;
+    await cart.save();
     const refreshed = await Cart.findByPk(cart.id, {
       include: { model: CartItem, as: 'items' },
     });
+    res.json(attachTotal(refreshed));
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /cart/coupon
+exports.removeCoupon = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) throw new ApiError('Not authenticated', 401);
+    const [cart] = await Cart.findOrCreate({ where: { userId: user.id }, defaults: {} });
+    cart.couponCode = null;
+    cart.discountTotal = 0;
+    await cart.save();
+    const refreshed = await Cart.findByPk(cart.id, { include: { model: CartItem, as: 'items', include: [Product] } });
     res.json(attachTotal(refreshed));
   } catch (err) {
     next(err);

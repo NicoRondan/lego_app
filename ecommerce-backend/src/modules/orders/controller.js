@@ -73,21 +73,35 @@ exports.createOrder = async (req, res, next) => {
       }
     }
     const dto = require('./dto');
-    const { couponCode } = dto.parseCreateOrder(req.body);
+    const { couponCode: couponCodeFromBody } = dto.parseCreateOrder(req.body);
     const cart = await Cart.findOne({
       where: { userId: user.id },
       include: { model: CartItem, as: 'items', include: [Product] },
     });
     if (!cart || cart.items.length === 0) throw new ApiError('Cart is empty', 400);
     const order = await sequelize.transaction(async (t) => {
+      // Prefer coupon from cart if applied; fallback to body
+      const cartWithCoupon = await Cart.findOne({ where: { userId: user.id } });
+      const effectiveCouponCode = cartWithCoupon?.couponCode || couponCodeFromBody || null;
       let coupon = null;
-      if (couponCode) {
-        coupon = await Coupon.findOne({ where: { code: couponCode }, transaction: t });
+      let discountTotal = 0;
+      if (effectiveCouponCode) {
+        coupon = await Coupon.findOne({ where: { code: effectiveCouponCode }, transaction: t });
       }
       // Snapshot items from cart
       const currency = cart.items[0]?.Product?.currency || cart.items[0]?.currency || 'USD';
       const subtotal = cart.items.reduce((sum, ci) => sum + ci.quantity * parseFloat(ci.unitPrice), 0);
-      const discountTotal = 0; // coupons applied below affect grandTotal only for now
+      // If cart has discountTotal, use it; otherwise compute if coupon provided
+      if (cartWithCoupon && cartWithCoupon.discountTotal) {
+        discountTotal = parseFloat(cartWithCoupon.discountTotal);
+      } else if (coupon) {
+        // Compute fresh discount for safety
+        const { Category, Product: ProductModel } = require('../../infra/models');
+        const cartReload = await Cart.findByPk(cart.id, { transaction: t, include: { model: CartItem, as: 'items', include: [{ model: ProductModel, include: [{ model: Category, as: 'categories', through: { attributes: [] } }] }] } });
+        const { validateAndPriceCoupon } = require('../promotions/engine');
+        const evalRes = await validateAndPriceCoupon({ coupon, userId: user.id, cart: cartReload, models: require('../../infra/models') });
+        if (evalRes.ok) discountTotal = evalRes.discount;
+      }
       const shippingTotal = 0;
       const taxTotal = 0;
       const grandTotal = subtotal - discountTotal + shippingTotal + taxTotal;
@@ -124,6 +138,17 @@ exports.createOrder = async (req, res, next) => {
         );
       }
       await CartItem.destroy({ where: { cartId: cart.id }, transaction: t });
+      // Clear coupon snapshot on cart after successful order creation
+      if (cartWithCoupon) {
+        cartWithCoupon.couponCode = null;
+        cartWithCoupon.discountTotal = 0;
+        await cartWithCoupon.save({ transaction: t });
+      }
+      // Record coupon usage
+      if (coupon) {
+        const { CouponUsage } = require('../../infra/models');
+        await CouponUsage.create({ couponId: coupon.id, userId: user.id, orderId: orderRecord.id }, { transaction: t });
+      }
       return orderRecord;
     });
     if (idempotencyKey) {

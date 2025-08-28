@@ -165,15 +165,143 @@ components:
       type: object
       properties:
         id: { type: integer }
+        couponCode:
+          type: string
+          nullable: true
+        subtotal:
+          type: number
+          format: float
+          example: 100.0
+        discountTotal:
+          type: number
+          format: float
+          example: 10.0
         items:
+  /cart/apply-coupon:
+    post:
+      summary: Apply a coupon code to the current cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Uppercase coupon code
+      responses:
+        '200':
+          description: Coupon applied; returns updated cart totals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '400':
+          description: Coupon invalid or not applicable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /cart/coupon:
+    delete:
+      summary: Remove applied coupon from cart
+      responses:
+        '200':
+          description: Coupon removed; returns updated cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /admin/coupons:
+    get:
+      summary: List coupons (admin)
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [active, paused] }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create coupon (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponInput'
+      responses:
+        '201': { description: Created }
+  /admin/coupons/{id}:
+    put:
+      summary: Update coupon (admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponInput'
+      responses:
+        '200': { description: OK }
+  /admin/coupons/{id}/usages:
+    get:
+      summary: List coupon usages (admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
           type: array
           items:
             $ref: '#/components/schemas/CartItem'
         total:
-          type: string
-          description: Sum of item subtotals with two decimal places
-          example: '30.00'
+          type: number
+          format: float
+          description: Grand total after discounts
+          example: 90.0
     Error:
       type: object
       properties:
+        code: { type: string }
         message: { type: string }
+        requestId: { type: string }
+    CouponInput:
+      type: object
+      required: [code, type, value]
+      properties:
+        code: { type: string }
+        type: { type: string, enum: [percent, fixed] }
+        value: { type: number, format: float }
+        validFrom: { type: string, format: date-time }
+        validTo: { type: string, format: date-time }
+        minSubtotal: { type: number, format: float }
+        maxUses: { type: integer }
+        perUserLimit: { type: integer }
+        allowedThemes:
+          type: array
+          items: { type: string }
+        disallowProducts:
+          type: array
+          items: { type: string }
+        status: { type: string, enum: [active, paused] }
+        stackable: { type: boolean }

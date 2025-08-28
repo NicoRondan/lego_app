@@ -21,4 +21,10 @@ router.delete('/items/:id', controller.removeItem);
 // DELETE /cart
 router.delete('/', controller.clearCart);
 
+// POST /cart/apply-coupon
+router.post('/apply-coupon', controller.applyCoupon);
+
+// DELETE /cart/coupon
+router.delete('/coupon', controller.removeCoupon);
+
 module.exports = router;

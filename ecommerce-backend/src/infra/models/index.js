@@ -110,6 +110,8 @@ const Product = sequelize.define('Product', {
   status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'active' },
   stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   maxQtyPerOrder: { type: DataTypes.INTEGER, field: 'max_qty_per_order' },
+  // coupons eligibility
+  allowCoupon: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: 'allow_coupon' },
 }, {
   tableName: 'products',
   underscored: true,
@@ -144,6 +146,9 @@ const Cart = sequelize.define('Cart', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   // Explicit foreign key so queries use snake_case column
   userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
+  // Applied coupon snapshot on cart
+  couponCode: { type: DataTypes.STRING, field: 'coupon_code' },
+  discountTotal: { type: DataTypes.DECIMAL(10,2), field: 'discount_total', defaultValue: 0 },
 }, {
   tableName: 'carts',
   underscored: true,
@@ -243,15 +248,48 @@ const Shipment = sequelize.define('Shipment', {
   underscored: true,
 });
 
-// Coupon model
+// Coupon model (promotions)
 const Coupon = sequelize.define('Coupon', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  code: { type: DataTypes.STRING, allowNull: false, unique: true },
-  type: { type: DataTypes.STRING, allowNull: false },
+  code: { type: DataTypes.STRING, allowNull: false, unique: true }, // uppercase enforced at DTO level
+  type: { type: DataTypes.STRING, allowNull: false }, // 'percent' | 'fixed' (accept legacy 'percentage')
   value: { type: DataTypes.DECIMAL(10,2), allowNull: false },
+  validFrom: { type: DataTypes.DATE, field: 'valid_from' },
+  validTo: { type: DataTypes.DATE, field: 'valid_to' },
+  minSubtotal: { type: DataTypes.DECIMAL(10,2), field: 'min_subtotal', defaultValue: 0 },
+  maxUses: { type: DataTypes.INTEGER, field: 'max_uses' },
+  perUserLimit: { type: DataTypes.INTEGER, field: 'per_user_limit' },
+  allowedThemes: { type: DataTypes.JSON, field: 'allowed_themes' }, // array of category names
+  disallowProducts: { type: DataTypes.JSON, field: 'disallow_products' }, // array of product ids or codes
+  status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'active' }, // 'active' | 'paused'
+  stackable: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+  createdBy: { type: DataTypes.INTEGER, field: 'created_by' },
 }, {
   tableName: 'coupons',
   underscored: true,
+  indexes: [
+    { unique: true, fields: ['code'] },
+    { fields: ['status'] },
+    { fields: ['valid_from'] },
+    { fields: ['valid_to'] },
+  ],
+});
+
+// CouponUsage model
+const CouponUsage = sequelize.define('CouponUsage', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  couponId: { type: DataTypes.INTEGER, allowNull: false, field: 'coupon_id' },
+  userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
+  orderId: { type: DataTypes.INTEGER, allowNull: false, field: 'order_id' },
+  usedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: 'used_at' },
+}, {
+  tableName: 'coupon_usages',
+  underscored: true,
+  indexes: [
+    { fields: ['coupon_id'] },
+    { fields: ['user_id'] },
+    { fields: ['order_id'] },
+  ],
 });
 
 // Review model
@@ -399,6 +437,12 @@ Shipment.belongsTo(Order);
 Order.belongsTo(Coupon, { as: 'coupon' });
 Coupon.hasMany(Order);
 
+// Coupon usage relations
+CouponUsage.belongsTo(Coupon, { foreignKey: 'couponId' });
+Coupon.hasMany(CouponUsage, { as: 'usages', foreignKey: 'couponId' });
+CouponUsage.belongsTo(User, { foreignKey: 'userId' });
+CouponUsage.belongsTo(Order, { foreignKey: 'orderId' });
+
 // Review relations
 Product.hasMany(Review, { as: 'reviews' });
 Review.belongsTo(Product);
@@ -458,6 +502,7 @@ module.exports = {
   Payment,
   Shipment,
   Coupon,
+  CouponUsage,
   Review,
   RefreshToken,
   IdempotencyKey,

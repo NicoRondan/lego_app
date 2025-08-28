@@ -70,6 +70,9 @@ function ProductDetailPage() {
         />
       )}
       <h2>{product.name}</h2>
+      {product.allowCoupon === false && (
+        <span className="badge bg-warning text-dark mb-2">No acepta cupones</span>
+      )}
       <p>{product.description}</p>
       {product.recommendedAgeMin != null && product.recommendedAgeMax != null && (
         <p>
