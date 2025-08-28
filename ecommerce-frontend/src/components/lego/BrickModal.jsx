@@ -9,7 +9,7 @@ export default function BrickModal({ id, title, children, open = false, onClose,
     <>
       <div className={modalClass} id={id} tabIndex="-1" aria-hidden={open ? 'false' : 'true'}>
         <div className={`modal-dialog modal-dialog-centered ${sizeClass} ${dialogClassName}`.trim()}>
-          <div className="modal-content brick-modal bg-body text-body">
+          <div className="modal-content brick-modal">
             <div className="modal-header border-0">
             <h5 className="modal-title fw-bold d-flex align-items-center">
               <i className="fa-solid fa-cube me-2 text-warning" aria-hidden="true"></i>

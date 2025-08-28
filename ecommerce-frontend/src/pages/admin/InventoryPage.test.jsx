@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { act } from 'react-dom/test-utils';
 import { MemoryRouter } from 'react-router-dom';
 
 jest.mock('../../services/api', () => ({
@@ -71,16 +72,21 @@ describe('InventoryPage', () => {
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     const plusBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent.includes('+ Ajustar'));
-    const promptSpy = jest.spyOn(window, 'prompt');
-    promptSpy
-      .mockReturnValueOnce('2') // qty
-      .mockReturnValueOnce('ajuste test'); // reason
-    plusBtn.click();
+    act(() => { plusBtn.click(); });
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+    const modal = container.querySelector('.modal.show .modal-content');
+    const qtyInput = modal.querySelector('input[type="number"]');
+    qtyInput.value = '2';
+    qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+    const applyBtn = Array.from(modal.querySelectorAll('button')).find((b) => b.textContent.includes('Aplicar'));
+    act(() => { applyBtn.click(); });
+    await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     expect(api.adminAdjustInventory).toHaveBeenCalled();
     // reload
     expect(api.adminListInventory).toHaveBeenCalledTimes(2);
-    promptSpy.mockRestore();
+    
   });
 
   test('edits safety stock and opens movements', async () => {
@@ -109,12 +115,18 @@ describe('InventoryPage', () => {
 
     // Edit safety
     const editBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent.includes('Editar mínimo'));
-    const promptSpy = jest.spyOn(window, 'prompt');
-    promptSpy.mockReturnValueOnce('7');
-    editBtn.click();
+    act(() => { editBtn.click(); });
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+    const modal2 = container.querySelector('.modal.show .modal-content');
+    const safetyInput = modal2.querySelector('input[type="number"]');
+    safetyInput.value = '7';
+    safetyInput.dispatchEvent(new Event('change', { bubbles: true }));
+    const saveBtn = Array.from(modal2.querySelectorAll('button')).find((b) => b.textContent.includes('Guardar'));
+    act(() => { saveBtn.click(); });
+    await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     expect(api.adminUpdateSafetyStock).toHaveBeenCalled();
-    promptSpy.mockRestore();
 
     // Movements
     const movBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent.includes('Movimientos'));

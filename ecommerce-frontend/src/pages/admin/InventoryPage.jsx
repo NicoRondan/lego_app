@@ -14,7 +14,8 @@ function Badge({ low }) {
 }
 
 function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
-  const [movs, setMovs] = useState(null);
+  const [movs, setMovs] = useState([]);
+  const [movsOpen, setMovsOpen] = useState(false);
   const [loadingMovs, setLoadingMovs] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjustSign, setAdjustSign] = useState(1);
@@ -23,11 +24,18 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
   const [safetyOpen, setSafetyOpen] = useState(false);
   const [safetyVal, setSafetyVal] = useState(String(item.safetyStock || 0));
 
-  const fetchMovs = async () => {
-    setLoadingMovs(true);
-    const res = await adminListInventoryMovements(item.productId, { limit: 20 });
-    setMovs(res.items || []);
-    setLoadingMovs(false);
+  const toggleMovs = async () => {
+    if (movsOpen) {
+      setMovsOpen(false);
+      return;
+    }
+    setMovsOpen(true);
+    if (!movs || movs.length === 0) {
+      setLoadingMovs(true);
+      const res = await adminListInventoryMovements(item.productId, { limit: 20 });
+      setMovs(res.items || []);
+      setLoadingMovs(false);
+    }
   };
 
   const openAdjust = (sign) => {
@@ -77,10 +85,10 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
             <button className="btn btn-outline-secondary" onClick={() => openAdjust(-1)}>- Ajustar</button>
           </div>
           <button className="btn btn-sm btn-outline-warning ms-2" onClick={openSafety}>Editar mínimo</button>
-          <button className="btn btn-sm btn-outline-primary ms-2" onClick={fetchMovs}>Movimientos</button>
+          <button className="btn btn-sm btn-primary ms-2" onClick={toggleMovs}>{movsOpen ? 'Ocultar' : 'Movimientos'}</button>
         </td>
       </tr>
-      {movs && (
+      {movsOpen && (
         <tr>
           <td colSpan={6}>
             <div className="p-2 border rounded">
@@ -167,10 +175,7 @@ function InventoryPage() {
 
   return (
     <AdminLayout>
-      <div className="d-flex align-items-center mb-3">
-        <img src="/assets/logo.png" alt="Brick" width="36" height="36" className="me-2" />
-        <h1 className="mb-0">Inventario</h1>
-      </div>
+      <h1 className="mb-3">Inventario</h1>
       <div className="d-flex align-items-end gap-2 mb-3">
         <div className="flex-grow-1">
           <label className="form-label">Buscar por set o nombre</label>
