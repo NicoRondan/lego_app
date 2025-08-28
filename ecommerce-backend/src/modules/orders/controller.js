@@ -122,6 +122,10 @@ exports.createOrder = async (req, res, next) => {
         { transaction: t }
       );
       for (const ci of cart.items) {
+        // Validate max per order at order time
+        if (ci.Product?.maxQtyPerOrder && ci.quantity > ci.Product.maxQtyPerOrder) {
+          throw new ApiError('Exceeds max qty per order', 400);
+        }
         await OrderItem.create(
           {
             orderId: orderRecord.id,
