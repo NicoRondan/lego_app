@@ -107,8 +107,7 @@ function hasRole(...roles) {
   return function (req, res, next) {
     const role = req.user?.role;
     if (!role) return res.status(401).json({ error: { code: ERROR_CODES[401], message: 'Unauthorized' }, requestId: req.id });
-    if (role === 'superadmin') return next();
-    if (role === 'admin' && roles.length === 0) return next();
+    if (role === 'superadmin' || role === 'admin') return next();
     if (ADMIN_ROLES.includes(role) && (roles.length === 0 || roles.includes(role))) return next();
     return res.status(403).json({ error: { code: ERROR_CODES[403], message: 'Forbidden' }, requestId: req.id });
   };

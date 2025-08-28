@@ -159,6 +159,36 @@ exports.deleteAddress = async (req, res, next) => {
   }
 };
 
+exports.updateAddress = async (req, res, next) => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    const addressId = parseInt(req.params.addressId, 10);
+    const addr = await Address.findOne({ where: { id: addressId, userId } });
+    if (!addr) return res.status(404).json({ error: { message: 'Address not found' } });
+    const { type, name, line1, line2, city, state, zip, country, isDefault } = req.body || {};
+    if (isDefault && (type || addr.type)) {
+      await Address.update({ isDefault: false }, { where: { userId, type: type || addr.type } });
+      addr.isDefault = true;
+    } else if (isDefault === false) {
+      addr.isDefault = false;
+    }
+    if (type != null) addr.type = type;
+    if (name != null) addr.name = name;
+    if (line1 != null) addr.line1 = line1;
+    if (line2 != null) addr.line2 = line2;
+    if (city != null) addr.city = city;
+    if (state != null) addr.state = state;
+    if (zip != null) addr.zip = zip;
+    if (country != null) addr.country = country;
+    if (line1 != null) addr.street = line1; // keep legacy in sync
+    await addr.save();
+    await AdminAuditLog.create({ adminUserId: null, action: 'address_update', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, addressId } });
+    res.json(addr);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.impersonate = async (req, res, next) => {
   try {
     const userId = parseInt(req.params.id, 10);
