@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import BrickModal from '../../components/lego/BrickModal.jsx';
 import {
   adminListInventory,
   adminAdjustInventory,
@@ -15,6 +16,12 @@ function Badge({ low }) {
 function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
   const [movs, setMovs] = useState(null);
   const [loadingMovs, setLoadingMovs] = useState(false);
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [adjustSign, setAdjustSign] = useState(1);
+  const [adjustQty, setAdjustQty] = useState('');
+  const [adjustReason, setAdjustReason] = useState('');
+  const [safetyOpen, setSafetyOpen] = useState(false);
+  const [safetyVal, setSafetyVal] = useState(String(item.safetyStock || 0));
 
   const fetchMovs = async () => {
     setLoadingMovs(true);
@@ -23,22 +30,29 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
     setLoadingMovs(false);
   };
 
-  const adjust = async (sign) => {
-    const raw = prompt(`Cantidad a ${sign > 0 ? 'sumar' : 'restar'} (entero):`);
-    if (raw == null) return;
-    const qty = parseInt(raw, 10) * sign;
-    if (!Number.isInteger(qty) || qty === 0) return alert('Cantidad inválida');
-    const reason = prompt('Motivo del ajuste:') || '';
-    await adminAdjustInventory(item.productId, { qty, reason });
+  const openAdjust = (sign) => {
+    setAdjustSign(sign);
+    setAdjustQty('');
+    setAdjustReason('');
+    setAdjustOpen(true);
+  };
+  const submitAdjust = async (e) => {
+    e.preventDefault();
+    const n = parseInt(adjustQty, 10);
+    if (!Number.isInteger(n) || n <= 0) return alert('Ingrese un entero mayor a 0');
+    const qty = adjustSign * n;
+    await adminAdjustInventory(item.productId, { qty, reason: adjustReason || '' });
+    setAdjustOpen(false);
     onAdjusted();
   };
 
-  const editSafety = async () => {
-    const raw = prompt('Nuevo mínimo (safety stock):', String(item.safetyStock || 0));
-    if (raw == null) return;
-    const safetyStock = parseInt(raw, 10);
+  const openSafety = () => { setSafetyVal(String(item.safetyStock || 0)); setSafetyOpen(true); };
+  const submitSafety = async (e) => {
+    e.preventDefault();
+    const safetyStock = parseInt(safetyVal, 10);
     if (!Number.isInteger(safetyStock) || safetyStock < 0) return alert('Valor inválido');
     await adminUpdateSafetyStock(item.productId, { safetyStock });
+    setSafetyOpen(false);
     onSafetyUpdated();
   };
 
@@ -59,17 +73,17 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
         <td className="text-end">{item.safetyStock}</td>
         <td className="text-end">
           <div className="btn-group btn-group-sm">
-            <button className="btn btn-outline-secondary" onClick={() => adjust(+1)}>+ Ajustar</button>
-            <button className="btn btn-outline-secondary" onClick={() => adjust(-1)}>- Ajustar</button>
+            <button className="btn btn-outline-secondary" onClick={() => openAdjust(+1)}>+ Ajustar</button>
+            <button className="btn btn-outline-secondary" onClick={() => openAdjust(-1)}>- Ajustar</button>
           </div>
-          <button className="btn btn-sm btn-outline-primary ms-2" onClick={editSafety}>Editar mínimo</button>
-          <button className="btn btn-sm btn-outline-dark ms-2" onClick={fetchMovs}>Movimientos</button>
+          <button className="btn btn-sm btn-outline-warning ms-2" onClick={openSafety}>Editar mínimo</button>
+          <button className="btn btn-sm btn-outline-primary ms-2" onClick={fetchMovs}>Movimientos</button>
         </td>
       </tr>
       {movs && (
         <tr>
           <td colSpan={6}>
-            <div className="bg-light p-2 rounded">
+            <div className="p-2 border rounded">
               {loadingMovs ? (
                 <div>Cargando...</div>
               ) : (
@@ -78,7 +92,7 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
                     <tr>
                       <th>Fecha</th>
                       <th>Tipo</th>
-                      <th className="text-end">Qty</th>
+                      <th className="text-end">Cantidad</th>
                       <th>Motivo/Pedido</th>
                     </tr>
                   </thead>
@@ -98,6 +112,40 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
           </td>
         </tr>
       )}
+
+      {/* Modales */}
+      <BrickModal id={`adjust-${item.productId}`} title={`Ajustar stock • ${item.name}`} open={adjustOpen} onClose={() => setAdjustOpen(false)}>
+        <form onSubmit={submitAdjust} className="row g-3">
+          <div className="col-12">
+            <label className="form-label">Cantidad</label>
+            <div className="input-group">
+              <span className="input-group-text">{adjustSign > 0 ? '+' : '-'}</span>
+              <input className="form-control" type="number" step="1" min="1" value={adjustQty} onChange={(e) => setAdjustQty(e.target.value)} required />
+            </div>
+          </div>
+          <div className="col-12">
+            <label className="form-label">Motivo (opcional)</label>
+            <input className="form-control" placeholder="Inventario, rotura, corrección…" value={adjustReason} onChange={(e) => setAdjustReason(e.target.value)} />
+          </div>
+          <div className="col-12 d-flex justify-content-end gap-2">
+            <button type="button" className="btn btn-outline-secondary" onClick={() => setAdjustOpen(false)}>Cancelar</button>
+            <button type="submit" className="btn btn-primary">Aplicar</button>
+          </div>
+        </form>
+      </BrickModal>
+
+      <BrickModal id={`safety-${item.productId}`} title={`Editar mínimo • ${item.name}`} open={safetyOpen} onClose={() => setSafetyOpen(false)}>
+        <form onSubmit={submitSafety} className="row g-3">
+          <div className="col-12">
+            <label className="form-label">Mínimo (safety stock)</label>
+            <input className="form-control" type="number" step="1" min="0" value={safetyVal} onChange={(e) => setSafetyVal(e.target.value)} required />
+          </div>
+          <div className="col-12 d-flex justify-content-end gap-2">
+            <button type="button" className="btn btn-outline-secondary" onClick={() => setSafetyOpen(false)}>Cancelar</button>
+            <button type="submit" className="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </BrickModal>
     </>
   );
 }
@@ -119,7 +167,10 @@ function InventoryPage() {
 
   return (
     <AdminLayout>
-      <h1 className="mb-3">Inventario</h1>
+      <div className="d-flex align-items-center mb-3">
+        <img src="/assets/logo.png" alt="Brick" width="36" height="36" className="me-2" />
+        <h1 className="mb-0">Inventario</h1>
+      </div>
       <div className="d-flex align-items-end gap-2 mb-3">
         <div className="flex-grow-1">
           <label className="form-label">Buscar por set o nombre</label>
@@ -162,4 +213,3 @@ function InventoryPage() {
 }
 
 export default InventoryPage;
-
