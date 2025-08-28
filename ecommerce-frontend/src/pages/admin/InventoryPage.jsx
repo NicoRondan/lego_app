@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import InfoTooltip from '../../components/InfoTooltip.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
 import {
   adminListInventory,
@@ -125,15 +126,39 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
       <BrickModal id={`adjust-${item.productId}`} title={`Ajustar stock • ${item.name}`} open={adjustOpen} onClose={() => setAdjustOpen(false)}>
         <form onSubmit={submitAdjust} className="row g-3">
           <div className="col-12">
-            <label className="form-label">Cantidad</label>
+            <label className="form-label d-flex align-items-center gap-2">
+              Cantidad
+              <InfoTooltip text="Ingrese un entero > 0. El signo (+/−) se elige con el botón presionado." />
+            </label>
             <div className="input-group">
               <span className="input-group-text">{adjustSign > 0 ? '+' : '-'}</span>
-              <input className="form-control" type="number" step="1" min="1" value={adjustQty} onChange={(e) => setAdjustQty(e.target.value)} required />
+              <input
+                className="form-control"
+                type="number"
+                name="qty"
+                step="1"
+                min="1"
+                placeholder="Cantidad a ajustar (entero > 0)"
+                aria-label="Cantidad a ajustar"
+                value={adjustQty}
+                onChange={(e) => setAdjustQty(e.target.value)}
+                required
+              />
             </div>
           </div>
           <div className="col-12">
-            <label className="form-label">Motivo (opcional)</label>
-            <input className="form-control" placeholder="Inventario, rotura, corrección…" value={adjustReason} onChange={(e) => setAdjustReason(e.target.value)} />
+            <label className="form-label d-flex align-items-center gap-2">
+              Motivo (opcional)
+              <InfoTooltip text="Describe la causa del ajuste: inventario, corrección, rotura, recepción, etc." />
+            </label>
+            <input
+              className="form-control"
+              name="reason"
+              placeholder="Inventario, rotura, corrección…"
+              aria-label="Motivo del ajuste"
+              value={adjustReason}
+              onChange={(e) => setAdjustReason(e.target.value)}
+            />
           </div>
           <div className="col-12 d-flex justify-content-end gap-2">
             <button type="button" className="btn btn-outline-secondary" onClick={() => setAdjustOpen(false)}>Cancelar</button>
@@ -145,8 +170,22 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
       <BrickModal id={`safety-${item.productId}`} title={`Editar mínimo • ${item.name}`} open={safetyOpen} onClose={() => setSafetyOpen(false)}>
         <form onSubmit={submitSafety} className="row g-3">
           <div className="col-12">
-            <label className="form-label">Mínimo (safety stock)</label>
-            <input className="form-control" type="number" step="1" min="0" value={safetyVal} onChange={(e) => setSafetyVal(e.target.value)} required />
+            <label className="form-label d-flex align-items-center gap-2">
+              Mínimo (safety stock)
+              <InfoTooltip text="Si Disponible (Stock−Reservado) es menor o igual a este valor, el producto se marca 'Bajo stock' y aparece en el filtro correspondiente." />
+            </label>
+            <input
+              className="form-control"
+              type="number"
+              name="safetyStock"
+              step="1"
+              min="0"
+              placeholder="Ej: 3"
+              aria-label="Mínimo de seguridad"
+              value={safetyVal}
+              onChange={(e) => setSafetyVal(e.target.value)}
+              required
+            />
           </div>
           <div className="col-12 d-flex justify-content-end gap-2">
             <button type="button" className="btn btn-outline-secondary" onClick={() => setSafetyOpen(false)}>Cancelar</button>
@@ -175,7 +214,7 @@ function InventoryPage() {
 
   return (
     <AdminLayout>
-      <h1 className="mb-3">Inventario</h1>
+      <h2 className="mb-3">Inventario</h2>
       <div className="d-flex align-items-end gap-2 mb-3">
         <div className="flex-grow-1">
           <label className="form-label">Buscar por set o nombre</label>

@@ -75,7 +75,7 @@ describe('InventoryPage', () => {
     act(() => { plusBtn.click(); });
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
-    const modal = container.querySelector('.modal.show .modal-content');
+    const modal = document.querySelector('.modal.show .modal-content');
     const qtyInput = modal.querySelector('input[type="number"]');
     qtyInput.value = '2';
     qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -118,7 +118,7 @@ describe('InventoryPage', () => {
     act(() => { editBtn.click(); });
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
-    const modal2 = container.querySelector('.modal.show .modal-content');
+    const modal2 = document.querySelector('.modal.show .modal-content');
     const safetyInput = modal2.querySelector('input[type="number"]');
     safetyInput.value = '7';
     safetyInput.dispatchEvent(new Event('change', { bubbles: true }));
