@@ -3,7 +3,14 @@ import InfoTooltip from '../../components/InfoTooltip.jsx';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { API_URL, adminReportSalesSummary, adminReportSalesByTheme, adminReportTopProducts, adminReportLowStock } from '../../services/api';
 
-const ALL_STATUSES = ['pending', 'picking', 'paid', 'shipped', 'delivered'];
+const STATUS_OPTIONS = [
+  { code: 'pending', label: 'Pendiente' },
+  { code: 'picking', label: 'Preparación' },
+  { code: 'paid', label: 'Pagado' },
+  { code: 'shipped', label: 'Enviado' },
+  { code: 'delivered', label: 'Entregado' },
+];
+const ALL_STATUSES = STATUS_OPTIONS.map((o) => o.code);
 
 function fmtDate(d) {
   const yyyy = d.getFullYear();
@@ -27,14 +34,16 @@ function StatusMultiSelect({ value, onChange }) {
   };
   return (
     <div className="d-flex flex-wrap gap-2">
-      {ALL_STATUSES.map((s) => (
+      {STATUS_OPTIONS.map(({ code, label }) => (
         <button
-          key={s}
+          key={code}
           type="button"
-          className={`btn btn-sm ${value.includes(s) ? 'btn-primary' : 'btn-outline-secondary'}`}
-          onClick={() => toggle(s)}
-        >{s}</button>
+          className={`btn btn-sm ${value.includes(code) ? 'btn-primary' : 'btn-outline-secondary'}`}
+          onClick={() => toggle(code)}
+        >{label}</button>
       ))}
+      <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => onChange([...ALL_STATUSES])}>Todos</button>
+      <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => onChange([])}>Ninguno</button>
     </div>
   );
 }
@@ -227,12 +236,12 @@ function ReportsPage() {
         <>
           <div className="row g-3 mb-3">
             <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Pedidos<InfoTooltip text="Cantidad de órdenes en el rango seleccionado" /></div><div className="fs-4">{totals.orders}</div></div></div>
-            <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Net<InfoTooltip text="Ingresos netos = Gross - Descuentos (antes de impuestos/envío)" /></div><div className="fs-4">{totals.net.toFixed(2)}</div></div></div>
-            <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">AOV<InfoTooltip text="Average Order Value = Net / Pedidos" /></div><div className="fs-4">{totals.aov.toFixed(2)}</div></div></div>
+            <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Neto<InfoTooltip text="Ingresos netos = Bruto - Descuentos (antes de impuestos/envío)" /></div><div className="fs-4">{totals.net.toFixed(2)}</div></div></div>
+            <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Ticket prom.<InfoTooltip text="Promedio por pedido = Neto / Pedidos" /></div><div className="fs-4">{totals.aov.toFixed(2)}</div></div></div>
             <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">% OFF prom.<InfoTooltip text="Promedio de descuento sobre el Gross (Descuento/Gross)" /></div><div className="fs-4">{totals.avgOffPct.toFixed(1)}%</div></div></div>
           </div>
           <div className="d-flex justify-content-end mb-2">
-            <button className="btn btn-outline-secondary" onClick={() => exportCsv('/admin/reports/sales/summary')}>Export CSV</button>
+            <button className="btn btn-outline-secondary" onClick={() => exportCsv('/admin/reports/sales/summary')}>Exportar CSV</button>
           </div>
           {error && <div className="alert alert-danger">{error}</div>}
           {loading ? <div>Cargando...</div> : (
@@ -242,11 +251,11 @@ function ReportsPage() {
                   <tr>
                     <th>Periodo</th>
                     <th>Pedidos<InfoTooltip text="Número de órdenes en el período" /></th>
-                    <th>Qty<InfoTooltip text="Unidades vendidas" /></th>
-                    <th>Gross<InfoTooltip text="Suma de (precio x cantidad)" /></th>
+                    <th>Unidades<InfoTooltip text="Unidades vendidas" /></th>
+                    <th>Bruto<InfoTooltip text="Suma de (precio x cantidad)" /></th>
                     <th>Desc.<InfoTooltip text="Total de descuentos aplicados (cupones/ofertas)" /></th>
-                    <th>Net<InfoTooltip text="Gross - Descuentos" /></th>
-                    <th>AOV<InfoTooltip text="Average Order Value" /></th>
+                    <th>Neto<InfoTooltip text="Bruto - Descuentos" /></th>
+                    <th>Ticket prom.<InfoTooltip text="Promedio por pedido = Neto / Pedidos" /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -259,8 +268,8 @@ function ReportsPage() {
                       <td>{b.discount?.toFixed ? b.discount.toFixed(2) : b.discount}</td>
                       <td>{b.net?.toFixed ? b.net.toFixed(2) : b.net}</td>
                       <td>{b.avgOrderValue?.toFixed ? b.avgOrderValue.toFixed(2) : b.avgOrderValue}</td>
-                    </tr>
-                  ))}
+                  </tr>
+                ))}
                 </tbody>
               </table>
               <div className="d-flex justify-content-between align-items-center">
@@ -287,7 +296,7 @@ function ReportsPage() {
       {tab === 'theme' && (
         <>
           <div className="d-flex justify-content-end mb-2">
-            <button className="btn btn-outline-secondary" onClick={() => exportCsv('/admin/reports/sales/by-theme')}>Export CSV</button>
+            <button className="btn btn-outline-secondary" onClick={() => exportCsv('/admin/reports/sales/by-theme')}>Exportar CSV</button>
           </div>
           {error && <div className="alert alert-danger">{error}</div>}
           {loading ? <div>Cargando...</div> : (
@@ -297,8 +306,8 @@ function ReportsPage() {
                   <tr>
                     <th>Tema</th>
                     <th>Pedidos<InfoTooltip text="Órdenes que incluyen productos del tema" /></th>
-                    <th>Qty<InfoTooltip text="Unidades vendidas (acumulado del tema)" /></th>
-                    <th>Net<InfoTooltip text="Ingresos netos atribuidos al tema" /></th>
+                    <th>Unidades<InfoTooltip text="Unidades vendidas (acumulado del tema)" /></th>
+                    <th>Neto<InfoTooltip text="Ingresos netos atribuidos al tema" /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -337,7 +346,7 @@ function ReportsPage() {
       {tab === 'top' && (
         <>
           <div className="d-flex justify-content-end mb-2">
-            <button className="btn btn-outline-secondary" onClick={() => exportCsv('/admin/reports/sales/top-products')}>Export CSV</button>
+            <button className="btn btn-outline-secondary" onClick={() => exportCsv('/admin/reports/sales/top-products')}>Exportar CSV</button>
           </div>
           {error && <div className="alert alert-danger">{error}</div>}
           {loading ? <div>Cargando...</div> : (
@@ -347,8 +356,8 @@ function ReportsPage() {
                   <tr>
                     <th>Set</th>
                     <th>Nombre</th>
-                    <th>Qty<InfoTooltip text="Unidades vendidas del set" /></th>
-                    <th>Net<InfoTooltip text="Ingresos netos del set" /></th>
+                    <th>Unidades<InfoTooltip text="Unidades vendidas del set" /></th>
+                    <th>Neto<InfoTooltip text="Ingresos netos del set" /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -395,7 +404,7 @@ function ReportsPage() {
               <button className="btn btn-primary w-100" onClick={loadLowStock}>Refrescar</button>
             </div>
             <div className="col-md-2 align-self-end">
-              <button className="btn btn-outline-secondary w-100" onClick={exportLowStockCsv}>Export CSV</button>
+              <button className="btn btn-outline-secondary w-100" onClick={exportLowStockCsv}>Exportar CSV</button>
             </div>
           </div>
           {error && <div className="alert alert-danger">{error}</div>}

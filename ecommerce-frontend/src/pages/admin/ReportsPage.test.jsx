@@ -38,7 +38,7 @@ describe('ReportsPage', () => {
 
     // Ensure pending is present as a toggle
     const buttons = Array.from(container.querySelectorAll('button'));
-    const pendingBtn = buttons.find((b) => b.textContent.trim() === 'pending');
+    const pendingBtn = buttons.find((b) => b.textContent.trim() === 'Pendiente');
     expect(pendingBtn).toBeTruthy();
 
     // Toggle on pending and click Filtrar to trigger refresh
@@ -67,7 +67,7 @@ describe('ReportsPage', () => {
     await new Promise((r) => setTimeout(r, 0));
     const text = container.textContent;
     expect(text).toMatch(/Pedidos\??\s*2/);
-    expect(text).toMatch(/Net\??\s*150\.00/);
-    expect(text).toMatch(/AOV\??\s*75\.00/);
+    expect(text).toMatch(/Neto\??\s*150\.00/);
+    expect(text).toMatch(/Ticket prom\.?\??\s*75\.00/);
   });
 });
