@@ -654,6 +654,37 @@ Endpoints (clientes):
 - `POST /admin/users/:id/impersonate`
 - `GET /admin/users/:id/audit`
 
+### Marketing: Segmentos y Campañas
+
+Segmentos permiten definir audiencias a partir de un DSL simple y calcular su tamaño en backend.
+
+- `GET /admin/segments` — lista segmentos y actualiza su `size` calculado.
+- `POST /admin/segments` — crea un segmento. Body: `{ name, definition }`.
+- `POST /admin/segments` con `preview: true` — no persiste; responde `{ size }`.
+
+Definición (DSL) ejemplo:
+```json
+{ "theme": ["Star Wars", "Technic"], "minAov": 100, "lastOrderDaysLt": 90, "hasWishlist": true }
+```
+
+Campañas permiten programar acciones sobre un segmento (sin envío de emails todavía). El estado se deriva de `startsAt`/`endsAt` (`draft|scheduled|running|paused|finished`).
+
+- `GET /admin/campaigns` — lista campañas e incluye `currentStatus` derivado.
+- `POST /admin/campaigns` — crea campaña. Body: `{ name, segmentId, couponCode?, startsAt?, endsAt?, status? }`.
+
+### Endpoints de cliente: Wishlists
+
+Se añadieron endpoints bajo `/me/*` para gestionar wishlists por usuario. Se mantiene compatibilidad con `/wishlist` existente.
+
+- `GET /me/wishlists` — lista todas las wishlists del usuario (con items y productos).
+- `POST /me/wishlists` — crea wishlist. Body: `{ name?, isDefault? }`. La primera es default.
+- `DELETE /me/wishlists/:id` — elimina una wishlist del usuario.
+- `GET /me/wishlist` — devuelve la wishlist por defecto.
+- `POST /me/wishlist/items` — agrega un producto. Body: `{ productId, wishlistId? }`.
+- `DELETE /me/wishlist/items/:id` — elimina un ítem.
+
+Restricción: no se permiten ítems duplicados por `(wishlist_id, product_id)`.
+
 Impersonación segura:
 - One‑time token que expira (`IMPERSONATION_TTL_MIN`, default 10).
 - Intercambio via `POST /auth/impersonate` y cookie `impersonation=1` para banner en FE.

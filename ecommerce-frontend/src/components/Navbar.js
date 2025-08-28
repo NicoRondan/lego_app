@@ -4,12 +4,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import CartModal from './CartModal';
 import ThemeToggle from './ThemeToggle';
+// import * as api from '../services/api'; // no longer needed after WishlistContext
+import { useWishlist } from '../contexts/WishlistContext.jsx';
 
 // Navigation bar component. Uses Bootstrap classes for styling.
 function Navbar() {
   const { user, logout } = useAuth();
   const { cart } = useCart();
   const itemsCount = cart?.summary?.itemsCount || 0;
+  const { count: wishlistCount, pulse: wishlistPulse } = useWishlist();
   const allowGuestCart = process.env.REACT_APP_ALLOW_GUEST_CART === 'true';
   const isAdmin = useMemo(() => {
     const ADMIN_ROLES = ['superadmin','catalog_manager','oms','support','marketing'];
@@ -62,8 +65,17 @@ function Navbar() {
             )}
             {user?.role === 'customer' && (
               <li className="nav-item">
-                <Link className="nav-link" to="/wishlist">
-                  Mi wishlist
+                <Link className="nav-link d-flex align-items-center" to="/wishlist">
+                  <span className="position-relative me-1">
+                    <i className="fa-regular fa-heart" aria-hidden="true"></i>
+                    {wishlistCount > 0 && (
+                      <span className={`position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ${wishlistPulse ? 'badge-pulse' : ''}`}>
+                        {wishlistCount}
+                        <span className="visually-hidden">items in wishlist</span>
+                      </span>
+                    )}
+                  </span>
+                  <span>Wishlist</span>
                 </Link>
               </li>
             )}

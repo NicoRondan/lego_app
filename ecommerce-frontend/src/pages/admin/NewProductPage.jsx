@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { createProduct, getCategories } from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import InfoTooltip from '../../components/InfoTooltip';
 import AgeRangeSlider from '../../components/AgeRangeSlider';
 
@@ -347,7 +348,10 @@ function NewProductPage() {
 
   return (
     <AdminLayout>
-      <h2>Crear nuevo producto</h2>
+      <AdminPageHeader
+        title="Crear nuevo producto"
+        subtitle="Completa los datos principales del set, imágenes y metadatos SEO. Usa el generador de slug y valida el rango de edad."
+      />
       <form>
         <ul className="nav nav-tabs mb-3">
           <li className="nav-item">
@@ -736,4 +740,3 @@ function NewProductPage() {
 }
 
 export default NewProductPage;
-

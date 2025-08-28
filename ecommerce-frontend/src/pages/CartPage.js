@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import QuantityStepper from '../components/QuantityStepper';
 import * as api from '../services/api';
+import { useConfirm } from '../components/ConfirmProvider.jsx';
 
 // Page that displays the user's cart and allows quantity adjustments and removal
 function CartPage() {
@@ -12,6 +13,7 @@ function CartPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
   useEffect(() => {
     const load = async () => {
@@ -47,7 +49,8 @@ function CartPage() {
   };
 
   const handleClear = async () => {
-    if (!window.confirm('¿Vaciar el carrito?')) return;
+    const ok = await confirm({ title: 'Vaciar carrito', body: '¿Vaciar el carrito?' });
+    if (!ok) return;
     try {
       await clearCart();
     } catch (err) {
@@ -181,7 +184,7 @@ function CartPage() {
                     className="btn btn-sm btn-outline-secondary ms-2"
                     onClick={async () => {
                       try {
-                        const updated = await api.cartRemoveCoupon();
+                        await api.cartRemoveCoupon();
                         await fetchCart();
                         // Optionally set a toast; keeping UI minimal
                       } catch (err) {

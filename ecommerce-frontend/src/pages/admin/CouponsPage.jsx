@@ -1,8 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as api from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
+import AdminTablePager from '../../components/admin/AdminTablePager.jsx';
+import AdminFiltersBar from '../../components/admin/AdminFiltersBar.jsx';
+import useFilters from '../../hooks/useFilters';
 
 function toYMD(v) {
   if (!v) return '';
@@ -182,24 +186,24 @@ export default function CouponsPage() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(null);
   const [usages, setUsages] = useState({ openFor: null, items: [] });
-  const [filters, setFilters] = useState({ q: '', status: '', from: '', to: '' });
+  const { filters, reset: resetFilters, bind } = useFilters({ q: '', status: '', from: '', to: '' });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [sort, setSort] = useState({ field: 'code', dir: 'asc' });
 
-  const load = async (override = {}) => {
+  const load = useCallback(async (override = {}) => {
     setLoading(true);
     const params = { page, pageSize, ...filters, ...override };
     const data = (await api.adminListCoupons(params)) || {};
     setList(data.items || []);
     setTotal(data.total || 0);
     setLoading(false);
-  };
+  }, [page, pageSize, filters]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [page, pageSize]);
+  useEffect(() => { load(); }, [load]);
 
   const applyFilters = async () => {
-    setPage(1);
+    if (page !== 1) setPage(1);
     await load({ page: 1 });
   };
 
@@ -280,7 +284,10 @@ export default function CouponsPage() {
   return (
     <AdminLayout>
       <div>
-        <h2 className="mb-3">Cupones</h2>
+        <AdminPageHeader
+          title="Cupones"
+          subtitle="Crea, lista y edita códigos de descuento. Filtra por estado/periodo y revisa usos."
+        />
         <ul className="nav nav-tabs mb-3">
           <li className="nav-item">
             <button type="button" className={`nav-link ${activeTab === 'crear' ? 'active' : ''}`} onClick={() => setActiveTab('crear')}>Crear</button>
@@ -297,52 +304,21 @@ export default function CouponsPage() {
             </div>
           </div>
           <div className={`tab-pane fade ${activeTab === 'listar' ? 'show active' : ''}`}>
-            <div className="mb-3 d-flex gap-2 align-items-end">
-              <div>
-                <label className="form-label">Buscar</label>
-                <input
-                  aria-label="Buscar cupones"
-                  className="form-control"
-                  placeholder="Código"
-                  value={filters.q}
-                  onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="form-label">Estado</label>
-                <select
-                  aria-label="Estado"
-                  className="form-select"
-                  value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                >
-                  <option value="">Todos</option>
-                  <option value="active">Activo</option>
-                  <option value="paused">Pausado</option>
-                </select>
-              </div>
-              <div>
-                <label className="form-label">Desde</label>
-                <input type="date" className="form-control" value={filters.from}
-                  onChange={(e) => setFilters({ ...filters, from: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">Hasta</label>
-                <input type="date" className="form-control" value={filters.to}
-                  onChange={(e) => setFilters({ ...filters, to: e.target.value })} />
-              </div>
-              <button className="btn btn-outline-primary" onClick={applyFilters}>Buscar</button>
-              <button
-                className="btn btn-outline-secondary"
-                onClick={() => {
-                  setFilters({ q: '', status: '', from: '', to: '' });
-                  setPage(1);
-                  load({ q: '', status: '', from: '', to: '', page: 1 });
-                }}
-              >
-                Limpiar
-              </button>
-            </div>
+            <AdminFiltersBar
+              className="mb-3"
+              controls={[
+                { type: 'text', key: 'q', label: 'Buscar', ariaLabel: 'Buscar cupones', placeholder: 'Código', ...bind('q') },
+                { type: 'select', key: 'status', label: 'Estado', ariaLabel: 'Estado', ...bind('status'), options: [
+                  { value: '', label: 'Todos' },
+                  { value: 'active', label: 'Activo' },
+                  { value: 'paused', label: 'Pausado' },
+                ]},
+                { type: 'date', key: 'from', label: 'Desde', ...bind('from') },
+                { type: 'date', key: 'to', label: 'Hasta', ...bind('to') },
+              ]}
+              onSearch={applyFilters}
+              onClear={() => { resetFilters(); setPage(1); load({ page: 1, override: {} }); }}
+            />
             {loading ? (
               <p>Cargando…</p>
             ) : (
@@ -382,21 +358,14 @@ export default function CouponsPage() {
                 </tbody>
               </table>
             )}
-            <div className="d-flex align-items-center justify-content-between mt-2">
-              <div className="d-flex align-items-center gap-2">
-                <button className="btn btn-outline-secondary btn-sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Anterior</button>
-                <span>Página {page} de {Math.max(1, Math.ceil((total || 0) / pageSize))}</span>
-                <button className="btn btn-outline-secondary btn-sm" disabled={page >= Math.ceil((total || 0) / pageSize)} onClick={() => setPage((p) => p + 1)}>Siguiente</button>
-              </div>
-              <div>
-                <label className="me-2">Por página</label>
-                <select className="form-select d-inline-block" style={{ width: 90 }} value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value, 10) || 20); setPage(1); }}>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </select>
-              </div>
-            </div>
+            <AdminTablePager
+              className="mt-2"
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              onChangePage={setPage}
+              onChangePageSize={(n) => { setPageSize(n); setPage(1); }}
+            />
             <BrickModal id="couponUsagesModal" title={`Usos de ${list.find((x) => x.id === usages.openFor)?.code || ''}`}>
               {usages.items.length === 0 ? (
                 <p className="mb-0">Sin usos</p>

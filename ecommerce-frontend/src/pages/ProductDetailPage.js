@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import * as api from '../services/api';
+import { useWishlist } from '../contexts/WishlistContext.jsx';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import QuantityStepper from '../components/QuantityStepper';
@@ -15,7 +16,7 @@ function ProductDetailPage() {
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [inWishlist, setInWishlist] = useState(false);
+  const { isInWishlist, add, removeByProduct } = useWishlist();
   const [review, setReview] = useState({ rating: 5, comment: '' });
 
   useEffect(() => {
@@ -23,11 +24,7 @@ function ProductDetailPage() {
       try {
         const data = await api.getProductById(id);
         setProduct(data);
-        if (user) {
-          // Fetch wishlist but tolerate missing list for new users
-          const wl = await api.getWishlist().catch(() => null);
-          setInWishlist(wl?.items?.some((it) => it.product?.id === data.id));
-        }
+        // Wishlist state comes from context (isInWishlist)
       } catch (err) {
         console.error(err);
         setError('Producto no encontrado');
@@ -99,15 +96,8 @@ function ProductDetailPage() {
             return;
           }
           try {
-            if (inWishlist) {
-              const wl = await api.getWishlist();
-              const item = wl.items.find((it) => it.product?.id === product.id);
-              if (item) await api.removeFromWishlist(item.id);
-              setInWishlist(false);
-            } else {
-              await api.addToWishlist(product.id);
-              setInWishlist(true);
-            }
+            if (isInWishlist(product.id)) { await removeByProduct(product.id); }
+            else { await add(product.id); }
           } catch (err) {
             console.error(err);
             setMessage('Error al actualizar la wishlist');
@@ -115,7 +105,7 @@ function ProductDetailPage() {
         }}
         className="btn btn-outline-secondary"
       >
-        {inWishlist ? 'Quitar de wishlist' : 'Añadir a wishlist'}
+        {isInWishlist(product?.id) ? 'Quitar de wishlist' : 'Añadir a wishlist'}
       </button>
       {message && <p className="mt-3 text-info">{message}</p>}
       <hr />

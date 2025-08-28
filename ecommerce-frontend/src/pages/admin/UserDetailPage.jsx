@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import * as api from '../../services/api';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
+import { useConfirm } from '../../components/ConfirmProvider.jsx';
 
 function TabNav({ tab, setTab }) {
   return (
@@ -24,8 +26,9 @@ function UserDetailPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', marketingOptIn: false });
   const [addresses, setAddresses] = useState([]);
   const [audit, setAudit] = useState([]);
+  const confirm = useConfirm();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const u = await api.adminGetUser(id);
     setUser(u);
     setForm({ name: u.name, email: u.email, phone: u.phone || '', marketingOptIn: !!u.marketingOptIn });
@@ -33,9 +36,9 @@ function UserDetailPage() {
     setAddresses(addrs);
     const aud = await api.adminListUserAudit(id).catch(() => []);
     setAudit(aud || []);
-  };
+  }, [id]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
+  useEffect(() => { load(); }, [load]);
 
   const save = async () => {
     await api.adminUpdateUser(id, form);
@@ -53,6 +56,8 @@ function UserDetailPage() {
   };
 
   const delAddress = async (addressId) => {
+    const ok = await confirm({ title: 'Eliminar dirección', body: '¿Eliminar esta dirección? Esta acción no se puede deshacer.' });
+    if (!ok) return;
     await api.adminDeleteAddress(id, addressId);
     await load();
   };
@@ -69,7 +74,10 @@ function UserDetailPage() {
 
   return (
     <AdminLayout>
-      <h1 className="mb-3">Usuario #{user.id} – {user.name}</h1>
+      <AdminPageHeader
+        title={`Usuario #${user.id} – ${user.name}`}
+        subtitle="Edita datos de perfil, administra direcciones, revisa actividad y genera token seguro para impersonar."
+      />
       <TabNav tab={tab} setTab={setTab} />
       {tab === 'perfil' && (
         <div className="card p-3">

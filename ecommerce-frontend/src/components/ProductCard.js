@@ -1,27 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import BrickButton from "./lego/BrickButton";
 import BrickBadge from "./lego/BrickBadge";
-import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
-import QuantityStepper from "./QuantityStepper";
-import { toast } from "react-toastify";
 import "./ProductCard.css";
+// import * as api from "../services/api"; // handled by WishlistContext
+import { useWishlist } from "../contexts/WishlistContext.jsx";
+import AddToCartControls from "./AddToCartControls";
+import { toast } from "react-toastify";
 
 // Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
-  const [loading, setLoading] = useState(false);
-  const [qty, setQty] = useState(1);
-  const [wish, setWish] = useState(false);
-  const { cart, addItem } = useCart();
+  const { isInWishlist, add, removeByProduct } = useWishlist();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const added = cart?.items?.some(
-    (it) => it.product?.id === product.id || it.productId === product.id
-  );
 
-  const handleAdd = async (e) => {
+  const handleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
@@ -29,21 +23,12 @@ function ProductCard({ product }) {
       return;
     }
     try {
-      setLoading(true);
-      await addItem({ productId: product.id, quantity: qty });
-      toast.success("Agregado");
-      setQty(1);
+      const wished = isInWishlist(product.id);
+      if (!wished) { await add(product.id); toast.success("Agregado a wishlist"); }
+      else { await removeByProduct(product.id); toast.info("Quitado de wishlist"); }
     } catch (err) {
-      // error toast handled in api
-    } finally {
-      setLoading(false);
+      // error handled by api toast
     }
-  };
-
-  const handleWishlist = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setWish(!wish);
   };
   const avgRating =
     product.reviews && product.reviews.length > 0
@@ -77,12 +62,12 @@ function ProductCard({ product }) {
         )}
         <button
           type="button"
-          className={`btn ${wish ? "btn-danger" : "btn-outline-danger"} wishlist-btn position-absolute top-0 end-0 m-2 z-3`}
+          className={`btn ${isInWishlist(product.id) ? "btn-danger" : "btn-outline-danger"} wishlist-btn position-absolute top-0 end-0 m-2 z-3`}
           aria-label="Agregar a wishlist"
           onClick={handleWishlist}
         >
           <i
-            className={`${wish ? "fa-solid" : "fa-regular"} fa-heart`}
+            className={`${isInWishlist(product.id) ? "fa-solid" : "fa-regular"} fa-heart`}
             aria-hidden="true"
           ></i>
         </button>
@@ -126,29 +111,7 @@ function ProductCard({ product }) {
           <p className="card-text fw-bold">
             ${parseFloat(product.price).toFixed(2)}
           </p>
-          <div
-            className="mt-auto d-flex align-items-center gap-2 position-relative z-3 product-actions"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <QuantityStepper
-              value={qty}
-              onChange={setQty}
-              min={1}
-              max={product.stock}
-            />
-            <BrickButton
-              color={added ? "green" : "yellow"}
-              onClick={handleAdd}
-              disabled={added || loading}
-              className="flex-grow-1 d-flex align-items-center justify-content-center"
-            >
-              <i
-                className={`fa-solid ${added ? "fa-check" : "fa-cart-plus"} me-1`}
-                aria-hidden="true"
-              ></i>
-              {added ? "Añadido" : "Agregar"}
-            </BrickButton>
-          </div>
+          <AddToCartControls product={product} className="mt-auto position-relative z-3 product-actions" />
         </div>
         <Link
           to={`/products/${product.id}`}

@@ -87,6 +87,8 @@ const Wishlist = sequelize.define('Wishlist', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   // Explicit foreign key mapping to ensure camelCase attribute uses snake_case column
   userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
+  name: { type: DataTypes.STRING, allowNull: false, defaultValue: 'Mi lista' },
+  isDefault: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: 'is_default' },
 }, {
   tableName: 'wishlists',
   underscored: true,
@@ -98,9 +100,13 @@ const WishlistItem = sequelize.define('WishlistItem', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   wishlistId: { type: DataTypes.INTEGER, allowNull: false, field: 'wishlist_id' },
   productId: { type: DataTypes.INTEGER, allowNull: false, field: 'product_id' },
+  addedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: 'added_at' },
 }, {
   tableName: 'wishlist_items',
   underscored: true,
+  indexes: [
+    { unique: true, fields: ['wishlist_id', 'product_id'] },
+  ],
 });
 
 // Admin users and RBAC models
@@ -386,6 +392,37 @@ const CouponUsage = sequelize.define('CouponUsage', {
   ],
 });
 
+// Marketing segments (dynamic user sets)
+const Segment = sequelize.define('Segment', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  name: { type: DataTypes.STRING, allowNull: false },
+  definition: { type: DataTypes.JSON, allowNull: false },
+  size: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW, field: 'created_at' },
+}, {
+  tableName: 'segments',
+  underscored: true,
+  timestamps: false,
+});
+
+// Campaigns (scheduling, linked to segments)
+const Campaign = sequelize.define('Campaign', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  name: { type: DataTypes.STRING, allowNull: false },
+  segmentId: { type: DataTypes.INTEGER, allowNull: false, field: 'segment_id' },
+  couponCode: { type: DataTypes.STRING, field: 'coupon_code' },
+  startsAt: { type: DataTypes.DATE, field: 'starts_at' },
+  endsAt: { type: DataTypes.DATE, field: 'ends_at' },
+  status: { type: DataTypes.ENUM('draft','scheduled','running','paused','finished'), allowNull: false, defaultValue: 'draft' },
+}, {
+  tableName: 'campaigns',
+  underscored: true,
+  indexes: [
+    { fields: ['segment_id'] },
+    { fields: ['status'] },
+  ],
+});
+
 // Review model
 const Review = sequelize.define('Review', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -544,6 +581,10 @@ OrderItem.belongsTo(Product, { foreignKey: 'productId' });
 
 Order.hasOne(Payment, { as: 'payment' });
 Payment.belongsTo(Order);
+
+// Segments & Campaigns
+Segment.hasMany(Campaign, { as: 'campaigns', foreignKey: 'segmentId' });
+Campaign.belongsTo(Segment, { foreignKey: 'segmentId' });
 
 Order.hasMany(OrderStatusHistory, { as: 'statusHistory' });
 OrderStatusHistory.belongsTo(Order);
@@ -751,6 +792,8 @@ module.exports = {
   Shipment,
   Coupon,
   CouponUsage,
+  Segment,
+  Campaign,
   Review,
   RefreshToken,
   IdempotencyKey,

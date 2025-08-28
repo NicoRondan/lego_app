@@ -1,7 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
+import AdminTablePager from '../../components/admin/AdminTablePager.jsx';
+import AdminFiltersBar from '../../components/admin/AdminFiltersBar.jsx';
+import useFilters from '../../hooks/useFilters';
+import useListState from '../../hooks/useListState';
 import {
   adminListInventory,
   adminAdjustInventory,
@@ -47,7 +52,8 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
   };
   const submitAdjust = async (e) => {
     e.preventDefault();
-    const n = parseInt(adjustQty, 10);
+    const formEl = e?.currentTarget?.form || e?.currentTarget || e?.target?.form || e?.target;
+    const n = parseInt(adjustQty || formEl?.qty?.value || formEl?.elements?.qty?.value, 10);
     if (!Number.isInteger(n) || n <= 0) return alert('Ingrese un entero mayor a 0');
     const qty = adjustSign * n;
     await adminAdjustInventory(item.productId, { qty, reason: adjustReason || '' });
@@ -58,7 +64,8 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
   const openSafety = () => { setSafetyVal(String(item.safetyStock || 0)); setSafetyOpen(true); };
   const submitSafety = async (e) => {
     e.preventDefault();
-    const safetyStock = parseInt(safetyVal, 10);
+    const formEl2 = e?.currentTarget?.form || e?.currentTarget || e?.target?.form || e?.target;
+    const safetyStock = parseInt(safetyVal || formEl2?.safetyStock?.value || formEl2?.elements?.safetyStock?.value, 10);
     if (!Number.isInteger(safetyStock) || safetyStock < 0) return alert('Valor inválido');
     await adminUpdateSafetyStock(item.productId, { safetyStock });
     setSafetyOpen(false);
@@ -162,7 +169,7 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
           </div>
           <div className="col-12 d-flex justify-content-end gap-2">
             <button type="button" className="btn btn-outline-secondary" onClick={() => setAdjustOpen(false)}>Cancelar</button>
-            <button type="submit" className="btn btn-primary">Aplicar</button>
+            <button type="submit" className="btn btn-primary" onClick={(e)=>{ e.preventDefault(); submitAdjust(e); }}>Aplicar</button>
           </div>
         </form>
       </BrickModal>
@@ -189,7 +196,7 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
           </div>
           <div className="col-12 d-flex justify-content-end gap-2">
             <button type="button" className="btn btn-outline-secondary" onClick={() => setSafetyOpen(false)}>Cancelar</button>
-            <button type="submit" className="btn btn-primary">Guardar</button>
+            <button type="submit" className="btn btn-primary" onClick={(e)=>{ e.preventDefault(); submitSafety(e); }}>Guardar</button>
           </div>
         </form>
       </BrickModal>
@@ -198,40 +205,26 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
 }
 
 function InventoryPage() {
-  const [q, setQ] = useState('');
-  const [low, setLow] = useState(false);
-  const [data, setData] = useState({ items: [], page: 1, pageSize: 20, total: 0 });
-
-  const load = async () => {
-    const res = await adminListInventory({ q, lowStockOnly: low, page: 1, pageSize: 50 });
-    setData(res);
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { filters, bind } = useFilters({ q: '', low: false });
+  const list = useListState(async ({ page, pageSize, filters: f }) => {
+    const res = await adminListInventory({ q: f.q, lowStockOnly: !!f.low, page, pageSize });
+    return { items: res.items || [], total: res.total || 0, pageSize: res.pageSize || pageSize };
+  }, { initialPage: 1, initialPageSize: 20 });
 
   return (
     <AdminLayout>
-      <h2 className="mb-3">Inventario</h2>
-      <div className="d-flex align-items-end gap-2 mb-3">
-        <div className="flex-grow-1">
-          <label className="form-label">Buscar por set o nombre</label>
-          <input
-            aria-label="Buscar inventario"
-            className="form-control"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="75192 o Hogwarts"
-          />
-        </div>
-        <div className="form-check mb-2">
-          <input id="lowOnly" className="form-check-input" type="checkbox" checked={low} onChange={(e) => setLow(e.target.checked)} />
-          <label className="form-check-label" htmlFor="lowOnly">Bajo stock</label>
-        </div>
-        <button className="btn btn-primary mb-2" onClick={load}>Buscar</button>
-      </div>
+      <AdminPageHeader
+        title="Inventario"
+        subtitle="Consulta stock, reservas y disponible. Ajusta cantidades, edita mínimos y revisa movimientos por producto."
+      />
+      <AdminFiltersBar
+        className="mb-3"
+        controls={[
+          { type: 'text', key: 'q', label: 'Buscar por set o nombre', ariaLabel: 'Buscar inventario', placeholder: '75192 o Hogwarts', ...bind('q') },
+          { type: 'checkbox', key: 'low', id: 'lowOnly', label: 'Bajo stock', ...bind('low') },
+        ]}
+        onSearch={() => list.applyFilters(filters)}
+      />
 
       <div className="table-responsive">
         <table className="table align-middle">
@@ -246,12 +239,19 @@ function InventoryPage() {
             </tr>
           </thead>
           <tbody>
-            {data.items.map((it) => (
-              <InventoryRow key={it.productId} item={it} onAdjusted={load} onSafetyUpdated={load} />
+            {list.items.map((it) => (
+              <InventoryRow key={it.productId} item={it} onAdjusted={() => list.load()} onSafetyUpdated={() => list.load()} />
             ))}
           </tbody>
         </table>
       </div>
+      <AdminTablePager
+        page={list.page}
+        pageSize={list.pageSize}
+        total={list.total}
+        onChangePage={list.changePage}
+        onChangePageSize={list.changePageSize}
+      />
     </AdminLayout>
   );
 }

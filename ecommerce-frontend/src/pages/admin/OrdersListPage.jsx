@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import { adminListOrders } from '../../services/api';
 import { API_URL } from '../../services/api';
+import useCsvExport from '../../hooks/useCsvExport';
 
 const statuses = ['pending', 'paid', 'picking', 'shipped', 'delivered', 'canceled', 'refunded'];
 
@@ -23,23 +25,18 @@ function OrdersListPage() {
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil((data.total || 0) / (filters.pageSize || 20))), [data.total, filters.pageSize]);
 
+  const csv = useCsvExport(API_URL);
   const exportCsv = () => {
-    const params = new URLSearchParams();
-    if (filters.status) params.set('status', filters.status);
-    if (filters.q) params.set('q', filters.q);
-    if (filters.from) params.set('from', filters.from);
-    if (filters.to) params.set('to', filters.to);
-    params.set('format', 'csv');
-    const url = `${API_URL}/admin/orders?${params.toString()}`;
-    window.location.href = url;
+    csv('/admin/orders', { status: filters.status, q: filters.q, from: filters.from, to: filters.to });
   };
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Pedidos</h2>
-        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
-      </div>
+      <AdminPageHeader
+        title="Pedidos"
+        subtitle="Filtra y navega pedidos por estado, búsqueda y rango de fechas. Exporta resultados a CSV."
+        actions={<button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>}
+      />
 
       <div className="row g-3 mb-3">
         <div className="col-md-2">
@@ -120,4 +117,3 @@ function OrdersListPage() {
 }
 
 export default OrdersListPage;
-

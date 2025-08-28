@@ -1,7 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
+import AdminFiltersBar from '../../components/admin/AdminFiltersBar.jsx';
+import useFilters from '../../hooks/useFilters';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
+import StatusMultiSelect from '../../components/admin/StatusMultiSelect.jsx';
 import { API_URL, adminReportSalesSummary, adminReportSalesByTheme, adminReportTopProducts, adminReportLowStock } from '../../services/api';
+import useCsvExport from '../../hooks/useCsvExport';
 import { formatMoney } from '../../utils/format';
 const CURRENCY = process.env.REACT_APP_CURRENCY || 'USD';
 
@@ -28,35 +33,14 @@ function defaultRange(days) {
   return { from: fmtDate(from), to: fmtDate(to) };
 }
 
-function StatusMultiSelect({ value, onChange }) {
-  const toggle = (s) => {
-    const set = new Set(value);
-    if (set.has(s)) set.delete(s); else set.add(s);
-    onChange(Array.from(set));
-  };
-  return (
-    <div className="d-flex flex-wrap gap-2">
-      {STATUS_OPTIONS.map(({ code, label }) => (
-        <button
-          key={code}
-          type="button"
-          className={`btn btn-sm ${value.includes(code) ? 'btn-primary' : 'btn-outline-secondary'}`}
-          onClick={() => toggle(code)}
-        >{label}</button>
-      ))}
-      <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => onChange([...ALL_STATUSES])}>Todos</button>
-      <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => onChange([])}>Ninguno</button>
-    </div>
-  );
-}
+// moved to components/admin/StatusMultiSelect.jsx
 
 function ReportsPage() {
   const initial = defaultRange(30);
   const [tab, setTab] = useState('sales');
-  const [from, setFrom] = useState(initial.from);
-  const [to, setTo] = useState(initial.to);
+  const { filters, set: setFilter, bind, reset } = useFilters({ from: initial.from, to: initial.to, groupBy: 'day' });
   const [statuses, setStatuses] = useState([...ALL_STATUSES]);
-  const [groupBy, setGroupBy] = useState('day');
+  // groupBy is within `filters`
 
   const [summary, setSummary] = useState({ buckets: [] });
   const [byTheme, setByTheme] = useState({ rows: [] });
@@ -83,18 +67,18 @@ function ReportsPage() {
     try {
       setLoading(true);
       setError('');
-      const finalFrom = overrides.from ?? from;
-      const finalTo = overrides.to ?? to;
+      const finalFrom = overrides.from ?? filters.from;
+      const finalTo = overrides.to ?? filters.to;
       const [s, t, p] = await Promise.all([
-        adminReportSalesSummary({ from: finalFrom, to: finalTo, groupBy, status: statusParam }),
+        adminReportSalesSummary({ from: finalFrom, to: finalTo, groupBy: (overrides.groupBy ?? filters.groupBy), status: statusParam }),
         adminReportSalesByTheme({ from: finalFrom, to: finalTo, status: statusParam }),
         adminReportTopProducts({ from: finalFrom, to: finalTo, status: statusParam, limit: 50 }),
       ]);
       setSummary(s);
       setByTheme(t);
       setTopSets(p);
-      if (overrides.from) setFrom(finalFrom);
-      if (overrides.to) setTo(finalTo);
+      if (overrides.from) setFilter('from', finalFrom);
+      if (overrides.to) setFilter('to', finalTo);
       setPageSummary(1); setPageTheme(1); setPageTop(1);
     } catch (e) {
       setError(e.message || 'Error');
@@ -163,30 +147,21 @@ function ReportsPage() {
   }, [lowStock, pageStock, pageSizeStock]);
   const totalPagesStock = useMemo(() => Math.max(1, Math.ceil((lowStock?.rows?.length || 0) / pageSizeStock)), [lowStock, pageSizeStock]);
 
+  const csv = useCsvExport(API_URL);
   const exportCsv = (endpoint) => {
-    const params = new URLSearchParams();
-    if (from) params.set('from', from);
-    if (to) params.set('to', to);
-    if (statusParam) params.set('status', statusParam);
-    if (endpoint.includes('summary')) params.set('groupBy', groupBy);
-    params.set('format', 'csv');
-    const url = `${API_URL}${endpoint}?${params.toString()}`;
-    window.location.href = url;
+    csv(endpoint, { from: filters.from, to: filters.to, status: statusParam, groupBy: endpoint.includes('summary') ? filters.groupBy : undefined });
   };
 
   const exportLowStockCsv = () => {
-    const params = new URLSearchParams();
-    params.set('threshold', threshold);
-    params.set('format', 'csv');
-    const url = `${API_URL}/admin/reports/stock/low?${params.toString()}`;
-    window.location.href = url;
+    csv('/admin/reports/stock/low', { threshold });
   };
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Reportes</h2>
-      </div>
+      <AdminPageHeader
+        title="Reportes"
+        subtitle="Analiza ventas por periodo, temas y sets, y detecta bajo stock. Exporta cualquier vista a CSV."
+      />
 
       <ul className="nav nav-tabs mb-3">
         <li className="nav-item"><button className={`nav-link ${tab==='sales'?'active':''}`} onClick={() => setTab('sales')}>Ventas</button></li>
@@ -197,15 +172,21 @@ function ReportsPage() {
 
       {tab !== 'stock' && (
         <>
-        <div className="row g-3 mb-2">
-          <div className="col-md-2">
-            <label className="form-label">Desde</label>
-            <input type="date" className="form-control" value={from} onChange={(e) => setFrom(e.target.value)} />
-          </div>
-          <div className="col-md-2">
-            <label className="form-label">Hasta</label>
-            <input type="date" className="form-control" value={to} onChange={(e) => setTo(e.target.value)} />
-          </div>
+        <AdminFiltersBar
+          className="mb-2"
+          searchLabel="Filtrar"
+          controls={[
+            { type: 'date', key: 'from', label: 'Desde', ...bind('from') },
+            { type: 'date', key: 'to', label: 'Hasta', ...bind('to') },
+            ...(tab === 'sales' ? [{ type: 'select', key: 'groupBy', label: 'Agrupar por', ...bind('groupBy'), options: [
+              { value: 'day', label: 'Día' },
+              { value: 'week', label: 'Semana' },
+              { value: 'month', label: 'Mes' },
+            ]}] : []),
+          ]}
+          onSearch={() => load({})}
+          onClear={() => { const r = defaultRange(30); reset(); setFilter('from', r.from); setFilter('to', r.to); load({ from: r.from, to: r.to }); }}
+        />
           <div className="col-md-4 col-lg-3">
             <label className="form-label">Rango rápido</label>
             <div className="d-flex flex-wrap gap-2">
@@ -215,25 +196,12 @@ function ReportsPage() {
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => { const d = new Date(); const prev = new Date(d.getFullYear(), d.getMonth()-1, 1); const endPrev = new Date(d.getFullYear(), d.getMonth(), 0); const r = { from: fmtDate(prev), to: fmtDate(endPrev) }; load({ from: r.from, to: r.to }); }}>Mes anterior</button>
             </div>
           </div>
-          {tab === 'sales' && (
-            <div className="col-md-2">
-              <label className="form-label">Agrupar por</label>
-              <select className="form-select" value={groupBy} onChange={(e) => setGroupBy(e.target.value)}>
-                <option value="day">Día</option>
-                <option value="week">Semana</option>
-                <option value="month">Mes</option>
-              </select>
-            </div>
-          )}
-          <div className="col-md-2 align-self-end">
-            <button className="btn btn-primary w-100" onClick={() => (tab==='sales'?load():tab==='theme'?load():load())}>Filtrar</button>
-          </div>
-        </div>
+        
         <div className="row g-2 mt-2 mb-3">
           <div className="col-12">
             <label className="form-label me-2">Estados</label>
             <div className="d-inline-block">
-              <StatusMultiSelect value={statuses} onChange={setStatuses} />
+              <StatusMultiSelect options={STATUS_OPTIONS} value={statuses} onChange={setStatuses} />
             </div>
           </div>
         </div>
