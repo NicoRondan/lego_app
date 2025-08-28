@@ -107,7 +107,8 @@ function parseCreateProduct(body) {
     code,
     currency,
     imageUrl,
-    recommendedAge,
+    recommendedAgeMin,
+    recommendedAgeMax,
     minifigCount,
     weightGrams,
     boxWidthMm,
@@ -124,11 +125,18 @@ function parseCreateProduct(body) {
   if (isNaN(priceNum)) throw new ApiError('price must be a number', 400);
   const stockNum = parseInt(stock, 10);
   if (isNaN(stockNum)) throw new ApiError('stock must be an integer', 400);
-  if (recommendedAge === undefined)
-    throw new ApiError('recommendedAge is required', 400);
-  const ageNum = parseInt(recommendedAge, 10);
-  if (isNaN(ageNum) || ageNum < 0)
-    throw new ApiError('recommendedAge must be a non-negative integer', 400);
+  if (recommendedAgeMin === undefined)
+    throw new ApiError('recommendedAgeMin is required', 400);
+  if (recommendedAgeMax === undefined)
+    throw new ApiError('recommendedAgeMax is required', 400);
+  const ageMinNum = parseInt(recommendedAgeMin, 10);
+  const ageMaxNum = parseInt(recommendedAgeMax, 10);
+  if (isNaN(ageMinNum) || ageMinNum < 0)
+    throw new ApiError('recommendedAgeMin must be a non-negative integer', 400);
+  if (isNaN(ageMaxNum) || ageMaxNum < 0)
+    throw new ApiError('recommendedAgeMax must be a non-negative integer', 400);
+  if (ageMaxNum < ageMinNum)
+    throw new ApiError('recommendedAgeMax must be greater or equal to recommendedAgeMin', 400);
   const releaseYearNum = parseInt(releaseYear, 10);
   if (isNaN(releaseYearNum))
     throw new ApiError('releaseYear must be an integer', 400);
@@ -139,7 +147,8 @@ function parseCreateProduct(body) {
     description: String(description),
     price: priceNum,
     stock: stockNum,
-    recommendedAge: ageNum,
+    recommendedAgeMin: ageMinNum,
+    recommendedAgeMax: ageMaxNum,
     releaseYear: releaseYearNum,
     code: String(code || setNumber),
     currency: String(currency || 'USD'),

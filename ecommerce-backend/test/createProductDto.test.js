@@ -9,13 +9,15 @@ test('parseCreateProduct defaults code and currency', () => {
     slug: '123-brick-set',
     price: '19.99',
     stock: '5',
-    recommendedAge: '8',
+    recommendedAgeMin: '8',
+    recommendedAgeMax: '12',
     description: 'A cool set',
     releaseYear: '2024',
   });
   assert.strictEqual(data.code, '123');
   assert.strictEqual(data.currency, 'USD');
-  assert.strictEqual(data.recommendedAge, 8);
+  assert.strictEqual(data.recommendedAgeMin, 8);
+  assert.strictEqual(data.recommendedAgeMax, 12);
   assert.strictEqual(data.description, 'A cool set');
   assert.strictEqual(data.releaseYear, 2024);
 });
@@ -27,7 +29,8 @@ test('parseCreateProduct uses provided code and currency', () => {
     slug: '123-brick-set',
     price: '19.99',
     stock: '5',
-    recommendedAge: '8',
+    recommendedAgeMin: '8',
+    recommendedAgeMax: '12',
     description: 'A cool set',
     releaseYear: '2024',
     code: 'ABC',
@@ -35,7 +38,8 @@ test('parseCreateProduct uses provided code and currency', () => {
   });
   assert.strictEqual(data.code, 'ABC');
   assert.strictEqual(data.currency, 'ARS');
-  assert.strictEqual(data.recommendedAge, 8);
+  assert.strictEqual(data.recommendedAgeMin, 8);
+  assert.strictEqual(data.recommendedAgeMax, 12);
   assert.strictEqual(data.description, 'A cool set');
   assert.strictEqual(data.releaseYear, 2024);
 });
@@ -47,13 +51,15 @@ test('parseCreateProduct accepts imageUrl', () => {
     slug: '123-brick-set',
     price: '19.99',
     stock: '5',
-    recommendedAge: '8',
+    recommendedAgeMin: '8',
+    recommendedAgeMax: '12',
     description: 'A cool set',
     releaseYear: '2024',
     imageUrl: 'https://example.com/img.jpg',
   });
   assert.strictEqual(data.imageUrl, 'https://example.com/img.jpg');
-  assert.strictEqual(data.recommendedAge, 8);
+  assert.strictEqual(data.recommendedAgeMin, 8);
+  assert.strictEqual(data.recommendedAgeMax, 12);
   assert.strictEqual(data.description, 'A cool set');
   assert.strictEqual(data.releaseYear, 2024);
 });
@@ -65,7 +71,8 @@ test('parseCreateProduct parses construction and logistics fields', () => {
     slug: '123-brick-set',
     price: '19.99',
     stock: '5',
-    recommendedAge: '8',
+    recommendedAgeMin: '8',
+    recommendedAgeMax: '12',
     description: 'A cool set',
     releaseYear: '2024',
     pieces: '1000',
@@ -83,21 +90,36 @@ test('parseCreateProduct parses construction and logistics fields', () => {
   assert.strictEqual(data.boxDepthMm, 80);
 });
 
-test('parseCreateProduct requires recommendedAge', () => {
-    assert.throws(
-      () =>
-        parseCreateProduct({
-          setNumber: '123',
-          name: 'Brick Set',
-          slug: '123-brick-set',
-          price: '19.99',
-          stock: '5',
-          description: 'A cool set',
-          releaseYear: '2024',
-        }),
-      /recommendedAge is required/
-    );
-  });
+test('parseCreateProduct requires recommendedAgeMin and recommendedAgeMax', () => {
+  assert.throws(
+    () =>
+      parseCreateProduct({
+        setNumber: '123',
+        name: 'Brick Set',
+        slug: '123-brick-set',
+        price: '19.99',
+        stock: '5',
+        recommendedAgeMax: '12',
+        description: 'A cool set',
+        releaseYear: '2024',
+      }),
+    /recommendedAgeMin is required/
+  );
+  assert.throws(
+    () =>
+      parseCreateProduct({
+        setNumber: '123',
+        name: 'Brick Set',
+        slug: '123-brick-set',
+        price: '19.99',
+        stock: '5',
+        recommendedAgeMin: '8',
+        description: 'A cool set',
+        releaseYear: '2024',
+      }),
+    /recommendedAgeMax is required/
+  );
+});
 
 test('parseCreateProduct requires description', () => {
   assert.throws(
@@ -108,7 +130,8 @@ test('parseCreateProduct requires description', () => {
         slug: '123-brick-set',
         price: '19.99',
         stock: '5',
-        recommendedAge: '8',
+        recommendedAgeMin: '8',
+        recommendedAgeMax: '12',
         releaseYear: '2024',
       }),
     /description is required/
@@ -124,7 +147,8 @@ test('parseCreateProduct requires releaseYear', () => {
         slug: '123-brick-set',
         price: '19.99',
         stock: '5',
-        recommendedAge: '8',
+        recommendedAgeMin: '8',
+        recommendedAgeMax: '12',
         description: 'A cool set',
       }),
     /releaseYear is required/

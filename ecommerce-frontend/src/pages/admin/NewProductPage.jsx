@@ -65,16 +65,26 @@ const schema = z.object({
   ),
   stock: z.preprocess(
     (v) => (v === '' ? undefined : Number(v)),
-    z.number({ required_error: 'Stock requerido' })
+    z
+      .number({ required_error: 'Stock requerido' })
       .int()
       .nonnegative('Stock inválido')
   ),
-  recommendedAge: z.preprocess(
+  recommendedAgeMin: z.preprocess(
     (v) => (v === '' ? undefined : Number(v)),
     z
-      .number({ required_error: 'Edad recomendada requerida' })
+      .number({ required_error: 'Edad mínima requerida' })
       .int()
-      .nonnegative('Edad inválida')
+      .min(0, 'Edad inválida')
+      .max(99, 'Edad inválida')
+  ),
+  recommendedAgeMax: z.preprocess(
+    (v) => (v === '' ? undefined : Number(v)),
+    z
+      .number({ required_error: 'Edad máxima requerida' })
+      .int()
+      .min(0, 'Edad inválida')
+      .max(99, 'Edad inválida')
   ),
   categories: z.array(z.string()).optional(),
   metaTitle: z.string().optional(),
@@ -89,7 +99,13 @@ const schema = z.object({
       })
     )
     .optional(),
-});
+}).refine(
+  (data) => data.recommendedAgeMax >= data.recommendedAgeMin,
+  {
+    path: ['recommendedAgeMax'],
+    message: 'La edad máxima debe ser mayor o igual a la mínima',
+  }
+);
 
 function ImageGalleryManager({ images, setImages }) {
   const [url, setUrl] = useState('');
@@ -260,7 +276,8 @@ function NewProductPage() {
       stock: '',
       images: [],
       categories: [],
-      recommendedAge: '',
+      recommendedAgeMin: 0,
+      recommendedAgeMax: 99,
       pieces: '',
       minifigCount: '',
       weightGrams: '',
@@ -272,6 +289,8 @@ function NewProductPage() {
 
   useEffect(() => {
     register('images');
+    register('recommendedAgeMin');
+    register('recommendedAgeMax');
   }, [register]);
 
   useEffect(() => {
@@ -435,20 +454,49 @@ function NewProductPage() {
                 {errors.slug && <div className="text-danger small">{errors.slug.message}</div>}
               </div>
               <div className="col-md-4">
-                <label className="form-label" htmlFor="recommendedAge">
+                <label className="form-label" htmlFor="recommendedAgeMin">
                   Edad recomendada <span className="text-danger">*</span>
-                  <InfoTooltip text="Edad mínima sugerida" />
+                  <InfoTooltip text="Rango de edades sugerido" />
                 </label>
-                <input
-                  id="recommendedAge"
-                  type="number"
-                  className="form-control"
-                  placeholder="Ej: 8"
-                  {...register('recommendedAge')}
-                  required
-                />
-                {errors.recommendedAge && (
-                  <div className="text-danger small">{errors.recommendedAge.message}</div>
+                <div className="px-2 position-relative" style={{ height: '38px' }}>
+                  <input
+                    type="range"
+                    min="0"
+                    max="99"
+                    value={watch('recommendedAgeMin')}
+                    onChange={(e) =>
+                      setValue(
+                        'recommendedAgeMin',
+                        Math.min(Number(e.target.value), watch('recommendedAgeMax'))
+                      )
+                    }
+                    className="form-range position-absolute top-0 start-0 w-100"
+                    style={{ zIndex: 5 }}
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="99"
+                    value={watch('recommendedAgeMax')}
+                    onChange={(e) =>
+                      setValue(
+                        'recommendedAgeMax',
+                        Math.max(Number(e.target.value), watch('recommendedAgeMin'))
+                      )
+                    }
+                    className="form-range position-absolute top-0 start-0 w-100"
+                    style={{ zIndex: 4 }}
+                  />
+                  <div className="d-flex justify-content-between small mt-1 position-absolute w-100" style={{ top: '30px' }}>
+                    <span>{watch('recommendedAgeMin')}</span>
+                    <span>{watch('recommendedAgeMax')}</span>
+                  </div>
+                </div>
+                {(errors.recommendedAgeMin || errors.recommendedAgeMax) && (
+                  <div className="text-danger small">
+                    {errors.recommendedAgeMin?.message ||
+                      errors.recommendedAgeMax?.message}
+                  </div>
                 )}
               </div>
               <div className="col-md-8">
