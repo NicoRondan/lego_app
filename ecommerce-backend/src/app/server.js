@@ -45,6 +45,7 @@ const adminCampaignsRouter = require('../modules/admin/campaignsRouter');
 const adminReportsRouter = require('../modules/admin/reportsRouter');
 const adminInventoryRouter = require('../modules/admin/inventoryRouter');
 const adminUsersRouter = require('../modules/admin/usersRouter');
+const cmsRouter = require('../modules/cms/router');
 
 async function createApp() {
   const app = express();
@@ -121,6 +122,8 @@ async function createApp() {
   app.use('/uploads', uploadsRouter);
   app.use('/me', meRouter);
   app.use('/webhooks', webhookLimiter, webhooksRouter);
+  // Public CMS endpoints
+  app.use('/', cmsRouter);
   // Admin (RBAC)
   const { isAdmin, hasRole } = require('../shared/middlewares');
   app.use('/admin/orders', isAdmin, hasRole('oms','support'), adminOrdersRouter);
