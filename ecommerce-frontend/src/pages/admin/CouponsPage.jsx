@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as api from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import BrickModal from '../../components/lego/BrickModal.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 
 function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
@@ -44,99 +45,107 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
   };
   const removeTheme = (t) => setForm({ ...form, allowedThemes: form.allowedThemes.filter((x) => x !== t) });
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="row g-2">
-      <div className="col-auto">
-        <input className="form-control" placeholder="CODE" value={form.code}
-          onChange={(e) => setForm({ ...form, code: e.target.value })} required />
-      </div>
-      <div className="col-auto">
-        <select className="form-select" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-          <option value="percent">Percent</option>
-          <option value="fixed">Fixed</option>
-        </select>
-      </div>
-      <div className="col-auto">
-        <label className="form-label d-block">Valor<InfoTooltip text="Porcentaje (0-100) si es percent, o monto fijo si es fixed" /></label>
-        <input className="form-control" type="number" step="0.01" placeholder="Valor" value={form.value}
-          onChange={(e) => setForm({ ...form, value: e.target.value })} required />
-        {errors.value && <div className="text-danger small">{errors.value}</div>}
-      </div>
-      <div className="col-auto">
-        <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-          <option value="active">Activo</option>
-          <option value="paused">Pausado</option>
-        </select>
-      </div>
-      <div className="col-auto">
-        <input type="date" className="form-control" placeholder="Desde" value={form.validFrom}
-          onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
-      </div>
-      <div className="col-auto">
-        <input type="date" className="form-control" placeholder="Hasta" value={form.validTo}
-          onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
-      </div>
-      <div className="col-auto">
-        <label className="form-label d-block">Min subtotal<InfoTooltip text="Monto mínimo del carrito para aplicar" /></label>
-        <input className="form-control" type="number" step="0.01" placeholder="Min subtotal" value={form.minSubtotal}
-          onChange={(e) => setForm({ ...form, minSubtotal: e.target.value })} />
-        {errors.minSubtotal && <div className="text-danger small">{errors.minSubtotal}</div>}
-      </div>
-      <div className="col-auto">
-        <label className="form-label d-block">Max usos<InfoTooltip text="Cantidad total de usos del cupón" /></label>
-        <input className="form-control" type="number" step="1" placeholder="Max usos" value={form.maxUses}
-          onChange={(e) => setForm({ ...form, maxUses: e.target.value })} />
-        {errors.maxUses && <div className="text-danger small">{errors.maxUses}</div>}
-      </div>
-      <div className="col-auto">
-        <label className="form-label d-block">Límite por usuario<InfoTooltip text="Usos permitidos por usuario" /></label>
-        <input className="form-control" type="number" step="1" placeholder="Límite por usuario" value={form.perUserLimit}
-          onChange={(e) => setForm({ ...form, perUserLimit: e.target.value })} />
-        {errors.perUserLimit && <div className="text-danger small">{errors.perUserLimit}</div>}
-      </div>
-      <div className="col-auto form-check d-flex align-items-center ms-2">
-        <input id="stackableCheck" className="form-check-input" type="checkbox" checked={!!form.stackable}
-          onChange={(e) => setForm({ ...form, stackable: e.target.checked })} />
-        <label htmlFor="stackableCheck" className="form-check-label ms-1">Acumulable</label>
-      </div>
-      <div className="col-12">
-        <label className="form-label">Temas permitidos<InfoTooltip text="Al menos un item del carrito debe pertenecer a alguno de estos temas" /></label>
-        <div className="form-control p-2">
-          <div className="mb-2">
-            {form.allowedThemes.map((t) => (
-              <span key={t} className="badge rounded-pill bg-primary text-white me-2 d-inline-flex align-items-center">
-                {t}
-                <button
-                  type="button"
-                  className="btn-close btn-close-white ms-2"
-                  aria-label={`Quitar ${t}`}
-                  style={{ transform: 'scale(0.8)' }}
-                  onClick={() => removeTheme(t)}
-                />
-              </span>
-            ))}
-          </div>
-          <input
-            list={themeListId}
-            className="form-control border-0"
-            placeholder="Agregar tema y presiona Enter"
-            value={themeInput}
-            onChange={(e) => setThemeInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTheme(); } }}
-            onBlur={() => addTheme()}
-          />
-          <datalist id={themeListId}>
-            {categories.map((c) => <option key={c} value={c} />)}
-          </datalist>
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }}>
+      <div className="row g-3">
+        <div className="col-md-3">
+          <label className="form-label">Código</label>
+          <input className="form-control" placeholder="CODE" value={form.code}
+            onChange={(e) => setForm({ ...form, code: e.target.value })} required />
         </div>
-      </div>
-      <div className="col-12">
-        <input className="form-control" placeholder="Productos bloqueados (IDs o códigos, coma)" value={form.disallowProducts}
-          onChange={(e) => setForm({ ...form, disallowProducts: e.target.value })} />
-      </div>
-      <div className="col-12">
-        <button className="btn btn-primary" disabled={submitting || Object.keys(errors).length > 0}>
-          {submitting ? 'Guardando…' : 'Guardar'}
-        </button>
+        <div className="col-md-2">
+          <label className="form-label">Tipo</label>
+          <select className="form-select" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+            <option value="percent">Percent</option>
+            <option value="fixed">Fixed</option>
+          </select>
+        </div>
+        <div className="col-md-3">
+          <label className="form-label">Valor <InfoTooltip text="Porcentaje (0-100) si es percent, o monto fijo si es fixed" /></label>
+          <input className="form-control" type="number" step="0.01" placeholder="Valor" value={form.value}
+            onChange={(e) => setForm({ ...form, value: e.target.value })} required />
+          {errors.value && <div className="text-danger small">{errors.value}</div>}
+        </div>
+        <div className="col-md-2">
+          <label className="form-label">Estado</label>
+          <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+            <option value="active">Activo</option>
+            <option value="paused">Pausado</option>
+          </select>
+        </div>
+        <div className="col-md-2">
+          <label className="form-label">Hasta</label>
+          <input type="date" className="form-control" value={form.validTo}
+            onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
+        </div>
+
+        <div className="col-md-2">
+          <label className="form-label">Desde</label>
+          <input type="date" className="form-control" value={form.validFrom}
+            onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
+        </div>
+        <div className="col-md-3">
+          <label className="form-label">Min subtotal <InfoTooltip text="Monto mínimo del carrito para aplicar" /></label>
+          <input className="form-control" type="number" step="0.01" placeholder="Min subtotal" value={form.minSubtotal}
+            onChange={(e) => setForm({ ...form, minSubtotal: e.target.value })} />
+          {errors.minSubtotal && <div className="text-danger small">{errors.minSubtotal}</div>}
+        </div>
+        <div className="col-md-3">
+          <label className="form-label">Max usos <InfoTooltip text="Cantidad total de usos del cupón" /></label>
+          <input className="form-control" type="number" step="1" placeholder="Max usos" value={form.maxUses}
+            onChange={(e) => setForm({ ...form, maxUses: e.target.value })} />
+          {errors.maxUses && <div className="text-danger small">{errors.maxUses}</div>}
+        </div>
+        <div className="col-md-3">
+          <label className="form-label">Límite por usuario <InfoTooltip text="Usos permitidos por usuario" /></label>
+          <input className="form-control" type="number" step="1" placeholder="Límite por usuario" value={form.perUserLimit}
+            onChange={(e) => setForm({ ...form, perUserLimit: e.target.value })} />
+          {errors.perUserLimit && <div className="text-danger small">{errors.perUserLimit}</div>}
+        </div>
+        <div className="col-md-2 d-flex align-items-center">
+          <div className="form-check mt-4">
+            <input id="stackableCheck" className="form-check-input" type="checkbox" checked={!!form.stackable}
+              onChange={(e) => setForm({ ...form, stackable: e.target.checked })} />
+            <label htmlFor="stackableCheck" className="form-check-label ms-1">Acumulable</label>
+          </div>
+        </div>
+
+        <div className="col-12">
+          <label className="form-label">Temas permitidos <InfoTooltip text="Al menos un item del carrito debe pertenecer a alguno de estos temas" /></label>
+          <div className="form-control p-2">
+            <div className="mb-2">
+              {form.allowedThemes.map((t) => (
+                <span key={t} className="badge rounded-pill bg-primary text-white me-2 d-inline-flex align-items-center">
+                  {t}
+                  <button type="button" className="btn-close btn-close-white ms-2" aria-label={`Quitar ${t}`} style={{ transform: 'scale(0.8)' }} onClick={() => removeTheme(t)} />
+                </span>
+              ))}
+            </div>
+            <input
+              list={themeListId}
+              className="form-control border-0"
+              placeholder="Agregar tema y presiona Enter"
+              value={themeInput}
+              onChange={(e) => setThemeInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTheme(); } }}
+              onBlur={() => addTheme()}
+            />
+            <datalist id={themeListId}>
+              {categories.map((c) => <option key={c} value={c} />)}
+            </datalist>
+          </div>
+        </div>
+
+        <div className="col-12">
+          <label className="form-label">Productos bloqueados</label>
+          <input className="form-control" placeholder="IDs o códigos, separados por coma" value={form.disallowProducts}
+            onChange={(e) => setForm({ ...form, disallowProducts: e.target.value })} />
+        </div>
+
+        <div className="col-12">
+          <button className="btn btn-primary" disabled={submitting || Object.keys(errors).length > 0}>
+            {submitting ? 'Guardando…' : 'Guardar'}
+          </button>
+        </div>
       </div>
     </form>
   );
@@ -231,6 +240,23 @@ export default function CouponsPage() {
   // Tabs UI similar a NewProductPage
   const [activeTab, setActiveTab] = useState('crear');
 
+  // Modal helpers
+  const openEditModal = (coupon) => {
+    setEditing(coupon);
+    const el = document.getElementById('couponEditModal');
+    if (window.bootstrap && el) {
+      const modal = window.bootstrap.Modal.getOrCreateInstance(el);
+      modal.show();
+    }
+  };
+  const closeEditModal = () => {
+    const el = document.getElementById('couponEditModal');
+    if (window.bootstrap && el) {
+      const modal = window.bootstrap.Modal.getOrCreateInstance(el);
+      modal.hide();
+    }
+  };
+
   return (
     <AdminLayout>
       <div>
@@ -320,7 +346,7 @@ export default function CouponsPage() {
                       <td>{c.status}</td>
                       <td>{c.usageCount || 0}</td>
                       <td className="d-flex gap-2">
-                        <button className="btn btn-sm btn-outline-secondary" onClick={() => { setEditing(c); setActiveTab('crear'); }}>Editar</button>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={() => openEditModal(c)}>Editar</button>
                         <button className="btn btn-sm btn-outline-primary" onClick={() => toggleUsages(c)}>
                           {usages.openFor === c.id ? 'Ocultar usos' : 'Ver usos'}
                         </button>
@@ -345,90 +371,50 @@ export default function CouponsPage() {
                 </select>
               </div>
             </div>
+            {usages.openFor && (
+              <div className="mt-4">
+                <h5>Usos de {list.find((x) => x.id === usages.openFor)?.code}</h5>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      <th>Orden</th>
+                      <th>Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {usages.items.map((u) => (
+                      <tr key={u.id}>
+                        <td>{u.User?.name || u.userId}</td>
+                        <td>#{u.orderId}</td>
+                        <td>{new Date(u.usedAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
-        {loading ? (
-          <p>Cargando…</p>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Tipo</th>
-                <th>Valor</th>
-                <th>Estado</th>
-                <th>Usos</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.code}</td>
-                  <td>{c.type}</td>
-                  <td>{parseFloat(c.value).toFixed(2)}</td>
-                  <td>{c.status}</td>
-                  <td>{c.usageCount || 0}</td>
-                  <td className="d-flex gap-2">
-                    <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditing(c)}>Editar</button>
-                    <button className="btn btn-sm btn-outline-primary" onClick={() => toggleUsages(c)}>
-                      {usages.openFor === c.id ? 'Ocultar usos' : 'Ver usos'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        <div className="d-flex align-items-center justify-content-between mt-2">
-          <div className="d-flex align-items-center gap-2">
-            <button className="btn btn-outline-secondary btn-sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Anterior</button>
-            <span>Página {page} de {Math.max(1, Math.ceil((total || 0) / pageSize))}</span>
-            <button className="btn btn-outline-secondary btn-sm" disabled={page >= Math.ceil((total || 0) / pageSize)} onClick={() => setPage((p) => p + 1)}>Siguiente</button>
-          </div>
-          <div>
-            <label className="me-2">Por página</label>
-            <select className="form-select d-inline-block" style={{ width: 90 }} value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value, 10) || 20); setPage(1); }}>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
-        </div>
-        {editing && (
-          <div className="mt-4">
-            <h5>Editar {editing.code}</h5>
-            <CouponForm categories={categories} initial={{
-              ...editing,
-              allowedThemes: Array.isArray(editing.allowedThemes) ? editing.allowedThemes : (typeof editing.allowedThemes === 'string' ? editing.allowedThemes.split(',').map((s) => s.trim()).filter(Boolean) : []),
-              disallowProducts: Array.isArray(editing.disallowProducts) ? editing.disallowProducts.join(',') : '',
-            }} onSubmit={(f) => handleUpdate(editing.id, f)} />
-            <button className="btn btn-link mt-2" onClick={() => setEditing(null)}>Cancelar</button>
-          </div>
-        )}
-        {usages.openFor && (
-          <div className="mt-4">
-            <h5>Usos de {list.find((x) => x.id === usages.openFor)?.code}</h5>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Orden</th>
-                  <th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usages.items.map((u) => (
-                  <tr key={u.id}>
-                    <td>{u.User?.name || u.userId}</td>
-                    <td>#{u.orderId}</td>
-                    <td>{new Date(u.usedAt).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <BrickModal id="couponEditModal" title={`Editar cupón ${editing?.code || ''}`}>
+          {editing && (
+            <CouponForm
+              categories={categories}
+              initial={{
+                ...editing,
+                allowedThemes: Array.isArray(editing.allowedThemes)
+                  ? editing.allowedThemes
+                  : (typeof editing.allowedThemes === 'string'
+                    ? editing.allowedThemes.split(',').map((s) => s.trim()).filter(Boolean)
+                    : []),
+                disallowProducts: Array.isArray(editing.disallowProducts)
+                  ? editing.disallowProducts.join(',')
+                  : '',
+              }}
+              onSubmit={async (f) => { await handleUpdate(editing.id, f); closeEditModal(); }}
+            />
+          )}
+        </BrickModal>
       </div>
     </AdminLayout>
   );
