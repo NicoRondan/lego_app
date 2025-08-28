@@ -1,24 +1,28 @@
 # Lego Ecommerce Backend
 
-Service de backend para una tienda B2C de Lego construido con Node.js, Express y GraphQL.
+Servicio backend para una tienda B2C de Lego construido con Node.js, Express, Sequelize y GraphQL (Apollo Server 5).
 
 ## Requisitos
 
 - Node.js 18+
 - npm
 
-## Instalación
+## Puesta en marcha rápida
 
-1. Instalar dependencias:
+1) Instalar dependencias
    ```bash
    npm install
    ```
-2. Crear un archivo `.env` en la raíz del proyecto con las variables necesarias. Ejemplo:
+2) Variables de entorno (crear `.env` en esta carpeta). Valores de ejemplo:
    ```env
-   PORT=3000
-   BASE_URL=http://localhost:3000
+   # Puerto del servidor HTTP (por defecto 4000 si no se define)
+   PORT=4000
+   # Base de datos (SQLite en archivo o memoria; también funciona con Postgres/MySQL si ajustas el URI)
    DB_URI=sqlite::memory:
-   JWT_SECRET=cambia_este_secreto
+   # Seguridad
+   JWT_SECRET=change_this_secret
+   FRONTEND_URL=http://localhost:5173
+   # Integraciones opcionales
    GOOGLE_CLIENT_ID=
    GOOGLE_CLIENT_SECRET=
    FACEBOOK_APP_ID=
@@ -27,24 +31,31 @@ Service de backend para una tienda B2C de Lego construido con Node.js, Express y
    CLOUDINARY_CLOUD_NAME=
    CLOUDINARY_API_KEY=
    CLOUDINARY_API_SECRET=
-   DEFAULT_CURRENCY=USD
-   ASSET_BASE_URL=http://localhost:3000/assets
-   NEWNESS_WINDOW_DAYS=30
-   DEFAULT_TAX_CLASS=standard
    ```
-   Variables principales:
-   - `DEFAULT_CURRENCY`: moneda por defecto para nuevos precios.
-   - `ASSET_BASE_URL`: URL base para medios e imágenes de productos.
-   - `NEWNESS_WINDOW_DAYS`: días que un producto se considera nuevo desde su `release_year`.
-   - `DEFAULT_TAX_CLASS`: clase de impuesto aplicada por defecto a los productos.
-3. Aplicar la migración SQL inicial antes de iniciar el servidor. Ejemplo con SQLite:
-   ```bash
-   sqlite3 <ruta_de_la_base_de_datos> < src/infra/migrations/001_init.sql
-   ```
-4. (Opcional) Poblar la base de datos con datos de ejemplo:
+   Notas:
+   - `FRONTEND_URL` se usa para la lista blanca de CORS.
+   - El proyecto incluye scripts SQL en `src/infra/migrations`, pero durante el seed el esquema se crea con Sequelize (`sync`).
+
+3) Datos iniciales y creación de esquema
    ```bash
    npm run seed
    ```
+   Este comando borra y recrea el esquema (`sequelize.sync({ force: true })`) y carga datos de ejemplo.
+
+4) Levantar el servidor
+   ```bash
+   npm run dev   # desarrollo con nodemon
+   # o
+   npm start     # producción
+   ```
+   Por defecto expone `http://localhost:4000` y GraphQL en `http://localhost:4000/graphql`.
+
+## Scripts disponibles
+
+- `npm run dev`: inicia el servidor con recarga automática.
+- `npm start`: inicia el servidor en modo producción.
+- `npm test`: ejecuta las pruebas con el runner nativo de Node.
+- `npm run seed`: recrea el esquema y carga datos de ejemplo.
 
 ## Esquema de base de datos
 
@@ -150,7 +161,7 @@ erDiagram
     decimal shipping_total
     decimal tax_total
     decimal grand_total
-    decimal total (alias)
+    decimal total
     string status
     int coupon_id FK
     string coupon_code
@@ -182,7 +193,7 @@ erDiagram
   coupons {
     int id PK
     string code
-    string type (percent|fixed)
+    string type
     decimal value
     datetime valid_from
     datetime valid_to
@@ -191,9 +202,9 @@ erDiagram
     int per_user_limit
     json allowed_themes
     json disallow_products
-    string status (active|paused)
+    string status
     boolean stackable
-    int created_by FK(users)
+    int created_by FK
   }
   coupon_usages {
     int id PK
@@ -245,26 +256,28 @@ erDiagram
   coupons ||--o{ orders : aplica
   coupons ||--o{ coupon_usages : registra
   products ||--o{ reviews : recibe
-```
-
-## Ejecución
-
-- Modo desarrollo con recarga automática:
-  ```bash
-  npm run dev
   ```
-- Modo producción:
-  ```bash
-  npm start
-  ```
+Notas del modelo:
+- `orders.total` se mantiene por compatibilidad; refleja `grand_total`.
+- `coupons.type` admite `percent` o `fixed`; `coupons.status` suele ser `active|paused`.
+- Las columnas `*_raw` almacenan snapshots/estructuras JSON de integraciones.
 
 ## GraphQL
 
-- Implementado con [Apollo Server 5](https://www.apollographql.com/docs/apollo-server/).
-- Endpoint principal: `/graphql`.
-- Mutaciones disponibles:
-  - `addToCart`
-  - `updateCartItem`
+- Implementado con Apollo Server 5. Endpoint: `/graphql`.
+- Definiciones en `src/graphql/typeDefs.js` y `src/graphql/resolvers.js`.
+- Consultas principales:
+  - `products(search, theme, minPrice, maxPrice)`
+  - `categories`
+  - `cart`
+  - `me`
+  - `orders`
+- Mutaciones principales:
+  - `addToCart(productId, quantity)`
+  - `updateCartItem(itemId, quantity)`
+  - `removeCartItem(itemId)`
+  - `createOrder(couponCode)`
+  - `createMpPreference(orderId)`
 
 ## Cupones y reglas de carrito
 
@@ -289,9 +302,7 @@ erDiagram
 - Errores estructurados:
   - `COUPON_INVALID`, `COUPON_EXPIRED`, `COUPON_LIMIT_REACHED`, `COUPON_NOT_APPLICABLE`, `COUPON_MIN_SUBTOTAL`.
 
-Consulta `src/app/openapi.yaml` para el detalle de contratos OpenAPI actualizados.
-  - `createOrder`
-  - `createMpPreference`
+Consulta `src/app/openapi.yaml` para un bosquejo OpenAPI de los endpoints REST.
 
 ## Inventario y anti-oversell
 
@@ -334,6 +345,7 @@ Endpoints disponibles:
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | GET    | `/products` | Lista productos con filtros y paginación |
+| GET    | `/categories` | Lista categorías |
 | GET    | `/cart` | Obtiene el carrito del usuario autenticado |
 | POST   | `/cart/items` | Agrega un producto al carrito |
 | PATCH  | `/cart/items/:id` | Actualiza la cantidad de un ítem del carrito |
@@ -592,6 +604,8 @@ peticiones duplicadas. Se almacena una clave de deduplicación en la tabla `idem
 ### Seguridad HTTP
 
 Se usa `helmet` con políticas CSP, HSTS, `noSniff`, `frameguard`, `Referrer-Policy` y CORP/COEP.
+- CORS: lista blanca basada en `FRONTEND_URL`.
+- CSRF: para mutaciones GraphQL se requiere token por doble envío de cookie. Obtenerlo en `GET /auth/csrf` y enviarlo en el header `X-CSRF-Token`.
 Ejemplo de CSP compatible con Bootstrap/CDN:
 
 ```js
