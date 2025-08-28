@@ -103,9 +103,15 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
         <div className="form-control p-2">
           <div className="mb-2">
             {form.allowedThemes.map((t) => (
-              <span key={t} className="badge rounded-pill text-bg-secondary me-2">
+              <span key={t} className="badge rounded-pill bg-primary text-white me-2 d-inline-flex align-items-center">
                 {t}
-                <button type="button" className="btn btn-sm btn-link text-light ms-1 p-0" onClick={() => removeTheme(t)}>×</button>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white ms-2"
+                  aria-label={`Quitar ${t}`}
+                  style={{ transform: 'scale(0.8)' }}
+                  onClick={() => removeTheme(t)}
+                />
               </span>
             ))}
           </div>
@@ -229,52 +235,6 @@ export default function CouponsPage() {
     <AdminLayout>
       <div>
         <h2 className="mb-3">Cupones</h2>
-        <div className="mb-3 d-flex gap-2 align-items-end">
-          <div>
-            <label className="form-label">Buscar</label>
-            <input
-              aria-label="Buscar cupones"
-              className="form-control"
-              placeholder="Código"
-              value={filters.q}
-              onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="form-label">Estado</label>
-            <select
-              aria-label="Estado"
-              className="form-select"
-              value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            >
-              <option value="">Todos</option>
-              <option value="active">Activo</option>
-              <option value="paused">Pausado</option>
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Desde</label>
-            <input type="date" className="form-control" value={filters.from}
-              onChange={(e) => setFilters({ ...filters, from: e.target.value })} />
-          </div>
-          <div>
-            <label className="form-label">Hasta</label>
-            <input type="date" className="form-control" value={filters.to}
-              onChange={(e) => setFilters({ ...filters, to: e.target.value })} />
-          </div>
-          <button className="btn btn-outline-primary" onClick={applyFilters}>Buscar</button>
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => {
-              setFilters({ q: '', status: '', from: '', to: '' });
-              setPage(1);
-              load({ q: '', status: '', from: '', to: '', page: 1 });
-            }}
-          >
-            Limpiar
-          </button>
-        </div>
         <ul className="nav nav-tabs mb-3">
           <li className="nav-item">
             <button type="button" className={`nav-link ${activeTab === 'crear' ? 'active' : ''}`} onClick={() => setActiveTab('crear')}>Crear</button>
@@ -291,6 +251,52 @@ export default function CouponsPage() {
             </div>
           </div>
           <div className={`tab-pane fade ${activeTab === 'listar' ? 'show active' : ''}`}>
+            <div className="mb-3 d-flex gap-2 align-items-end">
+              <div>
+                <label className="form-label">Buscar</label>
+                <input
+                  aria-label="Buscar cupones"
+                  className="form-control"
+                  placeholder="Código"
+                  value={filters.q}
+                  onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="form-label">Estado</label>
+                <select
+                  aria-label="Estado"
+                  className="form-select"
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                >
+                  <option value="">Todos</option>
+                  <option value="active">Activo</option>
+                  <option value="paused">Pausado</option>
+                </select>
+              </div>
+              <div>
+                <label className="form-label">Desde</label>
+                <input type="date" className="form-control" value={filters.from}
+                  onChange={(e) => setFilters({ ...filters, from: e.target.value })} />
+              </div>
+              <div>
+                <label className="form-label">Hasta</label>
+                <input type="date" className="form-control" value={filters.to}
+                  onChange={(e) => setFilters({ ...filters, to: e.target.value })} />
+              </div>
+              <button className="btn btn-outline-primary" onClick={applyFilters}>Buscar</button>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => {
+                  setFilters({ q: '', status: '', from: '', to: '' });
+                  setPage(1);
+                  load({ q: '', status: '', from: '', to: '', page: 1 });
+                }}
+              >
+                Limpiar
+              </button>
+            </div>
             {loading ? (
               <p>Cargando…</p>
             ) : (
