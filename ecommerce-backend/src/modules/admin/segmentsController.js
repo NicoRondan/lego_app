@@ -102,13 +102,15 @@ exports.list = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const name = (req.body?.name || '').toString().trim();
-    if (!name) throw new ApiError('name is required', 400);
+    if (!name && !req.body?.preview) throw new ApiError('name is required', 400);
     const definition = normalizeDefinition(req.body?.definition || {});
     const size = await computeSegmentSize(definition);
+    if (req.body?.preview) {
+      return res.json({ size, definition });
+    }
     const seg = await Segment.create({ name, definition, size });
     res.status(201).json(seg);
   } catch (err) { next(err); }
 };
 
 module.exports = { computeSegmentSize };
-
