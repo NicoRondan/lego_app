@@ -8,11 +8,12 @@ import React from 'react';
 // Props:
 // - searchLabel: optional label for primary button (default: 'Buscar')
 // - clearLabel: optional label for clear button (default: 'Limpiar')
-export default function AdminFiltersBar({ controls = [], onSearch, onClear, className = '', searchLabel = 'Buscar', clearLabel = 'Limpiar' }) {
+// - col: default bootstrap col class for each control (e.g., 'col-md-3'). Each control can override via `control.col`.
+export default function AdminFiltersBar({ controls = [], onSearch, onClear, className = '', searchLabel = 'Buscar', clearLabel = 'Limpiar', col = 'col-md-3' }) {
   return (
     <div className={`row g-3 align-items-end ${className}`.trim()}>
       {controls.map((c) => (
-        <div className="col-md-3" key={c.key}>
+        <div className={c.col || col} key={c.key}>
           {c.label && <label className="form-label">{c.label}</label>}
           {c.type === 'select' ? (
             <select

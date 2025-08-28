@@ -4,6 +4,7 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import AdminFiltersBar from '../../components/admin/AdminFiltersBar.jsx';
 import useFilters from '../../hooks/useFilters';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
+import StatusMultiSelect from '../../components/admin/StatusMultiSelect.jsx';
 import { API_URL, adminReportSalesSummary, adminReportSalesByTheme, adminReportTopProducts, adminReportLowStock } from '../../services/api';
 import useCsvExport from '../../hooks/useCsvExport';
 import { formatMoney } from '../../utils/format';
@@ -32,27 +33,7 @@ function defaultRange(days) {
   return { from: fmtDate(from), to: fmtDate(to) };
 }
 
-function StatusMultiSelect({ value, onChange }) {
-  const toggle = (s) => {
-    const set = new Set(value);
-    if (set.has(s)) set.delete(s); else set.add(s);
-    onChange(Array.from(set));
-  };
-  return (
-    <div className="d-flex flex-wrap gap-2">
-      {STATUS_OPTIONS.map(({ code, label }) => (
-        <button
-          key={code}
-          type="button"
-          className={`btn btn-sm ${value.includes(code) ? 'btn-primary' : 'btn-outline-secondary'}`}
-          onClick={() => toggle(code)}
-        >{label}</button>
-      ))}
-      <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => onChange([...ALL_STATUSES])}>Todos</button>
-      <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => onChange([])}>Ninguno</button>
-    </div>
-  );
-}
+// moved to components/admin/StatusMultiSelect.jsx
 
 function ReportsPage() {
   const initial = defaultRange(30);
@@ -220,7 +201,7 @@ function ReportsPage() {
           <div className="col-12">
             <label className="form-label me-2">Estados</label>
             <div className="d-inline-block">
-              <StatusMultiSelect value={statuses} onChange={setStatuses} />
+              <StatusMultiSelect options={STATUS_OPTIONS} value={statuses} onChange={setStatuses} />
             </div>
           </div>
         </div>

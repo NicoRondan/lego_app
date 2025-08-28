@@ -1,31 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import * as api from '../services/api';
+import { useWishlist } from '../contexts/WishlistContext.jsx';
+import { useConfirm } from '../components/ConfirmProvider.jsx';
+import AddToCartControls from '../components/AddToCartControls.jsx';
 
-// Simple page that lists the user's wishlist items
+// Simple page that lists the user's wishlist items using WishlistContext
 function WishlistPage() {
   const { user } = useAuth();
-  const [wishlist, setWishlist] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const loadWishlist = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const data = await api.getWishlist();
-      setWishlist(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { items, loading, refresh, removeItem } = useWishlist();
+  const confirm = useConfirm();
 
   useEffect(() => {
-    loadWishlist();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    if (user) refresh().catch(() => {});
+  }, [user, refresh]);
 
   if (!user) {
     return (
@@ -41,31 +29,44 @@ function WishlistPage() {
       <h2 className="mb-4">Mi wishlist</h2>
       {loading ? (
         <p>Cargando...</p>
-      ) : !wishlist || !wishlist.items || wishlist.items.length === 0 ? (
+      ) : !items || items.length === 0 ? (
         <p>No tienes productos en tu wishlist.</p>
       ) : (
         <ul className="list-group">
-          {wishlist.items.map((item) => (
-            <li
-              key={item.id}
-              className="list-group-item d-flex justify-content-between align-items-center"
-            >
-              <Link to={`/products/${item.product?.id}`}>{item.product?.name}</Link>
-              <button
-                className="btn btn-sm btn-outline-danger"
-                onClick={async () => {
-                  try {
-                    await api.removeFromWishlist(item.id);
-                    loadWishlist();
-                  } catch (err) {
-                    console.error(err);
-                  }
-                }}
-              >
-                Quitar
-              </button>
-            </li>
-          ))}
+          {items.map((item) => {
+            const p = item.product || item.Product || {};
+            return (
+              <li key={item.id} className="list-group-item d-flex justify-content-between align-items-center">
+                <div className="d-flex align-items-center gap-3">
+                  {p.imageUrl && (
+                    <img src={p.imageUrl} alt={p.name || 'Producto'} width="60" height="60" style={{ objectFit: 'cover' }} />
+                  )}
+                  <div>
+                    <Link to={`/products/${p.id}`}>{p.name || `Producto ${p.id || ''}`}</Link>
+                    {p.price != null && (
+                      <div className="text-muted small">${parseFloat(p.price).toFixed(2)}</div>
+                    )}
+                    {item.addedAt && (
+                      <div className="text-muted small">Agregado el {new Date(item.addedAt).toLocaleDateString('es-AR')}</div>
+                    )}
+                  </div>
+                </div>
+                <div className="d-flex align-items-center gap-2">
+                  <AddToCartControls product={p} />
+                  <button
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={async () => {
+                      const ok = await confirm({ title: 'Quitar de wishlist', body: `¿Quitar "${p.name || 'este producto'}" de tu wishlist?` });
+                      if (!ok) return;
+                      await removeItem(item.id);
+                    }}
+                  >
+                    Quitar
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
