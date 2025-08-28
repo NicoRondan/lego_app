@@ -255,7 +255,7 @@ async function seed() {
   // Orders
   for (let i = 1; i <= 15; i++) {
     const user = users[Math.floor(Math.random() * users.length)];
-    const order = await Order.create({ userId: user.id, total: 0, status: 'created' });
+    const order = await Order.create({ userId: user.id, total: 0, status: 'pending', currency: 'USD' });
 
     let total = 0;
     const itemsCount = Math.floor(Math.random() * 3) + 1;
@@ -271,6 +271,10 @@ async function seed() {
         quantity,
         unitPrice,
         subtotal,
+        displayName: product.name,
+        thumbnailUrl: product.imageUrl,
+        currency: product.currency,
+        lineSubtotal: subtotal,
       });
     }
 
@@ -284,6 +288,7 @@ async function seed() {
       }
     }
 
+    order.grandTotal = total.toFixed(2);
     order.total = total.toFixed(2);
     await order.save();
   }

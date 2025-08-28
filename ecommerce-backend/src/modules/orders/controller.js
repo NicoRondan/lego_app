@@ -84,14 +84,42 @@ exports.createOrder = async (req, res, next) => {
       if (couponCode) {
         coupon = await Coupon.findOne({ where: { code: couponCode }, transaction: t });
       }
-      const total = cart.items.reduce((sum, ci) => sum + ci.quantity * ci.unitPrice, 0);
+      // Snapshot items from cart
+      const currency = cart.items[0]?.Product?.currency || cart.items[0]?.currency || 'USD';
+      const subtotal = cart.items.reduce((sum, ci) => sum + ci.quantity * parseFloat(ci.unitPrice), 0);
+      const discountTotal = 0; // coupons applied below affect grandTotal only for now
+      const shippingTotal = 0;
+      const taxTotal = 0;
+      const grandTotal = subtotal - discountTotal + shippingTotal + taxTotal;
       const orderRecord = await Order.create(
-        { userId: user.id, status: 'pending', total, couponId: coupon ? coupon.id : null },
+        {
+          userId: user.id,
+          status: 'pending',
+          subtotal: subtotal.toFixed(2),
+          discountTotal: discountTotal.toFixed(2),
+          shippingTotal: shippingTotal.toFixed(2),
+          taxTotal: taxTotal.toFixed(2),
+          grandTotal: grandTotal.toFixed(2),
+          currency,
+          total: grandTotal.toFixed(2),
+          couponId: coupon ? coupon.id : null,
+          couponCode: coupon ? coupon.code : null,
+        },
         { transaction: t }
       );
       for (const ci of cart.items) {
         await OrderItem.create(
-          { orderId: orderRecord.id, productId: ci.productId, quantity: ci.quantity, unitPrice: ci.unitPrice, subtotal: ci.quantity * ci.unitPrice },
+          {
+            orderId: orderRecord.id,
+            productId: ci.productId,
+            quantity: ci.quantity,
+            unitPrice: ci.unitPrice,
+            subtotal: ci.quantity * ci.unitPrice,
+            displayName: ci.displayName || ci.Product?.name,
+            thumbnailUrl: ci.thumbnailUrl || ci.Product?.imageUrl,
+            currency,
+            lineSubtotal: ci.quantity * ci.unitPrice,
+          },
           { transaction: t }
         );
       }

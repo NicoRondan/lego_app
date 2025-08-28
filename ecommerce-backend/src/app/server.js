@@ -36,6 +36,8 @@ const ordersRouter = require('../modules/orders/router');
 const paymentsRouter = require('../modules/payments/router');
 const uploadsRouter = require('../modules/uploads/router');
 const webhooksRouter = require('../modules/webhooks/router');
+const adminOrdersRouter = require('../modules/admin/ordersRouter');
+const adminPaymentsRouter = require('../modules/admin/paymentsRouter');
 
 async function createApp() {
   const app = express();
@@ -111,6 +113,10 @@ async function createApp() {
   app.use('/payments', paymentsRouter);
   app.use('/uploads', uploadsRouter);
   app.use('/webhooks', webhookLimiter, webhooksRouter);
+  // Admin (RBAC)
+  const { requireRole } = require('../shared/middlewares');
+  app.use('/admin/orders', requireRole('admin'), adminOrdersRouter);
+  app.use('/admin/payments', requireRole('admin'), adminPaymentsRouter);
 
   // Configure Apollo Server for GraphQL (Apollo Server 5)
   const apolloServer = new ApolloServer({

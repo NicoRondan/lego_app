@@ -18,6 +18,8 @@ import Styleguide from './pages/Styleguide';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import NewProductPage from './pages/admin/NewProductPage';
+import OrdersListPage from './pages/admin/OrdersListPage.jsx';
+import OrderDetailPage from './pages/admin/OrderDetailPage.jsx';
 
 function App() {
   return (
@@ -69,6 +71,22 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <ProtectedRoute role="admin">
+                <OrdersListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders/:id"
+            element={
+              <ProtectedRoute role="admin">
+                <OrderDetailPage />
               </ProtectedRoute>
             }
           />

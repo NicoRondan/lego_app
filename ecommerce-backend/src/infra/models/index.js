@@ -165,25 +165,58 @@ const CartItem = sequelize.define('CartItem', {
   underscored: true,
 });
 
-// Order model
+// Order model (enhanced for OMS)
 const Order = sequelize.define('Order', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  // Core order status lifecycle: pending|paid|picking|shipped|delivered|canceled|refunded
+  status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'pending' },
+  // Commercial totals
+  subtotal: { type: DataTypes.DECIMAL(10,2) },
+  discountTotal: { type: DataTypes.DECIMAL(10,2), field: 'discount_total' },
+  shippingTotal: { type: DataTypes.DECIMAL(10,2), field: 'shipping_total' },
+  taxTotal: { type: DataTypes.DECIMAL(10,2), field: 'tax_total' },
+  grandTotal: { type: DataTypes.DECIMAL(10,2), field: 'grand_total' },
+  currency: { type: DataTypes.STRING(3) },
+  // Backward compatibility: keep a total column mirroring grandTotal
   total: { type: DataTypes.DECIMAL(10,2), allowNull: false, defaultValue: 0 },
-  status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'created' },
+  // Payment audit on order
+  paymentStatus: { type: DataTypes.STRING, field: 'payment_status' }, // pending|approved|rejected|refunded|chargeback
+  paymentProvider: { type: DataTypes.STRING, field: 'payment_provider' },
+  paymentId: { type: DataTypes.STRING, field: 'payment_id' },
+  paymentRaw: { type: DataTypes.JSON, field: 'payment_raw' },
+  // Shipping
+  shippingMethod: { type: DataTypes.STRING, field: 'shipping_method' },
+  shippingAddress: { type: DataTypes.JSON, field: 'shipping_address' },
+  billingAddress: { type: DataTypes.JSON, field: 'billing_address' },
+  // Coupons and notes
+  couponCode: { type: DataTypes.STRING, field: 'coupon_code' },
+  notesAdmin: { type: DataTypes.TEXT, field: 'notes_admin' },
 }, {
   tableName: 'orders',
   underscored: true,
+  timestamps: true,
+  indexes: [
+    { fields: ['user_id'] },
+    { fields: ['status'] },
+    { fields: ['created_at'] },
+  ],
 });
 
-// OrderItem model
+// OrderItem model with snapshot fields
 const OrderItem = sequelize.define('OrderItem', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   quantity: { type: DataTypes.INTEGER, allowNull: false },
   unitPrice: { type: DataTypes.DECIMAL(10,2), allowNull: false },
   subtotal: { type: DataTypes.DECIMAL(10,2), allowNull: false },
+  // Snapshot for display
+  displayName: { type: DataTypes.STRING, field: 'display_name' },
+  thumbnailUrl: { type: DataTypes.STRING, field: 'thumbnail_url' },
+  currency: { type: DataTypes.STRING(3) },
+  lineSubtotal: { type: DataTypes.DECIMAL(10,2), field: 'line_subtotal' },
 }, {
   tableName: 'order_items',
   underscored: true,
+  indexes: [{ fields: ['order_id'] }],
 });
 
 // Payment model
@@ -193,7 +226,7 @@ const Payment = sequelize.define('Payment', {
   status: { type: DataTypes.STRING, allowNull: false },
   amount: { type: DataTypes.DECIMAL(10,2), allowNull: false },
   externalId: { type: DataTypes.STRING }, // id from MP or other providers
-  rawPayload: { type: DataTypes.JSONB },
+  rawPayload: { type: DataTypes.JSON },
 }, {
   tableName: 'payments',
   underscored: true,
@@ -256,6 +289,36 @@ const ProductPriceHistory = sequelize.define('ProductPriceHistory', {
     { fields: ['product_id'] },
     { fields: ['recorded_at'] },
   ],
+});
+
+// Order status history
+const OrderStatusHistory = sequelize.define('OrderStatusHistory', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  from: { type: DataTypes.STRING },
+  to: { type: DataTypes.STRING },
+  changedBy: { type: DataTypes.INTEGER, field: 'changed_by' },
+  note: { type: DataTypes.TEXT },
+}, {
+  tableName: 'order_status_history',
+  underscored: true,
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: false,
+  indexes: [{ fields: ['order_id'] }],
+});
+
+// Payment events (webhook/audit trail)
+const PaymentEvent = sequelize.define('PaymentEvent', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  type: { type: DataTypes.STRING }, // webhook|refund|capture
+  payload: { type: DataTypes.JSON },
+}, {
+  tableName: 'payment_events',
+  underscored: true,
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: false,
+  indexes: [{ fields: ['payment_id'] }],
 });
 
 /*
@@ -323,6 +386,12 @@ OrderItem.belongsTo(Product);
 
 Order.hasOne(Payment, { as: 'payment' });
 Payment.belongsTo(Order);
+
+Order.hasMany(OrderStatusHistory, { as: 'statusHistory' });
+OrderStatusHistory.belongsTo(Order);
+
+Payment.hasMany(PaymentEvent, { as: 'events' });
+PaymentEvent.belongsTo(Payment);
 
 Order.hasOne(Shipment, { as: 'shipment' });
 Shipment.belongsTo(Order);
@@ -394,4 +463,6 @@ module.exports = {
   IdempotencyKey,
   ProductMedia,
   ProductPriceHistory,
+  OrderStatusHistory,
+  PaymentEvent,
 };

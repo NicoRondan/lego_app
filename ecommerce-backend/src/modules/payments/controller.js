@@ -3,10 +3,11 @@
 // payment notifications via webhook. This implementation is stubbed for
 // educational purposes and does not interact with the real Mercado Pago API.
 
-const { Order, Payment, IdempotencyKey } = require('../../infra/models');
+const { Order, Payment, IdempotencyKey, PaymentEvent, OrderStatusHistory } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 const crypto = require('crypto');
 const mercadopago = require('../../shared/mercadopago');
+const { sendMail } = require('../../infra/mailer');
 
 // POST /payments/mp/preference
 exports.createPreference = async (req, res, next) => {
@@ -61,42 +62,68 @@ exports.createPreference = async (req, res, next) => {
 // a simplified payload { paymentId, status } for demonstration.
 exports.handleWebhook = async (req, res, next) => {
   try {
-    const idempotencyKey = req.get('Idempotency-Key');
-    if (idempotencyKey) {
-      const existing = await IdempotencyKey.findOne({
-        where: { key: idempotencyKey, endpoint: 'POST /webhooks/mp' },
-      });
-      if (existing) return res.json({ message: 'Duplicate webhook' });
-    }
+    const signature = req.get('x-signature') || req.get('X-Signature') || '';
+    const body = req.body || {};
+    const bodyId = body.paymentId || body.data?.id || body.id || '';
+    const idemKey = `mp:${bodyId}:${signature}`;
+    const existing = await IdempotencyKey.findOne({ where: { key: idemKey, endpoint: 'POST /webhooks/mp' } });
+    if (existing) return res.json({ message: 'Duplicate webhook' });
     const dto = require('./dto');
-    const { paymentId, status } = dto.parseWebhook(req.body);
+    const { paymentId, status } = dto.parseWebhook(body);
     // Locate the payment by externalId (Mercado Pago id)
     const payment = await Payment.findOne({ where: { externalId: paymentId } });
     if (!payment) throw new ApiError('Payment not found', 404);
     // Only update if status has changed
     if (payment.status === status) {
+      // Still record event for auditing
+      await PaymentEvent.create({ paymentId: payment.id, type: 'webhook', payload: body });
+      await IdempotencyKey.create({ key: idemKey, endpoint: 'POST /webhooks/mp', refId: payment.id });
       return res.json({ message: 'No change' });
     }
     // Update payment status
     payment.status = status;
+    payment.rawPayload = body;
     await payment.save();
     // Update corresponding order
     const order = await Order.findByPk(payment.orderId);
+    // Map MP statuses to order.paymentStatus and order.status
     if (status === 'approved') {
-      order.status = 'paid';
+      const from = order.status;
+      order.paymentStatus = 'approved';
+      if (order.status === 'pending') order.status = 'paid';
+      order.paymentProvider = 'mp';
+      order.paymentId = payment.externalId;
+      order.paymentRaw = body;
+      await order.save();
+      if (from !== order.status) {
+        await OrderStatusHistory.create({ orderId: order.id, from, to: order.status, changedBy: null, note: 'Payment approved via webhook' });
+      }
+      try {
+        // best-effort email
+        const user = await order.getUser();
+        if (user?.email) await sendMail({ to: user.email, subject: `Pago recibido - Pedido #${order.id}`, text: `Tu pedido #${order.id} fue pagado. Muchas gracias!` });
+      } catch (_) {}
     } else if (status === 'rejected' || status === 'cancelled') {
-      order.status = status;
+      const from = order.status;
+      order.paymentStatus = 'rejected';
+      order.status = status === 'cancelled' ? 'canceled' : 'canceled';
+      order.paymentProvider = 'mp';
+      order.paymentId = payment.externalId;
+      order.paymentRaw = body;
+      await order.save();
+      await OrderStatusHistory.create({ orderId: order.id, from, to: order.status, changedBy: null, note: `Payment ${status}` });
     } else if (status === 'refunded') {
+      const from = order.status;
+      order.paymentStatus = 'refunded';
       order.status = 'refunded';
+      order.paymentProvider = 'mp';
+      order.paymentId = payment.externalId;
+      order.paymentRaw = body;
+      await order.save();
+      await OrderStatusHistory.create({ orderId: order.id, from, to: order.status, changedBy: null, note: 'Payment refunded via webhook' });
     }
-    await order.save();
-    if (idempotencyKey) {
-      await IdempotencyKey.create({
-        key: idempotencyKey,
-        endpoint: 'POST /webhooks/mp',
-        refId: payment.id,
-      });
-    }
+    await PaymentEvent.create({ paymentId: payment.id, type: 'webhook', payload: body });
+    await IdempotencyKey.create({ key: idemKey, endpoint: 'POST /webhooks/mp', refId: payment.id });
     res.json({ message: 'Webhook processed' });
   } catch (err) {
     next(err);

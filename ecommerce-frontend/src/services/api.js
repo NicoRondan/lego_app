@@ -151,3 +151,30 @@ export const createReview = (productId, { rating, comment }) =>
     method: 'POST',
     body: { rating, comment },
   });
+
+// Admin - Orders
+export const adminListOrders = ({ status = '', q = '', from = '', to = '', page = 1, pageSize = 20, format = '' } = {}) => {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  if (q) params.set('q', q);
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  if (page) params.set('page', page);
+  if (pageSize) params.set('pageSize', pageSize);
+  if (format) params.set('format', format);
+  const qs = params.toString();
+  return request('/admin/orders' + (qs ? `?${qs}` : ''));
+};
+
+export const adminGetOrder = (id) => request(`/admin/orders/${id}`);
+
+export const adminUpdateOrderStatus = (id, { to, note }) =>
+  request(`/admin/orders/${id}/status`, { method: 'PUT', body: { to, note } });
+
+export const adminShipOrder = (id, { carrier, tracking, eta } = {}) =>
+  request(`/admin/orders/${id}/ship`, { method: 'POST', body: { carrier, tracking, eta } });
+
+export const adminRefundOrder = (id, { amount, reason }) =>
+  request(`/admin/orders/${id}/refund`, { method: 'POST', body: { amount, reason } });
+
+export const adminGetPaymentAudit = (idOrExtId) => request(`/admin/payments/${idOrExtId}`);

@@ -16,6 +16,12 @@ function AdminSidebar() {
           Dashboard
         </NavLink>
         <NavLink
+          to="/admin/orders"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          Pedidos
+        </NavLink>
+        <NavLink
           to="/admin/products/new"
           className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
         >
