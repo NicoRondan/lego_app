@@ -13,5 +13,7 @@ router.get('/me', authMiddleware, controller.me);
 router.get('/oauth/google/start', controller.oauthGoogleStart);
 router.get('/oauth/google/callback', controller.oauthGoogleCallback);
 router.get('/csrf', controller.csrfToken);
+router.post('/impersonate', controller.impersonate);
+router.get('/impersonate', controller.impersonate);
 
 module.exports = router;

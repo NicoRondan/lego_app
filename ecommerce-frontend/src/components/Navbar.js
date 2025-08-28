@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -11,8 +11,18 @@ function Navbar() {
   const { cart } = useCart();
   const itemsCount = cart?.summary?.itemsCount || 0;
   const allowGuestCart = process.env.REACT_APP_ALLOW_GUEST_CART === 'true';
+  const isAdmin = useMemo(() => {
+    const ADMIN_ROLES = ['superadmin','catalog_manager','oms','support','marketing'];
+    return user?.role === 'admin' || ADMIN_ROLES.includes(user?.role);
+  }, [user]);
+  const isImpersonating = typeof document !== 'undefined' && /(?:^|; )impersonation=1/.test(document.cookie || '');
   return (
     <>
+    {isImpersonating && (
+      <div className="bg-warning text-dark text-center py-1">
+        Impersonando a un cliente – <button className="btn btn-link p-0" onClick={logout}>Salir</button>
+      </div>
+    )}
     <nav className="navbar navbar-expand-lg navbar-light border-bottom">
       <div className="container-fluid">
         <Link className="navbar-brand d-flex align-items-center" to="/" aria-label="Inicio">
@@ -57,7 +67,7 @@ function Navbar() {
                 </Link>
               </li>
             )}
-            {user?.role === 'admin' && (
+            {isAdmin && (
               <li className="nav-item">
                 <Link className="nav-link" to="/admin">
                   Admin

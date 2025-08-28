@@ -252,6 +252,12 @@ async function seed() {
       })
     );
   }
+  // Admin roles for RBAC
+  const rbRoles = ['superadmin','support','catalog_manager','oms','marketing'];
+  for (const r of rbRoles) {
+    const passwordHash = await bcrypt.hash('password123', 10);
+    users.push(await User.create({ name: r.toUpperCase(), email: `${r}@example.com`, role: r, passwordHash }));
+  }
 
   // Coupons (sample)
   const coupons = [];

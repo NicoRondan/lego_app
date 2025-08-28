@@ -9,6 +9,9 @@ const User = sequelize.define('User', {
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   passwordHash: { type: DataTypes.STRING },
   role: { type: DataTypes.STRING, allowNull: false, defaultValue: 'customer' },
+  phone: { type: DataTypes.STRING },
+  lastLoginAt: { type: DataTypes.DATE, field: 'last_login_at' },
+  marketingOptIn: { type: DataTypes.BOOLEAN, field: 'marketing_opt_in', defaultValue: false },
 }, {
   tableName: 'users',
   underscored: true,
@@ -46,14 +49,37 @@ const IdempotencyKey = sequelize.define('IdempotencyKey', {
   underscored: true,
 });
 
-// Address model
+// Address model (expanded to support shipping/billing profiles)
 const Address = sequelize.define('Address', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  street: { type: DataTypes.STRING, allowNull: false },
-  city: { type: DataTypes.STRING, allowNull: false },
+  // legacy fields kept for GraphQL compatibility
+  street: { type: DataTypes.STRING },
+  city: { type: DataTypes.STRING },
+  // new fields per spec
+  type: { type: DataTypes.ENUM('shipping', 'billing'), allowNull: true },
+  name: { type: DataTypes.STRING },
+  line1: { type: DataTypes.STRING },
+  line2: { type: DataTypes.STRING },
+  state: { type: DataTypes.STRING },
+  zip: { type: DataTypes.STRING },
+  country: { type: DataTypes.STRING },
+  isDefault: { type: DataTypes.BOOLEAN, field: 'is_default', defaultValue: false },
 }, {
   tableName: 'addresses',
   underscored: true,
+});
+
+// Basic user activity/telemetry
+const UserEvent = sequelize.define('UserEvent', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
+  type: { type: DataTypes.STRING, allowNull: false },
+  payload: { type: DataTypes.JSON },
+  createdAt: { type: DataTypes.DATE, field: 'created_at', defaultValue: DataTypes.NOW },
+}, {
+  tableName: 'user_events',
+  underscored: true,
+  updatedAt: false,
 });
 
 // Wishlist model
@@ -75,6 +101,59 @@ const WishlistItem = sequelize.define('WishlistItem', {
 }, {
   tableName: 'wishlist_items',
   underscored: true,
+});
+
+// Admin users and RBAC models
+const AdminUser = sequelize.define('AdminUser', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  name: { type: DataTypes.STRING, allowNull: false },
+  role: { type: DataTypes.ENUM('superadmin','catalog_manager','oms','support','marketing'), allowNull: false },
+  passwordHash: { type: DataTypes.STRING, allowNull: false },
+  lastLoginAt: { type: DataTypes.DATE, field: 'last_login_at' },
+  isActive: { type: DataTypes.BOOLEAN, field: 'is_active', defaultValue: true },
+}, {
+  tableName: 'admin_users',
+  underscored: true,
+});
+
+const AdminUserSession = sequelize.define('AdminUserSession', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  adminUserId: { type: DataTypes.INTEGER, allowNull: false, field: 'admin_user_id' },
+  ip: { type: DataTypes.STRING },
+  userAgent: { type: DataTypes.STRING, field: 'user_agent' },
+  createdAt: { type: DataTypes.DATE, field: 'created_at', defaultValue: DataTypes.NOW },
+}, {
+  tableName: 'admin_user_sessions',
+  underscored: true,
+  updatedAt: false,
+});
+
+const AdminAuditLog = sequelize.define('AdminAuditLog', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  adminUserId: { type: DataTypes.INTEGER, allowNull: true, field: 'admin_user_id' },
+  action: { type: DataTypes.STRING, allowNull: false },
+  targetUserId: { type: DataTypes.INTEGER, field: 'target_user_id' },
+  ip: { type: DataTypes.STRING },
+  detail: { type: DataTypes.JSON },
+  createdAt: { type: DataTypes.DATE, field: 'created_at', defaultValue: DataTypes.NOW },
+}, {
+  tableName: 'admin_audit_logs',
+  underscored: true,
+  updatedAt: false,
+});
+
+const AdminImpersonationToken = sequelize.define('AdminImpersonationToken', {
+  token: { type: DataTypes.STRING, primaryKey: true },
+  adminUserId: { type: DataTypes.INTEGER, allowNull: true, field: 'admin_user_id' },
+  userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
+  expiresAt: { type: DataTypes.DATE, allowNull: false, field: 'expires_at' },
+  usedAt: { type: DataTypes.DATE, field: 'used_at' },
+  ip: { type: DataTypes.STRING },
+}, {
+  tableName: 'admin_impersonation_tokens',
+  underscored: true,
+  timestamps: false,
 });
 
 // Product model
@@ -397,6 +476,10 @@ const PaymentEvent = sequelize.define('PaymentEvent', {
 User.hasMany(Address, { as: 'addresses' });
 Address.belongsTo(User);
 
+// User telemetry
+User.hasMany(UserEvent, { as: 'events', foreignKey: 'userId' });
+UserEvent.belongsTo(User, { foreignKey: 'userId' });
+
 User.hasMany(SocialIdentity, { as: 'socialIdentities' });
 SocialIdentity.belongsTo(User);
 
@@ -491,6 +574,16 @@ ProductMedia.belongsTo(Product, { foreignKey: 'productId' });
 // Product price history relations
 Product.hasMany(ProductPriceHistory, { as: 'priceHistory', foreignKey: 'productId' });
 ProductPriceHistory.belongsTo(Product, { foreignKey: 'productId' });
+
+// Admin relations
+AdminUser.hasMany(AdminUserSession, { as: 'sessions', foreignKey: 'adminUserId' });
+AdminUserSession.belongsTo(AdminUser, { foreignKey: 'adminUserId' });
+AdminUser.hasMany(AdminAuditLog, { as: 'auditLogs', foreignKey: 'adminUserId' });
+AdminAuditLog.belongsTo(AdminUser, { foreignKey: 'adminUserId' });
+AdminUser.hasMany(AdminImpersonationToken, { as: 'impersonationTokens', foreignKey: 'adminUserId' });
+AdminImpersonationToken.belongsTo(AdminUser, { foreignKey: 'adminUserId' });
+User.hasMany(AdminImpersonationToken, { as: 'impersonationTokens', foreignKey: 'userId' });
+AdminImpersonationToken.belongsTo(User, { foreignKey: 'userId' });
 
 // Hooks to record price history
 Product.addHook('afterCreate', async (product, options) => {
@@ -638,8 +731,13 @@ Order?.addHook?.('afterUpdate', OrderUpdatedHook);
 module.exports = {
   sequelize,
   User,
+  AdminUser,
+  AdminUserSession,
+  AdminAuditLog,
+  AdminImpersonationToken,
   SocialIdentity,
   Address,
+  UserEvent,
   Wishlist,
   WishlistItem,
   Product,

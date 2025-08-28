@@ -632,6 +632,37 @@ Para detalles de parámetros y respuestas consulta `src/app/openapi.yaml`.
   npm test test/graphqlIntegration.test.js
   ```
 
+## Admin y RBAC
+
+Roles soportados: `superadmin`, `catalog_manager`, `oms`, `support`, `marketing` y compatibilidad con el rol legacy `admin`.
+
+Permisos sugeridos:
+- `catalog_manager`: inventario y productos
+- `oms`: pedidos y pagos
+- `support`: clientes e impersonación
+- `marketing`: cupones
+- `superadmin`/`admin`: todos
+
+Endpoints (clientes):
+- `GET /admin/users?q=&page=&pageSize=`
+- `GET /admin/users/:id`
+- `PUT /admin/users/:id`
+- `GET /admin/users/:id/addresses`
+- `POST /admin/users/:id/addresses`
+- `PUT /admin/users/:id/addresses/:addressId`
+- `DELETE /admin/users/:id/addresses/:addressId`
+- `POST /admin/users/:id/impersonate`
+- `GET /admin/users/:id/audit`
+
+Impersonación segura:
+- One‑time token que expira (`IMPERSONATION_TTL_MIN`, default 10).
+- Intercambio via `POST /auth/impersonate` y cookie `impersonation=1` para banner en FE.
+- Audita `{adminId, userId, ip}` y el `actorName/actorRole` en `detail`.
+
+Auditoría:
+- Se registran `admin_login`, `user_update`, `address_create|update|delete`, `impersonate_token`.
+- `GET /admin/users/:id/audit` devuelve los eventos para ese cliente.
+
 ## Estructura del proyecto
 
 ```
