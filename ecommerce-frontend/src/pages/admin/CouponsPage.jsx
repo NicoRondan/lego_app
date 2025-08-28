@@ -1,15 +1,48 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as api from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import InfoTooltip from '../../components/InfoTooltip.jsx';
 
 function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
   const [form, setForm] = useState({
     code: '', type: 'percent', value: 10, status: 'active',
     validFrom: '', validTo: '', minSubtotal: '', maxUses: '', perUserLimit: '',
-    allowedThemes: '', disallowProducts: '', stackable: false,
+    allowedThemes: [], disallowProducts: '', stackable: false,
     ...initial,
   });
+  // Normalizar allowedThemes si viene como string
+  useEffect(() => {
+    if (typeof initial.allowedThemes === 'string') {
+      setForm((f) => ({ ...f, allowedThemes: initial.allowedThemes.split(',').map((s) => s.trim()).filter(Boolean) }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const [errors, setErrors] = useState({});
+  const validate = (f) => {
+    const e = {};
+    const n = (v) => (v === '' || v === undefined || v === null ? undefined : Number(v));
+    if (n(f.value) !== undefined && Number(f.value) < 0) e.value = 'El valor debe ser >= 0';
+    if (n(f.minSubtotal) !== undefined && Number(f.minSubtotal) < 0) e.minSubtotal = 'Debe ser >= 0';
+    if (n(f.maxUses) !== undefined && Number(f.maxUses) < 0) e.maxUses = 'Debe ser >= 0';
+    if (n(f.perUserLimit) !== undefined && Number(f.perUserLimit) < 0) e.perUserLimit = 'Debe ser >= 0';
+    return e;
+  };
+  useEffect(() => {
+    setErrors(validate(form));
+  }, [form]);
   const themeListId = useMemo(() => 'themes-list', []);
+
+  // Chips para allowedThemes
+  const [themeInput, setThemeInput] = useState('');
+  const addTheme = (raw) => {
+    const v = String(raw || themeInput).trim();
+    if (!v) return;
+    if (form.allowedThemes.includes(v)) { setThemeInput(''); return; }
+    setForm({ ...form, allowedThemes: [...form.allowedThemes, v] });
+    setThemeInput('');
+  };
+  const removeTheme = (t) => setForm({ ...form, allowedThemes: form.allowedThemes.filter((x) => x !== t) });
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="row g-2">
       <div className="col-auto">
@@ -23,8 +56,10 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
         </select>
       </div>
       <div className="col-auto">
-        <input className="form-control" type="number" step="0.01" placeholder="Value" value={form.value}
+        <label className="form-label d-block">Valor<InfoTooltip text="Porcentaje (0-100) si es percent, o monto fijo si es fixed" /></label>
+        <input className="form-control" type="number" step="0.01" placeholder="Valor" value={form.value}
           onChange={(e) => setForm({ ...form, value: e.target.value })} required />
+        {errors.value && <div className="text-danger small">{errors.value}</div>}
       </div>
       <div className="col-auto">
         <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
@@ -41,16 +76,22 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
           onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
       </div>
       <div className="col-auto">
+        <label className="form-label d-block">Min subtotal<InfoTooltip text="Monto mínimo del carrito para aplicar" /></label>
         <input className="form-control" type="number" step="0.01" placeholder="Min subtotal" value={form.minSubtotal}
           onChange={(e) => setForm({ ...form, minSubtotal: e.target.value })} />
+        {errors.minSubtotal && <div className="text-danger small">{errors.minSubtotal}</div>}
       </div>
       <div className="col-auto">
+        <label className="form-label d-block">Max usos<InfoTooltip text="Cantidad total de usos del cupón" /></label>
         <input className="form-control" type="number" step="1" placeholder="Max usos" value={form.maxUses}
           onChange={(e) => setForm({ ...form, maxUses: e.target.value })} />
+        {errors.maxUses && <div className="text-danger small">{errors.maxUses}</div>}
       </div>
       <div className="col-auto">
+        <label className="form-label d-block">Límite por usuario<InfoTooltip text="Usos permitidos por usuario" /></label>
         <input className="form-control" type="number" step="1" placeholder="Límite por usuario" value={form.perUserLimit}
           onChange={(e) => setForm({ ...form, perUserLimit: e.target.value })} />
+        {errors.perUserLimit && <div className="text-danger small">{errors.perUserLimit}</div>}
       </div>
       <div className="col-auto form-check d-flex align-items-center ms-2">
         <input id="stackableCheck" className="form-check-input" type="checkbox" checked={!!form.stackable}
@@ -58,18 +99,36 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
         <label htmlFor="stackableCheck" className="form-check-label ms-1">Acumulable</label>
       </div>
       <div className="col-12">
-        <input list={themeListId} className="form-control" placeholder="Temas permitidos (separa con coma)" value={form.allowedThemes}
-          onChange={(e) => setForm({ ...form, allowedThemes: e.target.value })} />
-        <datalist id={themeListId}>
-          {categories.map((c) => <option key={c} value={c} />)}
-        </datalist>
+        <label className="form-label">Temas permitidos<InfoTooltip text="Al menos un item del carrito debe pertenecer a alguno de estos temas" /></label>
+        <div className="form-control p-2">
+          <div className="mb-2">
+            {form.allowedThemes.map((t) => (
+              <span key={t} className="badge rounded-pill text-bg-secondary me-2">
+                {t}
+                <button type="button" className="btn btn-sm btn-link text-light ms-1 p-0" onClick={() => removeTheme(t)}>×</button>
+              </span>
+            ))}
+          </div>
+          <input
+            list={themeListId}
+            className="form-control border-0"
+            placeholder="Agregar tema y presiona Enter"
+            value={themeInput}
+            onChange={(e) => setThemeInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTheme(); } }}
+            onBlur={() => addTheme()}
+          />
+          <datalist id={themeListId}>
+            {categories.map((c) => <option key={c} value={c} />)}
+          </datalist>
+        </div>
       </div>
       <div className="col-12">
         <input className="form-control" placeholder="Productos bloqueados (IDs o códigos, coma)" value={form.disallowProducts}
           onChange={(e) => setForm({ ...form, disallowProducts: e.target.value })} />
       </div>
       <div className="col-12">
-        <button className="btn btn-primary" disabled={submitting}>
+        <button className="btn btn-primary" disabled={submitting || Object.keys(errors).length > 0}>
           {submitting ? 'Guardando…' : 'Guardar'}
         </button>
       </div>
@@ -163,6 +222,9 @@ export default function CouponsPage() {
     }
   }, []);
 
+  // Tabs UI similar a NewProductPage
+  const [activeTab, setActiveTab] = useState('crear');
+
   return (
     <AdminLayout>
       <div>
@@ -213,9 +275,71 @@ export default function CouponsPage() {
             Limpiar
           </button>
         </div>
-        <div className="mb-4">
-          <h5>Crear cupón</h5>
-          <CouponForm onSubmit={handleCreate} submitting={creating} categories={categories} />
+        <ul className="nav nav-tabs mb-3">
+          <li className="nav-item">
+            <button type="button" className={`nav-link ${activeTab === 'crear' ? 'active' : ''}`} onClick={() => setActiveTab('crear')}>Crear</button>
+          </li>
+          <li className="nav-item">
+            <button type="button" className={`nav-link ${activeTab === 'listar' ? 'active' : ''}`} onClick={() => setActiveTab('listar')}>Listado</button>
+          </li>
+        </ul>
+        <div className="tab-content">
+          <div className={`tab-pane fade ${activeTab === 'crear' ? 'show active' : ''}`}>
+            <div className="mb-4">
+              <h5>Crear cupón</h5>
+              <CouponForm onSubmit={handleCreate} submitting={creating} categories={categories} />
+            </div>
+          </div>
+          <div className={`tab-pane fade ${activeTab === 'listar' ? 'show active' : ''}`}>
+            {loading ? (
+              <p>Cargando…</p>
+            ) : (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Estado</th>
+                    <th>Usos</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {list.map((c) => (
+                    <tr key={c.id}>
+                      <td>{c.code}</td>
+                      <td>{c.type}</td>
+                      <td>{parseFloat(c.value).toFixed(2)}</td>
+                      <td>{c.status}</td>
+                      <td>{c.usageCount || 0}</td>
+                      <td className="d-flex gap-2">
+                        <button className="btn btn-sm btn-outline-secondary" onClick={() => { setEditing(c); setActiveTab('crear'); }}>Editar</button>
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => toggleUsages(c)}>
+                          {usages.openFor === c.id ? 'Ocultar usos' : 'Ver usos'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <div className="d-flex align-items-center justify-content-between mt-2">
+              <div className="d-flex align-items-center gap-2">
+                <button className="btn btn-outline-secondary btn-sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Anterior</button>
+                <span>Página {page} de {Math.max(1, Math.ceil((total || 0) / pageSize))}</span>
+                <button className="btn btn-outline-secondary btn-sm" disabled={page >= Math.ceil((total || 0) / pageSize)} onClick={() => setPage((p) => p + 1)}>Siguiente</button>
+              </div>
+              <div>
+                <label className="me-2">Por página</label>
+                <select className="form-select d-inline-block" style={{ width: 90 }} value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value, 10) || 20); setPage(1); }}>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
         {loading ? (
           <p>Cargando…</p>
@@ -270,7 +394,7 @@ export default function CouponsPage() {
             <h5>Editar {editing.code}</h5>
             <CouponForm categories={categories} initial={{
               ...editing,
-              allowedThemes: Array.isArray(editing.allowedThemes) ? editing.allowedThemes.join(',') : '',
+              allowedThemes: Array.isArray(editing.allowedThemes) ? editing.allowedThemes : (typeof editing.allowedThemes === 'string' ? editing.allowedThemes.split(',').map((s) => s.trim()).filter(Boolean) : []),
               disallowProducts: Array.isArray(editing.disallowProducts) ? editing.disallowProducts.join(',') : '',
             }} onSubmit={(f) => handleUpdate(editing.id, f)} />
             <button className="btn btn-link mt-2" onClick={() => setEditing(null)}>Cancelar</button>
