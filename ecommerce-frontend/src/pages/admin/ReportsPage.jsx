@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
+import { formatMoney } from '../../utils/format';
+const CURRENCY = process.env.REACT_APP_CURRENCY || 'USD';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { API_URL, adminReportSalesSummary, adminReportSalesByTheme, adminReportTopProducts, adminReportLowStock } from '../../services/api';
 
@@ -194,7 +196,8 @@ function ReportsPage() {
       </ul>
 
       {tab !== 'stock' && (
-        <div className="row g-3 mb-3">
+        <>
+        <div className="row g-3 mb-0">
           <div className="col-md-2">
             <label className="form-label">Desde</label>
             <input type="date" className="form-control" value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -212,10 +215,6 @@ function ReportsPage() {
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => { const d = new Date(); const prev = new Date(d.getFullYear(), d.getMonth()-1, 1); const endPrev = new Date(d.getFullYear(), d.getMonth(), 0); const r = { from: fmtDate(prev), to: fmtDate(endPrev) }; load({ from: r.from, to: r.to }); }}>Mes anterior</button>
             </div>
           </div>
-          <div className="col-md-4">
-            <label className="form-label">Estados</label>
-            <StatusMultiSelect value={statuses} onChange={setStatuses} />
-          </div>
           {tab === 'sales' && (
             <div className="col-md-2">
               <label className="form-label">Agrupar por</label>
@@ -230,14 +229,23 @@ function ReportsPage() {
             <button className="btn btn-primary w-100" onClick={() => (tab==='sales'?load():tab==='theme'?load():load())}>Filtrar</button>
           </div>
         </div>
+        <div className="row g-2 mt-2 mb-3">
+          <div className="col-12">
+            <label className="form-label me-2">Estados</label>
+            <div className="d-inline-block">
+              <StatusMultiSelect value={statuses} onChange={setStatuses} />
+            </div>
+          </div>
+        </div>
+        </>
       )}
 
       {tab === 'sales' && (
         <>
           <div className="row g-3 mb-3">
             <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Pedidos<InfoTooltip text="Cantidad de órdenes en el rango seleccionado" /></div><div className="fs-4">{totals.orders}</div></div></div>
-            <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Neto<InfoTooltip text="Ingresos netos = Bruto - Descuentos (antes de impuestos/envío)" /></div><div className="fs-4">{totals.net.toFixed(2)}</div></div></div>
-            <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Ticket prom.<InfoTooltip text="Promedio por pedido = Neto / Pedidos" /></div><div className="fs-4">{totals.aov.toFixed(2)}</div></div></div>
+            <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Neto<InfoTooltip text="Ingresos netos = Bruto - Descuentos (antes de impuestos/envío)" /></div><div className="fs-4">{formatMoney(totals.net, CURRENCY)}</div></div></div>
+            <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">Ticket prom.<InfoTooltip text="Promedio por pedido = Neto / Pedidos" /></div><div className="fs-4">{formatMoney(totals.aov, CURRENCY)}</div></div></div>
             <div className="col-md-3"><div className="p-3 border rounded"><div className="text-muted">% OFF prom.<InfoTooltip text="Promedio de descuento sobre el Gross (Descuento/Gross)" /></div><div className="fs-4">{totals.avgOffPct.toFixed(1)}%</div></div></div>
           </div>
           <div className="d-flex justify-content-end mb-2">
@@ -264,10 +272,10 @@ function ReportsPage() {
                       <td>{b.periodStart}</td>
                       <td>{b.orders}</td>
                       <td>{b.qty}</td>
-                      <td>{b.gross?.toFixed ? b.gross.toFixed(2) : b.gross}</td>
-                      <td>{b.discount?.toFixed ? b.discount.toFixed(2) : b.discount}</td>
-                      <td>{b.net?.toFixed ? b.net.toFixed(2) : b.net}</td>
-                      <td>{b.avgOrderValue?.toFixed ? b.avgOrderValue.toFixed(2) : b.avgOrderValue}</td>
+                      <td>{formatMoney(b.gross?.toFixed ? b.gross : Number(b.gross || 0), CURRENCY)}</td>
+                      <td>{formatMoney(b.discount?.toFixed ? b.discount : Number(b.discount || 0), CURRENCY)}</td>
+                      <td>{formatMoney(b.net?.toFixed ? b.net : Number(b.net || 0), CURRENCY)}</td>
+                      <td>{formatMoney(b.avgOrderValue?.toFixed ? b.avgOrderValue : Number(b.avgOrderValue || 0), CURRENCY)}</td>
                   </tr>
                 ))}
                 </tbody>

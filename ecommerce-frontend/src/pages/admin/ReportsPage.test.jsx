@@ -67,7 +67,7 @@ describe('ReportsPage', () => {
     await new Promise((r) => setTimeout(r, 0));
     const text = container.textContent;
     expect(text).toMatch(/Pedidos\??\s*2/);
-    expect(text).toMatch(/Neto\??\s*150\.00/);
-    expect(text).toMatch(/Ticket prom\.?\??\s*75\.00/);
+    expect(text).toMatch(/Neto\??\s*\$?\s*150\.00/);
+    expect(text).toMatch(/Ticket prom\.?\??\s*\$?\s*75\.00/);
   });
 });
