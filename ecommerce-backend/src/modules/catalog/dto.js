@@ -105,6 +105,7 @@ function parseCreateProduct(body) {
     code,
     currency,
     imageUrl,
+    recommendedAge,
   } = body;
   if (!setNumber) throw new ApiError('setNumber is required', 400);
   if (!name) throw new ApiError('name is required', 400);
@@ -113,12 +114,18 @@ function parseCreateProduct(body) {
   if (isNaN(priceNum)) throw new ApiError('price must be a number', 400);
   const stockNum = parseInt(stock, 10);
   if (isNaN(stockNum)) throw new ApiError('stock must be an integer', 400);
+  if (recommendedAge === undefined)
+    throw new ApiError('recommendedAge is required', 400);
+  const ageNum = parseInt(recommendedAge, 10);
+  if (isNaN(ageNum) || ageNum < 0)
+    throw new ApiError('recommendedAge must be a non-negative integer', 400);
   const result = {
     setNumber: String(setNumber),
     name: String(name),
     slug: String(slug),
     price: priceNum,
     stock: stockNum,
+    recommendedAge: ageNum,
     code: String(code || setNumber),
     currency: String(currency || 'USD'),
   };

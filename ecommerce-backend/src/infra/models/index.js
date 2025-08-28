@@ -90,6 +90,7 @@ const Product = sequelize.define('Product', {
   currency: { type: DataTypes.STRING(3), allowNull: false },
   imageUrl: { type: DataTypes.STRING },
   instructionsUrl: { type: DataTypes.STRING, field: 'instructions_url' },
+  recommendedAge: { type: DataTypes.INTEGER, field: 'recommended_age' },
   // construction
   pieceCount: { type: DataTypes.INTEGER, field: 'piece_count', defaultValue: 0 },
   minifigCount: { type: DataTypes.INTEGER, field: 'minifig_count', defaultValue: 0 },

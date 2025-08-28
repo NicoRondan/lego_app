@@ -46,6 +46,13 @@ const schema = z.object({
       .int()
       .nonnegative('Stock inválido')
   ),
+  recommendedAge: z.preprocess(
+    (v) => (v === '' ? undefined : Number(v)),
+    z
+      .number({ required_error: 'Edad recomendada requerida' })
+      .int()
+      .nonnegative('Edad inválida')
+  ),
   categories: z.array(z.string()).optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
@@ -225,8 +232,18 @@ function NewProductPage() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { price: '', stock: '', images: [], categories: [] },
+    defaultValues: {
+      price: '',
+      stock: '',
+      images: [],
+      categories: [],
+      recommendedAge: '',
+    },
   });
+
+  useEffect(() => {
+    register('images');
+  }, [register]);
 
   useEffect(() => {
     setValue('images', images);
@@ -387,6 +404,23 @@ function NewProductPage() {
                   required
                 />
                 {errors.slug && <div className="text-danger small">{errors.slug.message}</div>}
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" htmlFor="recommendedAge">
+                  Edad recomendada <span className="text-danger">*</span>
+                  <InfoTooltip text="Edad mínima sugerida" />
+                </label>
+                <input
+                  id="recommendedAge"
+                  type="number"
+                  className="form-control"
+                  placeholder="Ej: 8"
+                  {...register('recommendedAge')}
+                  required
+                />
+                {errors.recommendedAge && (
+                  <div className="text-danger small">{errors.recommendedAge.message}</div>
+                )}
               </div>
               <div className="col-md-8">
                 <label className="form-label">
