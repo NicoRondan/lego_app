@@ -40,6 +40,7 @@ const adminOrdersRouter = require('../modules/admin/ordersRouter');
 const adminPaymentsRouter = require('../modules/admin/paymentsRouter');
 const adminCouponsRouter = require('../modules/admin/couponsRouter');
 const adminReportsRouter = require('../modules/admin/reportsRouter');
+const adminInventoryRouter = require('../modules/admin/inventoryRouter');
 
 async function createApp() {
   const app = express();
@@ -121,6 +122,7 @@ async function createApp() {
   app.use('/admin/payments', requireRole('admin'), adminPaymentsRouter);
   app.use('/admin/coupons', requireRole('admin'), adminCouponsRouter);
   app.use('/admin/reports', requireRole('admin'), adminReportsRouter);
+  app.use('/admin/inventory', requireRole('admin'), adminInventoryRouter);
 
   // Configure Apollo Server for GraphQL (Apollo Server 5)
   const apolloServer = new ApolloServer({
