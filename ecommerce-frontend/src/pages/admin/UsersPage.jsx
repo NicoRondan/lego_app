@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import AdminTablePager from '../../components/admin/AdminTablePager.jsx';
+import AdminFiltersBar from '../../components/admin/AdminFiltersBar.jsx';
 import useListState from '../../hooks/useListState';
 import * as api from '../../services/api';
 
@@ -18,10 +19,11 @@ function UsersPage() {
         title="Usuarios"
         subtitle="Consulta, busca y gestiona perfiles de clientes. También puedes ver direcciones, actividad e impersonar usuarios."
       />
-      <div className="d-flex gap-2 mb-3">
-        <input className="form-control" placeholder="Buscar por nombre o email" value={q} onChange={(e) => setQ(e.target.value)} />
-        <button className="btn btn-primary" onClick={() => list.applyFilters({})}>Buscar</button>
-      </div>
+      <AdminFiltersBar
+        className="mb-3"
+        controls={[{ type: 'text', key: 'q', label: 'Buscar', ariaLabel: 'Buscar usuarios', placeholder: 'Nombre o email', value: q, onChange: setQ }]}
+        onSearch={() => list.applyFilters({})}
+      />
       <div className="table-responsive">
         <table className="table table-striped">
           <thead>

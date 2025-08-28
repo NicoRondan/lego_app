@@ -95,6 +95,14 @@ body.no-texture .card.brick-card .card-body.tex{ background-image:none; }
   box-shadow: inset 0 .05rem 0 rgba(255,255,255,.25);
 }
 
+/* Small pulse animation for header badges (e.g., wishlist counter) */
+@keyframes badgePulse {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: .95; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+.badge-pulse { animation: badgePulse 0.7s ease-in-out; }
+
 /* Encabezados con estilo LEGO */
 h2:not(.accordion-header){
   display:inline-block;
@@ -257,4 +265,3 @@ input[type="radio"]:checked::after{
 
 .invalid-feedback{ color:var(--bs-danger); }
 .valid-feedback{ color:var(--bs-success); }
-

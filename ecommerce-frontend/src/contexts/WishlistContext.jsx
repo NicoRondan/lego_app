@@ -7,6 +7,7 @@ const WishlistContext = createContext(null);
 export function WishlistProvider({ children }) {
   const { user } = useAuth();
   const [wishlist, setWishlist] = useState(null);
+  const [pulse, setPulse] = useState(false); // short-lived flag used for header badge animation
   const [loading, setLoading] = useState(false);
 
   const refresh = async () => {
@@ -23,7 +24,7 @@ export function WishlistProvider({ children }) {
 
   useEffect(() => { refresh(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [user?.id]);
 
-  const add = async (productId) => { await api.addToWishlist(productId); await refresh(); };
+  const add = async (productId) => { await api.addToWishlist(productId); await refresh(); setPulse(true); setTimeout(() => setPulse(false), 700); };
   const removeItem = async (itemId) => { await api.removeFromWishlist(itemId); await refresh(); };
   const removeByProduct = async (productId) => {
     const wl = wishlist || (await refresh());
@@ -40,6 +41,7 @@ export function WishlistProvider({ children }) {
     add,
     removeItem,
     removeByProduct,
+    pulse,
     isInWishlist: (pid) => !!(wishlist?.items?.some((it) => (it.product?.id === pid || it.productId === pid))),
   }), [wishlist, loading]);
 
@@ -51,4 +53,3 @@ export function WishlistProvider({ children }) {
 export function useWishlist() {
   return useContext(WishlistContext) || { items: [], count: 0, add: async () => {}, removeItem: async () => {}, refresh: async () => {} };
 }
-

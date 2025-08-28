@@ -12,7 +12,7 @@ function Navbar() {
   const { user, logout } = useAuth();
   const { cart } = useCart();
   const itemsCount = cart?.summary?.itemsCount || 0;
-  const { count: wishlistCount } = useWishlist();
+  const { count: wishlistCount, pulse: wishlistPulse } = useWishlist();
   const allowGuestCart = process.env.REACT_APP_ALLOW_GUEST_CART === 'true';
   const isAdmin = useMemo(() => {
     const ADMIN_ROLES = ['superadmin','catalog_manager','oms','support','marketing'];
@@ -69,7 +69,7 @@ function Navbar() {
                   <span className="position-relative me-1">
                     <i className="fa-regular fa-heart" aria-hidden="true"></i>
                     {wishlistCount > 0 && (
-                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      <span className={`position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ${wishlistPulse ? 'badge-pulse' : ''}`}>
                         {wishlistCount}
                         <span className="visually-hidden">items in wishlist</span>
                       </span>

@@ -5,6 +5,8 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import AdminTablePager from '../../components/admin/AdminTablePager.jsx';
+import AdminFiltersBar from '../../components/admin/AdminFiltersBar.jsx';
+import useFilters from '../../hooks/useFilters';
 
 function toYMD(v) {
   if (!v) return '';
@@ -184,7 +186,7 @@ export default function CouponsPage() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(null);
   const [usages, setUsages] = useState({ openFor: null, items: [] });
-  const [filters, setFilters] = useState({ q: '', status: '', from: '', to: '' });
+  const { filters, set: setFilter, reset: resetFilters, bind } = useFilters({ q: '', status: '', from: '', to: '' });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [sort, setSort] = useState({ field: 'code', dir: 'asc' });
@@ -201,11 +203,8 @@ export default function CouponsPage() {
   useEffect(() => { load(); }, [load]);
 
   const applyFilters = async () => {
-    if (page !== 1) {
-      setPage(1);
-    } else {
-      await load({ page: 1 });
-    }
+    if (page !== 1) setPage(1);
+    await load({ page: 1 });
   };
 
   const buildPayload = (form) => {
@@ -305,52 +304,21 @@ export default function CouponsPage() {
             </div>
           </div>
           <div className={`tab-pane fade ${activeTab === 'listar' ? 'show active' : ''}`}>
-            <div className="mb-3 d-flex gap-2 align-items-end">
-              <div>
-                <label className="form-label">Buscar</label>
-                <input
-                  aria-label="Buscar cupones"
-                  className="form-control"
-                  placeholder="Código"
-                  value={filters.q}
-                  onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="form-label">Estado</label>
-                <select
-                  aria-label="Estado"
-                  className="form-select"
-                  value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                >
-                  <option value="">Todos</option>
-                  <option value="active">Activo</option>
-                  <option value="paused">Pausado</option>
-                </select>
-              </div>
-              <div>
-                <label className="form-label">Desde</label>
-                <input type="date" className="form-control" value={filters.from}
-                  onChange={(e) => setFilters({ ...filters, from: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">Hasta</label>
-                <input type="date" className="form-control" value={filters.to}
-                  onChange={(e) => setFilters({ ...filters, to: e.target.value })} />
-              </div>
-              <button className="btn btn-outline-primary" onClick={applyFilters}>Buscar</button>
-              <button
-                className="btn btn-outline-secondary"
-                onClick={() => {
-                  setFilters({ q: '', status: '', from: '', to: '' });
-                  setPage(1);
-                  load({ q: '', status: '', from: '', to: '', page: 1 });
-                }}
-              >
-                Limpiar
-              </button>
-            </div>
+            <AdminFiltersBar
+              className="mb-3"
+              controls={[
+                { type: 'text', key: 'q', label: 'Buscar', ariaLabel: 'Buscar cupones', placeholder: 'Código', ...bind('q') },
+                { type: 'select', key: 'status', label: 'Estado', ariaLabel: 'Estado', ...bind('status'), options: [
+                  { value: '', label: 'Todos' },
+                  { value: 'active', label: 'Activo' },
+                  { value: 'paused', label: 'Pausado' },
+                ]},
+                { type: 'date', key: 'from', label: 'Desde', ...bind('from') },
+                { type: 'date', key: 'to', label: 'Hasta', ...bind('to') },
+              ]}
+              onSearch={applyFilters}
+              onClear={() => { resetFilters(); setPage(1); load({ page: 1, override: {} }); }}
+            />
             {loading ? (
               <p>Cargando…</p>
             ) : (
