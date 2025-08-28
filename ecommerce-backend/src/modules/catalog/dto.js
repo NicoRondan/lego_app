@@ -100,6 +100,8 @@ function parseCreateProduct(body) {
     price,
     stock,
     pieces,
+    description,
+    releaseYear,
     categories,
     status,
     code,
@@ -110,6 +112,9 @@ function parseCreateProduct(body) {
   if (!setNumber) throw new ApiError('setNumber is required', 400);
   if (!name) throw new ApiError('name is required', 400);
   if (!slug) throw new ApiError('slug is required', 400);
+  if (!description) throw new ApiError('description is required', 400);
+  if (releaseYear === undefined)
+    throw new ApiError('releaseYear is required', 400);
   const priceNum = parseFloat(price);
   if (isNaN(priceNum)) throw new ApiError('price must be a number', 400);
   const stockNum = parseInt(stock, 10);
@@ -119,13 +124,18 @@ function parseCreateProduct(body) {
   const ageNum = parseInt(recommendedAge, 10);
   if (isNaN(ageNum) || ageNum < 0)
     throw new ApiError('recommendedAge must be a non-negative integer', 400);
+  const releaseYearNum = parseInt(releaseYear, 10);
+  if (isNaN(releaseYearNum))
+    throw new ApiError('releaseYear must be an integer', 400);
   const result = {
     setNumber: String(setNumber),
     name: String(name),
     slug: String(slug),
+    description: String(description),
     price: priceNum,
     stock: stockNum,
     recommendedAge: ageNum,
+    releaseYear: releaseYearNum,
     code: String(code || setNumber),
     currency: String(currency || 'USD'),
   };

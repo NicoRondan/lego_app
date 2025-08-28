@@ -34,6 +34,14 @@ const schema = z.object({
   name: z.string().min(1, 'Nombre requerido'),
   setNumber: z.string().min(1, 'Número de set requerido'),
   slug: z.string().min(1, 'Slug requerido'),
+  description: z.string().min(1, 'Descripción requerida'),
+  releaseYear: z.preprocess(
+    (v) => (v === '' ? undefined : Number(v)),
+    z
+      .number({ required_error: 'Año de lanzamiento requerido' })
+      .int()
+      .nonnegative('Año inválido')
+  ),
   pieces: z
     .preprocess((v) => (v === '' ? undefined : Number(v)), z.number().int().positive().optional()),
   price: z.preprocess(
@@ -460,6 +468,23 @@ function NewProductPage() {
                   </button>
                 </div>
               </div>
+              <div className="col-12">
+                <label className="form-label" htmlFor="description">
+                  Descripción <span className="text-danger">*</span>
+                  <InfoTooltip text="Descripción del producto" />
+                </label>
+                <textarea
+                  id="description"
+                  className="form-control"
+                  rows="3"
+                  placeholder="Descripción del producto"
+                  {...register('description')}
+                  required
+                ></textarea>
+                {errors.description && (
+                  <div className="text-danger small">{errors.description.message}</div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -505,6 +530,23 @@ function NewProductPage() {
 
           <div className={`tab-pane fade ${activeTab === 'estado' ? 'show active' : ''}`}>
             <div className="row g-3">
+              <div className="col-md-4">
+                <label className="form-label" htmlFor="releaseYear">
+                  Año de lanzamiento <span className="text-danger">*</span>
+                  <InfoTooltip text="Año de salida al mercado" />
+                </label>
+                <input
+                  id="releaseYear"
+                  type="number"
+                  className="form-control"
+                  placeholder="Ej: 2024"
+                  {...register('releaseYear')}
+                  required
+                />
+                {errors.releaseYear && (
+                  <div className="text-danger small">{errors.releaseYear.message}</div>
+                )}
+              </div>
               <div className="col-md-4">
                 <label className="form-label" htmlFor="stock">
                   Stock <span className="text-danger">*</span>
