@@ -40,6 +40,8 @@ const webhooksRouter = require('../modules/webhooks/router');
 const adminOrdersRouter = require('../modules/admin/ordersRouter');
 const adminPaymentsRouter = require('../modules/admin/paymentsRouter');
 const adminCouponsRouter = require('../modules/admin/couponsRouter');
+const adminSegmentsRouter = require('../modules/admin/segmentsRouter');
+const adminCampaignsRouter = require('../modules/admin/campaignsRouter');
 const adminReportsRouter = require('../modules/admin/reportsRouter');
 const adminInventoryRouter = require('../modules/admin/inventoryRouter');
 const adminUsersRouter = require('../modules/admin/usersRouter');
@@ -124,6 +126,8 @@ async function createApp() {
   app.use('/admin/orders', isAdmin, hasRole('oms','support'), adminOrdersRouter);
   app.use('/admin/payments', isAdmin, hasRole('oms','support'), adminPaymentsRouter);
   app.use('/admin/coupons', isAdmin, hasRole('marketing'), adminCouponsRouter);
+  app.use('/admin/segments', isAdmin, hasRole('marketing'), adminSegmentsRouter);
+  app.use('/admin/campaigns', isAdmin, hasRole('marketing'), adminCampaignsRouter);
   app.use('/admin/reports', isAdmin, adminReportsRouter);
   app.use('/admin/inventory', isAdmin, hasRole('catalog_manager'), adminInventoryRouter);
   app.use('/admin/users', isAdmin, hasRole('support'), adminUsersRouter);
