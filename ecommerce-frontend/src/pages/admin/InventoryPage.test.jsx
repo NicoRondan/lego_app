@@ -25,12 +25,14 @@ describe('InventoryPage', () => {
       total: 2,
     });
     const container = document.createElement('div');
-    ReactDOM.render(
-      <MemoryRouter>
-        <InventoryPage />
-      </MemoryRouter>,
-      container,
-    );
+    await act(async () => {
+      ReactDOM.render(
+        <MemoryRouter>
+          <InventoryPage />
+        </MemoryRouter>,
+        container,
+      );
+    });
     // initial load
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
@@ -72,15 +74,15 @@ describe('InventoryPage', () => {
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     const plusBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent.includes('+ Ajustar'));
-    act(() => { plusBtn.click(); });
+    await act(async () => { plusBtn.click(); });
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     const modal = document.querySelector('.modal.show .modal-content');
     const qtyInput = modal.querySelector('input[type="number"]');
     qtyInput.value = '2';
     qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
-    const applyBtn = Array.from(modal.querySelectorAll('button')).find((b) => b.textContent.includes('Aplicar'));
-    act(() => { applyBtn.click(); });
+    const applyBtn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent.includes('Aplicar'));
+    await act(async () => { applyBtn.click(); });
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     expect(api.adminAdjustInventory).toHaveBeenCalled();
@@ -104,26 +106,28 @@ describe('InventoryPage', () => {
       { id: 100, type: 'adjust', qty: 5, createdAt: new Date().toISOString(), reason: 'seed' },
     ] });
     const container = document.createElement('div');
-    ReactDOM.render(
-      <MemoryRouter>
-        <InventoryPage />
-      </MemoryRouter>,
-      container,
-    );
+    await act(async () => {
+      ReactDOM.render(
+        <MemoryRouter>
+          <InventoryPage />
+        </MemoryRouter>,
+        container,
+      );
+    });
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
 
     // Edit safety
     const editBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent.includes('Editar mínimo'));
-    act(() => { editBtn.click(); });
+    await act(async () => { editBtn.click(); });
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     const modal2 = document.querySelector('.modal.show .modal-content');
     const safetyInput = modal2.querySelector('input[type="number"]');
     safetyInput.value = '7';
     safetyInput.dispatchEvent(new Event('change', { bubbles: true }));
-    const saveBtn = Array.from(modal2.querySelectorAll('button')).find((b) => b.textContent.includes('Guardar'));
-    act(() => { saveBtn.click(); });
+    const saveBtn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent.includes('Guardar'));
+    await act(async () => { saveBtn.click(); });
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
     expect(api.adminUpdateSafetyStock).toHaveBeenCalled();

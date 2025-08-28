@@ -164,7 +164,7 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
           </div>
           <div className="col-12 d-flex justify-content-end gap-2">
             <button type="button" className="btn btn-outline-secondary" onClick={() => setAdjustOpen(false)}>Cancelar</button>
-            <button type="submit" className="btn btn-primary">Aplicar</button>
+            <button type="submit" className="btn btn-primary" onClick={(e)=>{ e.preventDefault(); submitAdjust(e); }}>Aplicar</button>
           </div>
         </form>
       </BrickModal>
@@ -191,7 +191,7 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
           </div>
           <div className="col-12 d-flex justify-content-end gap-2">
             <button type="button" className="btn btn-outline-secondary" onClick={() => setSafetyOpen(false)}>Cancelar</button>
-            <button type="submit" className="btn btn-primary">Guardar</button>
+            <button type="submit" className="btn btn-primary" onClick={(e)=>{ e.preventDefault(); submitSafety(e); }}>Guardar</button>
           </div>
         </form>
       </BrickModal>
