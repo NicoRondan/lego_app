@@ -29,7 +29,7 @@ function UsersPage() {
         <table className="table table-striped">
           <thead>
             <tr>
-              <th>ID</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Opt-in</th><th>Alta</th>
+              <th>ID</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Badges</th><th>Alta</th>
             </tr>
           </thead>
           <tbody>
@@ -39,7 +39,11 @@ function UsersPage() {
                 <td><a href={`/admin/users/${u.id}`}>{u.name}</a></td>
                 <td>{u.email}</td>
                 <td>{u.phone || '-'}</td>
-                <td>{u.marketingOptIn ? <span className="badge bg-success">Opt-in</span> : <span className="badge bg-secondary">No</span>}</td>
+                <td>
+                  {u.marketingOptIn && <span className="badge bg-success me-1">Opt-in</span>}
+                  {u.hasOrders && <span className="badge bg-info text-dark me-1">Con pedidos</span>}
+                  {new Date(u.createdAt) > new Date(Date.now() - 7*24*60*60*1000) && <span className="badge bg-primary">Nuevo</span>}
+                </td>
                 <td>{new Date(u.createdAt).toLocaleDateString()}</td>
               </tr>
             ))}
@@ -59,4 +63,3 @@ function UsersPage() {
 }
 
 export default UsersPage;
-

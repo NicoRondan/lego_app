@@ -10,6 +10,7 @@ const {
   AdminImpersonationToken,
   AdminAuditLog,
 } = require('../../infra/models');
+const { sequelize } = require('../../infra/models');
 
 function maskEmail(email) {
   if (!email) return email;
@@ -53,8 +54,15 @@ exports.listUsers = async (req, res, next) => {
       offset: (page - 1) * pageSize,
       limit: pageSize,
     });
+    const ids = rows.map(r => r.id);
+    const orderCounts = await Order.findAll({
+      attributes: ['userId', [sequelize.fn('COUNT', sequelize.col('id')), 'cnt']],
+      where: { userId: ids },
+      group: ['userId'],
+    });
+    const hasOrders = new Set(orderCounts.filter(r => parseInt(r.get('cnt'), 10) > 0).map(r => r.userId));
     const role = req.user?.role;
-    const data = rows.map(u => sanitizeUserForRole(u, role));
+    const data = rows.map(u => ({ ...sanitizeUserForRole(u, role), hasOrders: hasOrders.has(u.id) }));
     res.json({ data, meta: { page, pageSize, total: count } });
   } catch (err) {
     next(err);
@@ -164,4 +172,3 @@ exports.impersonate = async (req, res, next) => {
     next(err);
   }
 };
-
