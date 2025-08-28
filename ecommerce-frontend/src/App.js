@@ -31,11 +31,18 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
-          <Route path="/cart" element={<CartPage />} />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute role="customer">
+                <CartPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/wishlist"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="customer">
                 <WishlistPage />
               </ProtectedRoute>
             }
@@ -43,7 +50,7 @@ function App() {
           <Route
             path="/checkout"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="customer">
                 <CheckoutPage />
               </ProtectedRoute>
             }
@@ -54,7 +61,7 @@ function App() {
           <Route
             path="/orders"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="customer">
                 <OrdersPage />
               </ProtectedRoute>
             }

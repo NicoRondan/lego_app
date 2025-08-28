@@ -84,7 +84,7 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
             <option value="fixed">Fixed</option>
           </select>
         </div>
-        <div className="col-md-3">
+        <div className="col-md-2">
           <label className="form-label">Valor <InfoTooltip text="Porcentaje (0-100) si es percent, o monto fijo si es fixed" /></label>
           <input className="form-control" type="number" step="0.01" placeholder="Valor" value={form.value ?? ''}
             onChange={(e) => setForm({ ...form, value: e.target.value })} required />
@@ -98,15 +98,14 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
           </select>
         </div>
         <div className="col-md-2">
-          <label className="form-label">Hasta</label>
-          <input type="date" className="form-control" value={form.validTo || ''}
-            onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
-        </div>
-
-        <div className="col-md-2">
           <label className="form-label">Desde</label>
           <input type="date" className="form-control" value={form.validFrom || ''}
             onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
+        </div>
+        <div className="col-md-2">
+          <label className="form-label">Hasta</label>
+          <input type="date" className="form-control" value={form.validTo || ''}
+            onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
         </div>
         <div className="col-md-3">
           <label className="form-label">Min subtotal <InfoTooltip text="Monto mínimo del carrito para aplicar" /></label>
@@ -114,7 +113,7 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
             onChange={(e) => setForm({ ...form, minSubtotal: e.target.value })} />
           {errors.minSubtotal && <div className="text-danger small">{errors.minSubtotal}</div>}
         </div>
-        <div className="col-md-3">
+        <div className="col-md-2">
           <label className="form-label">Max usos <InfoTooltip text="Cantidad total de usos del cupón" /></label>
           <input className="form-control" type="number" step="1" placeholder="Max usos" value={form.maxUses ?? ''}
             onChange={(e) => setForm({ ...form, maxUses: e.target.value })} />
