@@ -4,18 +4,32 @@ import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 
+function normalizeInitial(i = {}) {
+  const toStr = (v) => (v === null || v === undefined ? '' : v);
+  return {
+    code: toStr(i.code || ''),
+    type: toStr(i.type || 'percent'),
+    value: toStr(i.value ?? 10),
+    status: toStr(i.status || 'active'),
+    validFrom: toStr(i.validFrom || ''),
+    validTo: toStr(i.validTo || ''),
+    minSubtotal: toStr(i.minSubtotal ?? ''),
+    maxUses: toStr(i.maxUses ?? ''),
+    perUserLimit: toStr(i.perUserLimit ?? ''),
+    allowedThemes: Array.isArray(i.allowedThemes)
+      ? i.allowedThemes
+      : (typeof i.allowedThemes === 'string' ? i.allowedThemes.split(',').map((s) => s.trim()).filter(Boolean) : []),
+    disallowProducts: toStr(Array.isArray(i.disallowProducts) ? i.disallowProducts.join(',') : i.disallowProducts || ''),
+    stackable: !!i.stackable,
+  };
+}
+
 function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
-  const [form, setForm] = useState({
-    code: '', type: 'percent', value: 10, status: 'active',
-    validFrom: '', validTo: '', minSubtotal: '', maxUses: '', perUserLimit: '',
-    allowedThemes: [], disallowProducts: '', stackable: false,
-    ...initial,
-  });
+  const [form, setForm] = useState(() => normalizeInitial(initial));
   // Normalizar allowedThemes si viene como string
   useEffect(() => {
-    if (typeof initial.allowedThemes === 'string') {
-      setForm((f) => ({ ...f, allowedThemes: initial.allowedThemes.split(',').map((s) => s.trim()).filter(Boolean) }));
-    }
+    // Ensure no null values on mount
+    setForm((f) => ({ ...normalizeInitial(initial), ...f }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -49,7 +63,7 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
       <div className="row g-3">
         <div className="col-md-3">
           <label className="form-label">Código</label>
-          <input className="form-control" placeholder="CODE" value={form.code}
+          <input className="form-control" placeholder="CODE" value={form.code || ''}
             onChange={(e) => setForm({ ...form, code: e.target.value })} required />
         </div>
         <div className="col-md-2">
@@ -61,7 +75,7 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
         </div>
         <div className="col-md-3">
           <label className="form-label">Valor <InfoTooltip text="Porcentaje (0-100) si es percent, o monto fijo si es fixed" /></label>
-          <input className="form-control" type="number" step="0.01" placeholder="Valor" value={form.value}
+          <input className="form-control" type="number" step="0.01" placeholder="Valor" value={form.value ?? ''}
             onChange={(e) => setForm({ ...form, value: e.target.value })} required />
           {errors.value && <div className="text-danger small">{errors.value}</div>}
         </div>
@@ -74,30 +88,30 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
         </div>
         <div className="col-md-2">
           <label className="form-label">Hasta</label>
-          <input type="date" className="form-control" value={form.validTo}
+          <input type="date" className="form-control" value={form.validTo || ''}
             onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
         </div>
 
         <div className="col-md-2">
           <label className="form-label">Desde</label>
-          <input type="date" className="form-control" value={form.validFrom}
+          <input type="date" className="form-control" value={form.validFrom || ''}
             onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
         </div>
         <div className="col-md-3">
           <label className="form-label">Min subtotal <InfoTooltip text="Monto mínimo del carrito para aplicar" /></label>
-          <input className="form-control" type="number" step="0.01" placeholder="Min subtotal" value={form.minSubtotal}
+          <input className="form-control" type="number" step="0.01" placeholder="Min subtotal" value={form.minSubtotal ?? ''}
             onChange={(e) => setForm({ ...form, minSubtotal: e.target.value })} />
           {errors.minSubtotal && <div className="text-danger small">{errors.minSubtotal}</div>}
         </div>
         <div className="col-md-3">
           <label className="form-label">Max usos <InfoTooltip text="Cantidad total de usos del cupón" /></label>
-          <input className="form-control" type="number" step="1" placeholder="Max usos" value={form.maxUses}
+          <input className="form-control" type="number" step="1" placeholder="Max usos" value={form.maxUses ?? ''}
             onChange={(e) => setForm({ ...form, maxUses: e.target.value })} />
           {errors.maxUses && <div className="text-danger small">{errors.maxUses}</div>}
         </div>
         <div className="col-md-3">
           <label className="form-label">Límite por usuario <InfoTooltip text="Usos permitidos por usuario" /></label>
-          <input className="form-control" type="number" step="1" placeholder="Límite por usuario" value={form.perUserLimit}
+          <input className="form-control" type="number" step="1" placeholder="Límite por usuario" value={form.perUserLimit ?? ''}
             onChange={(e) => setForm({ ...form, perUserLimit: e.target.value })} />
           {errors.perUserLimit && <div className="text-danger small">{errors.perUserLimit}</div>}
         </div>
@@ -137,7 +151,7 @@ function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
 
         <div className="col-12">
           <label className="form-label">Productos bloqueados</label>
-          <input className="form-control" placeholder="IDs o códigos, separados por coma" value={form.disallowProducts}
+          <input className="form-control" placeholder="IDs o códigos, separados por coma" value={form.disallowProducts || ''}
             onChange={(e) => setForm({ ...form, disallowProducts: e.target.value })} />
         </div>
 
@@ -161,6 +175,7 @@ export default function CouponsPage() {
   const [filters, setFilters] = useState({ q: '', status: '', from: '', to: '' });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [sort, setSort] = useState({ field: 'code', dir: 'asc' });
 
   const load = async (override = {}) => {
     setLoading(true);
@@ -226,6 +241,10 @@ export default function CouponsPage() {
     }
     const res = await api.adminListCouponUsages(coupon.id, { page: 1, pageSize: 50 });
     setUsages({ openFor: coupon.id, items: res.items || [] });
+    const el = document.getElementById('couponUsagesModal');
+    if (window.bootstrap && el) {
+      window.bootstrap.Modal.getOrCreateInstance(el).show();
+    }
   };
 
   const [categories, setCategories] = useState([]);
@@ -329,16 +348,22 @@ export default function CouponsPage() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Código</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Estado</th>
-                    <th>Usos</th>
+                    <th role="button" onClick={() => setSort((s) => ({ field: 'code', dir: s.field==='code'&&s.dir==='asc'?'desc':'asc' }))}>Código</th>
+                    <th role="button" onClick={() => setSort((s) => ({ field: 'type', dir: s.field==='type'&&s.dir==='asc'?'desc':'asc' }))}>Tipo</th>
+                    <th role="button" onClick={() => setSort((s) => ({ field: 'value', dir: s.field==='value'&&s.dir==='asc'?'desc':'asc' }))}>Valor</th>
+                    <th role="button" onClick={() => setSort((s) => ({ field: 'status', dir: s.field==='status'&&s.dir==='asc'?'desc':'asc' }))}>Estado</th>
+                    <th role="button" onClick={() => setSort((s) => ({ field: 'usageCount', dir: s.field==='usageCount'&&s.dir==='asc'?'desc':'asc' }))}>Usos</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {list.map((c) => (
+                  {([...list].sort((a,b)=>{
+                      const f = sort.field; const dir = sort.dir==='asc'?1:-1;
+                      const av = a[f] ?? '';
+                      const bv = b[f] ?? '';
+                      if (typeof av === 'number' && typeof bv === 'number') return (av-bv)*dir;
+                      return String(av).localeCompare(String(bv)) * dir;
+                    })).map((c) => (
                     <tr key={c.id}>
                       <td>{c.code}</td>
                       <td>{c.type}</td>
@@ -371,9 +396,10 @@ export default function CouponsPage() {
                 </select>
               </div>
             </div>
-            {usages.openFor && (
-              <div className="mt-4">
-                <h5>Usos de {list.find((x) => x.id === usages.openFor)?.code}</h5>
+            <BrickModal id="couponUsagesModal" title={`Usos de ${list.find((x) => x.id === usages.openFor)?.code || ''}`}>
+              {usages.items.length === 0 ? (
+                <p className="mb-0">Sin usos</p>
+              ) : (
                 <table className="table">
                   <thead>
                     <tr>
@@ -392,8 +418,8 @@ export default function CouponsPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
+              )}
+            </BrickModal>
           </div>
         </div>
         <BrickModal id="couponEditModal" title={`Editar cupón ${editing?.code || ''}`}>
