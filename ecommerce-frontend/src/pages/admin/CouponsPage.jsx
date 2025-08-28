@@ -4,6 +4,7 @@ import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
+import AdminTablePager from '../../components/admin/AdminTablePager.jsx';
 
 function toYMD(v) {
   if (!v) return '';
@@ -389,21 +390,14 @@ export default function CouponsPage() {
                 </tbody>
               </table>
             )}
-            <div className="d-flex align-items-center justify-content-between mt-2">
-              <div className="d-flex align-items-center gap-2">
-                <button className="btn btn-outline-secondary btn-sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Anterior</button>
-                <span>Página {page} de {Math.max(1, Math.ceil((total || 0) / pageSize))}</span>
-                <button className="btn btn-outline-secondary btn-sm" disabled={page >= Math.ceil((total || 0) / pageSize)} onClick={() => setPage((p) => p + 1)}>Siguiente</button>
-              </div>
-              <div>
-                <label className="me-2">Por página</label>
-                <select className="form-select d-inline-block" style={{ width: 90 }} value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value, 10) || 20); setPage(1); }}>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </select>
-              </div>
-            </div>
+            <AdminTablePager
+              className="mt-2"
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              onChangePage={setPage}
+              onChangePageSize={(n) => { setPageSize(n); setPage(1); }}
+            />
             <BrickModal id="couponUsagesModal" title={`Usos de ${list.find((x) => x.id === usages.openFor)?.code || ''}`}>
               {usages.items.length === 0 ? (
                 <p className="mb-0">Sin usos</p>

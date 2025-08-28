@@ -3,6 +3,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
+import AdminTablePager from '../../components/admin/AdminTablePager.jsx';
 import {
   adminListInventory,
   adminAdjustInventory,
@@ -203,8 +204,10 @@ function InventoryPage() {
   const [low, setLow] = useState(false);
   const [data, setData] = useState({ items: [], page: 1, pageSize: 20, total: 0 });
 
-  const load = async () => {
-    const res = await adminListInventory({ q, lowStockOnly: low, page: 1, pageSize: 50 });
+  const load = async (overrides = {}) => {
+    const nextPage = overrides.page ?? data.page ?? 1;
+    const nextSize = overrides.pageSize ?? data.pageSize ?? 20;
+    const res = await adminListInventory({ q, lowStockOnly: low, page: nextPage, pageSize: nextSize });
     setData(res);
   };
 
@@ -256,6 +259,13 @@ function InventoryPage() {
           </tbody>
         </table>
       </div>
+      <AdminTablePager
+        page={data.page}
+        pageSize={data.pageSize}
+        total={data.total}
+        onChangePage={(p) => load({ page: p })}
+        onChangePageSize={(ps) => load({ page: 1, pageSize: ps })}
+      />
     </AdminLayout>
   );
 }

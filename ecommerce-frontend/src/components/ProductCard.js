@@ -8,12 +8,13 @@ import QuantityStepper from "./QuantityStepper";
 import { toast } from "react-toastify";
 import "./ProductCard.css";
 import * as api from "../services/api";
+import { useWishlist } from "../contexts/WishlistContext.jsx";
 
 // Card component for displaying a product in a grid with minimalist design.
 function ProductCard({ product }) {
   const [loading, setLoading] = useState(false);
   const [qty, setQty] = useState(1);
-  const [wish, setWish] = useState(false);
+  const { isInWishlist, add, removeByProduct } = useWishlist();
   const { cart, addItem } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -49,20 +50,9 @@ function ProductCard({ product }) {
       return;
     }
     try {
-      if (!wish) {
-        await api.addToWishlist(product.id);
-        setWish(true);
-        toast.success("Agregado a wishlist");
-      } else {
-        // find item in wishlist then remove
-        const wl = await api.getWishlist();
-        const item = wl?.items?.find((it) => (it.product?.id === product.id || it.productId === product.id));
-        if (item) {
-          await api.removeFromWishlist(item.id);
-          setWish(false);
-          toast.info("Quitado de wishlist");
-        }
-      }
+      const wished = isInWishlist(product.id);
+      if (!wished) { await add(product.id); toast.success("Agregado a wishlist"); }
+      else { await removeByProduct(product.id); toast.info("Quitado de wishlist"); }
     } catch (err) {
       // error handled by api toast
     }
@@ -99,12 +89,12 @@ function ProductCard({ product }) {
         )}
         <button
           type="button"
-          className={`btn ${wish ? "btn-danger" : "btn-outline-danger"} wishlist-btn position-absolute top-0 end-0 m-2 z-3`}
+          className={`btn ${isInWishlist(product.id) ? "btn-danger" : "btn-outline-danger"} wishlist-btn position-absolute top-0 end-0 m-2 z-3`}
           aria-label="Agregar a wishlist"
           onClick={handleWishlist}
         >
           <i
-            className={`${wish ? "fa-solid" : "fa-regular"} fa-heart`}
+            className={`${isInWishlist(product.id) ? "fa-solid" : "fa-regular"} fa-heart`}
             aria-hidden="true"
           ></i>
         </button>

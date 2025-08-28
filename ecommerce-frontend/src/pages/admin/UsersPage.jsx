@@ -1,23 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
+import AdminTablePager from '../../components/admin/AdminTablePager.jsx';
+import useListState from '../../hooks/useListState';
 import * as api from '../../services/api';
 
 function UsersPage() {
   const [q, setQ] = useState('');
-  const [page, setPage] = useState(1);
-  const [data, setData] = useState([]);
-  const [meta, setMeta] = useState({ total: 0, pageSize: 20 });
-
-  const load = useCallback(async () => {
+  const list = useListState(async ({ page }) => {
     const res = await api.adminListUsers({ q, page });
-    setData(res.data || []);
-    setMeta(res.meta || { total: 0, pageSize: 20, page });
-  }, [q, page]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.pageSize || 20)));
+    return { items: res.data || [], total: res.meta?.total || 0, pageSize: res.meta?.pageSize || 20 };
+  }, { initialPage: 1, initialPageSize: 20 });
 
   return (
     <AdminLayout>
@@ -27,7 +20,7 @@ function UsersPage() {
       />
       <div className="d-flex gap-2 mb-3">
         <input className="form-control" placeholder="Buscar por nombre o email" value={q} onChange={(e) => setQ(e.target.value)} />
-        <button className="btn btn-primary" onClick={() => { setPage(1); load(); }}>Buscar</button>
+        <button className="btn btn-primary" onClick={() => list.applyFilters({})}>Buscar</button>
       </div>
       <div className="table-responsive">
         <table className="table table-striped">
@@ -37,7 +30,7 @@ function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {data.map(u => (
+            {list.items.map(u => (
               <tr key={u.id}>
                 <td>{u.id}</td>
                 <td><a href={`/admin/users/${u.id}`}>{u.name}</a></td>
@@ -54,14 +47,13 @@ function UsersPage() {
           </tbody>
         </table>
       </div>
-      <div className="d-flex justify-content-between align-items-center">
-        <div>Mostrando {data.length} de {meta.total}</div>
-        <div className="btn-group">
-          <button className="btn btn-outline-secondary" disabled={page<=1} onClick={() => setPage(page-1)}>Anterior</button>
-          <span className="btn btn-outline-secondary disabled">{page}/{totalPages}</span>
-          <button className="btn btn-outline-secondary" disabled={page>=totalPages} onClick={() => setPage(page+1)}>Siguiente</button>
-        </div>
-      </div>
+      <AdminTablePager
+        page={list.page}
+        pageSize={list.pageSize}
+        total={list.total}
+        onChangePage={list.changePage}
+        onChangePageSize={list.changePageSize}
+      />
     </AdminLayout>
   );
 }
