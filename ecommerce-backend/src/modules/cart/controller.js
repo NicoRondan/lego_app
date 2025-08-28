@@ -60,6 +60,7 @@ exports.addItem = async (req, res, next) => {
     if (!user) throw new ApiError('Not authenticated', 401);
     const dto = require('./dto');
     const { productId, quantity } = dto.parseAddItem(req.body);
+    const models = require('../../infra/models');
     const product = await Product.findByPk(productId);
     if (!product) throw new ApiError('Product not found', 404);
     if (product.status === 'discontinued') throw new ApiError('Product discontinued', 400);
@@ -75,7 +76,16 @@ exports.addItem = async (req, res, next) => {
     if (product.maxQtyPerOrder && newQty > product.maxQtyPerOrder) {
       throw new ApiError('Exceeds max qty per order', 400);
     }
-    if (newQty > product.stock) throw new ApiError('Insufficient stock', 400);
+    let reserved = 0;
+    try {
+      const invModel = models.Inventory;
+      if (invModel && typeof invModel.findOne === 'function') {
+        const inv = await invModel.findOne({ where: { productId: product.id } });
+        reserved = inv?.reserved ? parseInt(inv.reserved, 10) : 0;
+      }
+    } catch (_) { reserved = 0; }
+    const available = (parseInt(product.stock, 10) || 0) - reserved;
+    if (newQty > available) throw new ApiError('Insufficient stock', 400);
     const price = getEffectivePrice(product);
     item.quantity = newQty;
     item.unitPrice = price;
@@ -110,6 +120,7 @@ exports.updateItem = async (req, res, next) => {
     if (parseInt(quantity, 10) <= 0) {
       await item.destroy();
     } else {
+      const models2 = require('../../infra/models');
       const product = await Product.findByPk(item.productId);
       if (!product) throw new ApiError('Product not found', 404);
       if (product.status === 'discontinued') throw new ApiError('Product discontinued', 400);
@@ -117,7 +128,16 @@ exports.updateItem = async (req, res, next) => {
       if (product.maxQtyPerOrder && newQty > product.maxQtyPerOrder) {
         throw new ApiError('Exceeds max qty per order', 400);
       }
-      if (newQty > product.stock) throw new ApiError('Insufficient stock', 400);
+      let reserved2 = 0;
+      try {
+        const invModel2 = models2.Inventory;
+        if (invModel2 && typeof invModel2.findOne === 'function') {
+          const inv2 = await invModel2.findOne({ where: { productId: product.id } });
+          reserved2 = inv2?.reserved ? parseInt(inv2.reserved, 10) : 0;
+        }
+      } catch (_) { reserved2 = 0; }
+      const available = (parseInt(product.stock, 10) || 0) - reserved2;
+      if (newQty > available) throw new ApiError('Insufficient stock', 400);
       const price = getEffectivePrice(product);
       item.quantity = newQty;
       item.unitPrice = price;

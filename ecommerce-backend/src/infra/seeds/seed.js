@@ -2,6 +2,7 @@ const {
   sequelize,
   User,
   Product,
+  Inventory,
   Category,
   Coupon,
   Order,
@@ -227,6 +228,14 @@ async function seed() {
       await ProductPriceHistory.bulkCreate(priceHistoryEntries);
 
     products.push(product);
+  }
+
+  // Ensure inventory rows mirror initial product stock
+  for (const product of products) {
+    await Inventory.findOrCreate({
+      where: { productId: product.id },
+      defaults: { stock: product.stock, safetyStock: 0, reserved: 0 },
+    });
   }
 
   // Users

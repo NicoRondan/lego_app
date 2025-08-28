@@ -124,6 +124,18 @@ const Product = sequelize.define('Product', {
   ],
 });
 
+// Inventory model (per product)
+const Inventory = sequelize.define('Inventory', {
+  productId: { type: DataTypes.INTEGER, primaryKey: true, field: 'product_id' },
+  stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  safetyStock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0, field: 'safety_stock' },
+  reserved: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  warehouseLocation: { type: DataTypes.STRING, field: 'warehouse_location' },
+}, {
+  tableName: 'inventory',
+  underscored: true,
+});
+
 // Category model
 const Category = sequelize.define('Category', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -332,6 +344,22 @@ const ProductPriceHistory = sequelize.define('ProductPriceHistory', {
   ],
 });
 
+// (OrderStatusHistory and PaymentEvent are defined later in this file)
+
+// Inventory movement audit
+const InventoryMovement = sequelize.define('InventoryMovement', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  productId: { type: DataTypes.INTEGER, allowNull: false, field: 'product_id' },
+  type: { type: DataTypes.STRING, allowNull: false }, // adjust|reserve|release|sale|return
+  qty: { type: DataTypes.INTEGER, allowNull: false }, // signed quantity
+  reason: { type: DataTypes.STRING },
+  orderId: { type: DataTypes.INTEGER, field: 'order_id' },
+  userId: { type: DataTypes.INTEGER, field: 'user_id' },
+}, {
+  tableName: 'inventory_movements',
+  underscored: true,
+});
+
 // Order status history
 const OrderStatusHistory = sequelize.define('OrderStatusHistory', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -411,6 +439,12 @@ WishlistItem.belongsTo(Product, { foreignKey: 'productId' });
 Product.belongsToMany(Category, { through: ProductCategory, as: 'categories' });
 Category.belongsToMany(Product, { through: ProductCategory, as: 'products' });
 
+// Inventory relations
+Product.hasOne(Inventory, { as: 'inventory', foreignKey: 'productId' });
+Inventory.belongsTo(Product, { foreignKey: 'productId' });
+Product.hasMany(InventoryMovement, { as: 'inventoryMovements', foreignKey: 'productId' });
+InventoryMovement.belongsTo(Product, { foreignKey: 'productId' });
+
 // Cart relations
 Cart.hasMany(CartItem, { as: 'items', foreignKey: 'cartId' });
 CartItem.belongsTo(Cart, { foreignKey: 'cartId' });
@@ -487,6 +521,119 @@ Product.addHook('afterUpdate', async (product, options) => {
   }
 });
 
+// Inventory hooks for Order lifecycle
+async function withInventory(models) {
+  const { Inventory: Inv, InventoryMovement: Mov, Product: Prod } = models;
+  return { Inv, Mov, Prod };
+}
+
+async function reserveForOrder(order, options) {
+  const { OrderItem } = module.exports; // avoid circular
+  const { Inv, Mov, Prod } = await withInventory(module.exports);
+  const items = await OrderItem.findAll({ where: { orderId: order.id }, transaction: options?.transaction });
+  for (const it of items) {
+    const [inv] = await Inv.findOrCreate({ where: { productId: it.productId }, defaults: { stock: 0, safetyStock: 0, reserved: 0 }, transaction: options?.transaction });
+    // anti-oversell: available >= qty
+    const prod = await Prod.findByPk(it.productId, { transaction: options?.transaction });
+    const available = (parseInt(prod.stock, 10) || 0) - (parseInt(inv.reserved, 10) || 0);
+    if (available < it.quantity) {
+      throw new Error(`Insufficient available stock for product ${it.productId}`);
+    }
+    inv.reserved = (parseInt(inv.reserved, 10) || 0) + it.quantity;
+    await inv.save({ transaction: options?.transaction });
+    await Mov.create({ productId: it.productId, type: 'reserve', qty: it.quantity, orderId: order.id }, { transaction: options?.transaction });
+  }
+}
+
+async function finalizeSaleForOrder(order, options) {
+  const { OrderItem } = module.exports;
+  const { Inv, Mov, Prod } = await withInventory(module.exports);
+  const items = await OrderItem.findAll({ where: { orderId: order.id }, transaction: options?.transaction });
+  for (const it of items) {
+    const [inv] = await Inv.findOrCreate({ where: { productId: it.productId }, defaults: { stock: 0, safetyStock: 0, reserved: 0 }, transaction: options?.transaction });
+    // decrement product and inventory stock; reduce reserved
+    const prod = await Prod.findByPk(it.productId, { transaction: options?.transaction, lock: options?.transaction ? options.transaction.LOCK.UPDATE : undefined });
+    const newProdStock = (parseInt(prod.stock, 10) || 0) - it.quantity;
+    if (newProdStock < 0) throw new Error(`Negative stock for product ${it.productId}`);
+    prod.stock = newProdStock;
+    await prod.save({ transaction: options?.transaction });
+    inv.stock = (parseInt(inv.stock, 10) || 0) - it.quantity;
+    if (inv.stock < 0) inv.stock = 0; // guard
+    inv.reserved = Math.max(0, (parseInt(inv.reserved, 10) || 0) - it.quantity);
+    await inv.save({ transaction: options?.transaction });
+    await Mov.create({ productId: it.productId, type: 'sale', qty: -it.quantity, orderId: order.id }, { transaction: options?.transaction });
+  }
+}
+
+async function releaseForOrder(order, options) {
+  const { OrderItem } = module.exports;
+  const { Inv, Mov } = await withInventory(module.exports);
+  const items = await OrderItem.findAll({ where: { orderId: order.id }, transaction: options?.transaction });
+  for (const it of items) {
+    const [inv] = await Inv.findOrCreate({ where: { productId: it.productId }, defaults: { stock: 0, safetyStock: 0, reserved: 0 }, transaction: options?.transaction });
+    inv.reserved = Math.max(0, (parseInt(inv.reserved, 10) || 0) - it.quantity);
+    await inv.save({ transaction: options?.transaction });
+    await Mov.create({ productId: it.productId, type: 'release', qty: -it.quantity, orderId: order.id }, { transaction: options?.transaction });
+  }
+}
+
+async function returnToStockForOrder(order, options) {
+  const { OrderItem } = module.exports;
+  const { Inv, Mov, Prod } = await withInventory(module.exports);
+  const items = await OrderItem.findAll({ where: { orderId: order.id }, transaction: options?.transaction });
+  for (const it of items) {
+    const [inv] = await Inv.findOrCreate({ where: { productId: it.productId }, defaults: { stock: 0, safetyStock: 0, reserved: 0 }, transaction: options?.transaction });
+    const prod = await Prod.findByPk(it.productId, { transaction: options?.transaction, lock: options?.transaction ? options.transaction.LOCK.UPDATE : undefined });
+    prod.stock = (parseInt(prod.stock, 10) || 0) + it.quantity;
+    await prod.save({ transaction: options?.transaction });
+    inv.stock = (parseInt(inv.stock, 10) || 0) + it.quantity;
+    await inv.save({ transaction: options?.transaction });
+    await Mov.create({ productId: it.productId, type: 'return', qty: it.quantity, orderId: order.id }, { transaction: options?.transaction });
+  }
+}
+
+// When an order is created, reserve items
+const OrderCreatedHook = async (order, options) => {
+  try {
+    if (order.status === 'pending') {
+      await reserveForOrder(order, options);
+    }
+  } catch (e) {
+    // Re-throw to abort creation
+    throw e;
+  }
+};
+
+// When an order status changes, apply movements
+const OrderUpdatedHook = async (order, options) => {
+  try {
+    if (!order.changed('status')) return;
+    const from = order.previous('status');
+    const to = order.status;
+    // paid: finalize sale and decrease stock
+    if (to === 'paid') {
+      await finalizeSaleForOrder(order, options);
+    }
+    // canceled while pending/picking: release reservation
+    if (to === 'canceled' && (from === 'pending' || from === 'picking')) {
+      await releaseForOrder(order, options);
+    }
+    // refunded or canceled after paid: return to stock
+    if ((to === 'refunded' || to === 'canceled') && (from === 'paid' || from === 'shipped' || from === 'delivered')) {
+      await returnToStockForOrder(order, options);
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+
+// Attach hooks after Order is defined
+// Note: Order is defined above in this file
+// eslint-disable-next-line no-use-before-define
+Order?.addHook?.('afterCreate', OrderCreatedHook);
+// eslint-disable-next-line no-use-before-define
+Order?.addHook?.('afterUpdate', OrderUpdatedHook);
+
 // Export models and sync helper
 module.exports = {
   sequelize,
@@ -513,4 +660,6 @@ module.exports = {
   ProductPriceHistory,
   OrderStatusHistory,
   PaymentEvent,
+  Inventory,
+  InventoryMovement,
 };

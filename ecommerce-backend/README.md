@@ -293,6 +293,40 @@ Consulta `src/app/openapi.yaml` para el detalle de contratos OpenAPI actualizado
   - `createOrder`
   - `createMpPreference`
 
+## Inventario y anti-oversell
+
+Se añadió un control de inventario con reservas y auditoría de movimientos para evitar sobreventa.
+
+Modelos nuevos:
+- `inventory` (1:1 con producto): `product_id PK/FK`, `stock`, `safety_stock`, `reserved`, `warehouse_location`, timestamps.
+- `inventory_movements`: `id`, `product_id`, `type` (`adjust|reserve|release|sale|return`), `qty` (con signo), `reason`, `order_id?`, `user_id?`, `created_at`.
+
+Reglas y hooks en órdenes:
+- Al crear orden `pending`: se generan movimientos `reserve` y se incrementa `reserved` por ítem.
+- Al pasar a `paid`: se crean `sale`, se descuenta `stock` (en `products` e `inventory`) y se reduce `reserved`.
+- Cancelación desde `pending|picking`: `release` (baja `reserved`).
+- Cancelación/refund tras `paid|shipped|delivered`: `return` (reposición de `stock`).
+
+Carrito y oversell:
+- Las operaciones de carrito validan `available = Product.stock - Inventory.reserved` además de `max_qty_per_order`.
+
+Migraciones y seed:
+- SQL: `src/infra/migrations/004_inventory.sql` crea `inventory` e `inventory_movements`.
+- Seed: `src/infra/seeds/seed.js` inicializa `inventory` espejando `Product.stock`.
+
+Endpoints Admin (RBAC `admin`):
+- `GET /admin/inventory?lowStockOnly=&q=&page=&pageSize=`
+- `PATCH /admin/inventory/:productId/adjust` body `{ qty, reason }` (qty ≠ 0; valida `stock+qty ≥ 0`).
+- `PUT /admin/inventory/:productId/safety` body `{ safetyStock }`.
+- `GET /admin/inventory/:productId/movements?limit=`.
+
+Front-end Admin:
+- Panel “Inventario” con buscador por set/nombre, filtro “Bajo stock”, acciones Ajustar (±), Editar mínimo y vista de movimientos.
+- Badge “Bajo stock” cuando `stock - reserved <= safetyStock`.
+
+Compatibilidad:
+- `products.stock` se mantiene para compatibilidad; `inventory.stock` se mantiene sincronizado por hooks/servicio.
+
 ## REST API
 
 Endpoints disponibles:

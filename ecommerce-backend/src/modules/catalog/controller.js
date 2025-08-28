@@ -4,7 +4,7 @@
 // applied based on query parameters.
 
 const { Op, fn, col, where: sequelizeWhere } = require('sequelize');
-const { Product, Category, Review, User } = require('../../infra/models');
+const { Product, Category, Review, User, Inventory } = require('../../infra/models');
 const { ApiError } = require('../../shared/errors');
 const { logger } = require('../../shared/logger');
 
@@ -39,6 +39,10 @@ exports.createProduct = async (req, res, next) => {
     const data = dto.parseCreateProduct(req.body);
     const { categories = [], ...productData } = data;
     const product = await Product.create(productData);
+    // Initialize inventory row mirroring initial stock
+    try {
+      await Inventory.findOrCreate({ where: { productId: product.id }, defaults: { stock: product.stock, safetyStock: 0, reserved: 0 } });
+    } catch (_) { /* non-blocking */ }
     if (categories.length) {
       const cats = [];
       for (const name of categories) {
