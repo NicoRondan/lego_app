@@ -35,6 +35,7 @@ const wishlistRouter = require('../modules/wishlist/router');
 const ordersRouter = require('../modules/orders/router');
 const paymentsRouter = require('../modules/payments/router');
 const uploadsRouter = require('../modules/uploads/router');
+const meRouter = require('../modules/me/router');
 const webhooksRouter = require('../modules/webhooks/router');
 const adminOrdersRouter = require('../modules/admin/ordersRouter');
 const adminPaymentsRouter = require('../modules/admin/paymentsRouter');
@@ -116,6 +117,7 @@ async function createApp() {
   app.use('/orders', ordersRouter);
   app.use('/payments', paymentsRouter);
   app.use('/uploads', uploadsRouter);
+  app.use('/me', meRouter);
   app.use('/webhooks', webhookLimiter, webhooksRouter);
   // Admin (RBAC)
   const { isAdmin, hasRole } = require('../shared/middlewares');
