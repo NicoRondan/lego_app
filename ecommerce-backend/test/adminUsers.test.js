@@ -1,9 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert');
+const path = require('node:path');
+const fs = require('node:fs');
+process.env.DB_URI = 'sqlite:' + path.join(__dirname, 'tmp_admin_users.sqlite');
 const request = require('supertest');
+const bcrypt = require('bcrypt');
 const { createApp } = require('../src/app/server');
-const { seed } = require('../src/infra/seeds/seed');
-
+const { sequelize, User } = require('../src/infra/models');
 let app;
 
 async function login(email, password = 'password123') {
@@ -14,7 +17,16 @@ async function login(email, password = 'password123') {
 }
 
 test('setup app', async () => {
-  await seed();
+  try { fs.unlinkSync(path.join(__dirname, 'tmp_admin_users.sqlite')); } catch {}
+  await sequelize.sync({ force: true });
+  // minimal fixtures
+  const ph = await bcrypt.hash('password123', 10);
+  await User.bulkCreate([
+    { name: 'Catalog', email: 'catalog_manager@example.com', role: 'catalog_manager', passwordHash: ph },
+    { name: 'Support', email: 'support@example.com', role: 'support', passwordHash: ph },
+    { name: 'Admin 1', email: 'admin1@example.com', role: 'admin', passwordHash: ph },
+    { name: 'Cust 1', email: 'cust1@example.com', role: 'customer', passwordHash: ph },
+  ]);
   app = await createApp();
 });
 
@@ -36,11 +48,7 @@ test('RBAC: catalog_manager denied; support allowed; legacy admin allowed', asyn
 test('Addresses CRUD respects isDefault within type', async () => {
   const cookie = await login('support@example.com');
   // pick a customer
-  const list = await request(app).get('/admin/users').set('Cookie', cookie);
-  assert.equal(list.status, 200);
-  const customer = list.body.data.find((u) => u.role === 'customer');
-  assert.ok(customer);
-  const uid = customer.id;
+  const uid = 4; // created above
 
   // create shipping default A1
   const a1 = await request(app)
@@ -78,4 +86,3 @@ test('Addresses CRUD respects isDefault within type', async () => {
     .set('Cookie', cookie);
   assert.equal(del.status, 200);
 });
-

@@ -56,11 +56,12 @@ exports.listUsers = async (req, res, next) => {
     });
     const ids = rows.map(r => r.id);
     const orderCounts = await Order.findAll({
-      attributes: ['userId', [sequelize.fn('COUNT', sequelize.col('id')), 'cnt']],
-      where: { userId: ids },
-      group: ['userId'],
+      attributes: [[sequelize.col('user_id'), 'userId'], [sequelize.fn('COUNT', sequelize.col('id')), 'cnt']],
+      where: sequelize.where(sequelize.col('user_id'), { [Op.in]: ids }),
+      group: ['user_id'],
+      raw: true,
     });
-    const hasOrders = new Set(orderCounts.filter(r => parseInt(r.get('cnt'), 10) > 0).map(r => r.userId));
+    const hasOrders = new Set(orderCounts.filter(r => parseInt(r.cnt, 10) > 0).map(r => r.userId));
     const role = req.user?.role;
     const data = rows.map(u => ({ ...sanitizeUserForRole(u, role), hasOrders: hasOrders.has(u.id) }));
     res.json({ data, meta: { page, pageSize, total: count } });
@@ -122,7 +123,7 @@ exports.updateUser = async (req, res, next) => {
 exports.listAddresses = async (req, res, next) => {
   try {
     const userId = parseInt(req.params.id, 10);
-    const addrs = await Address.findAll({ where: { userId }, order: [['is_default','DESC'], ['createdAt','DESC']] });
+    const addrs = await Address.findAll({ where: { UserId: userId }, order: [['is_default','DESC'], ['createdAt','DESC']] });
     res.json(addrs);
   } catch (err) {
     next(err);
@@ -134,9 +135,9 @@ exports.createAddress = async (req, res, next) => {
     const userId = parseInt(req.params.id, 10);
     const { type, name, line1, line2, city, state, zip, country, isDefault } = req.body || {};
     if (isDefault && type) {
-      await Address.update({ isDefault: false }, { where: { userId, type } });
+      await Address.update({ isDefault: false }, { where: { UserId: userId, type } });
     }
-    const addr = await Address.create({ userId, type, name, line1, line2, city, state, zip, country, isDefault: !!isDefault, street: line1 || null });
+    const addr = await Address.create({ UserId: userId, type, name, line1, line2, city, state, zip, country, isDefault: !!isDefault, street: line1 || null });
     // audit
     await AdminAuditLog.create({ adminUserId: null, action: 'address_create', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, addressId: addr.id } });
     res.status(201).json(addr);
@@ -149,7 +150,7 @@ exports.deleteAddress = async (req, res, next) => {
   try {
     const userId = parseInt(req.params.id, 10);
     const addressId = parseInt(req.params.addressId, 10);
-    const addr = await Address.findOne({ where: { id: addressId, userId } });
+    const addr = await Address.findOne({ where: { id: addressId, UserId: userId } });
     if (!addr) return res.status(404).json({ error: { message: 'Address not found' } });
     await addr.destroy();
     await AdminAuditLog.create({ adminUserId: null, action: 'address_delete', targetUserId: userId, ip: req.ip, detail: { actorUserId: req.user?.id, addressId } });
@@ -163,11 +164,11 @@ exports.updateAddress = async (req, res, next) => {
   try {
     const userId = parseInt(req.params.id, 10);
     const addressId = parseInt(req.params.addressId, 10);
-    const addr = await Address.findOne({ where: { id: addressId, userId } });
+    const addr = await Address.findOne({ where: { id: addressId, UserId: userId } });
     if (!addr) return res.status(404).json({ error: { message: 'Address not found' } });
     const { type, name, line1, line2, city, state, zip, country, isDefault } = req.body || {};
     if (isDefault && (type || addr.type)) {
-      await Address.update({ isDefault: false }, { where: { userId, type: type || addr.type } });
+      await Address.update({ isDefault: false }, { where: { UserId: userId, type: type || addr.type } });
       addr.isDefault = true;
     } else if (isDefault === false) {
       addr.isDefault = false;
