@@ -65,6 +65,25 @@ src/
   index.js              Punto de entrada
 ```
 
+## Panel de administración
+
+Los usuarios con rol `admin` cuentan con un tablero accesible desde `/admin`.
+La página **Agregar producto** (`/admin/products/new`) está construida con React
+Hook Form y Zod e incluye:
+
+- Pestañas de Bootstrap 5 para organizar la información en secciones: Básicos,
+  Construcción, Precio, Estado & Stock, Medios y SEO.
+- Sugerencia automática del *slug* combinando el número de set y el nombre
+  (`slugify`).
+- Validaciones y tooltips que describen cada campo, con marcadores de
+  obligatoriedad.
+- Gestión de galería de imágenes con arrastrar y soltar, soporte para URLs y
+  archivos locales, posibilidad de elegir imagen principal, texto alternativo y
+  ordenamiento.
+- Botones para **Guardar borrador**, **Publicar** y **Cancelar**. Al publicar se
+  muestra un toast "Producto creado" y se redirige a `/admin/products/:id` (o a
+  `/products/:slug`).
+
 ## Tema y paleta
 
 Los colores del tema se extraen del logo y se armonizan con los tonos clásicos de Lego.
