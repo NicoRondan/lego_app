@@ -186,7 +186,7 @@ export default function CouponsPage() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(null);
   const [usages, setUsages] = useState({ openFor: null, items: [] });
-  const { filters, set: setFilter, reset: resetFilters, bind } = useFilters({ q: '', status: '', from: '', to: '' });
+  const { filters, reset: resetFilters, bind } = useFilters({ q: '', status: '', from: '', to: '' });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [sort, setSort] = useState({ field: 'code', dir: 'asc' });

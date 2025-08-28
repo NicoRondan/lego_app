@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as api from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -10,7 +10,7 @@ export function WishlistProvider({ children }) {
   const [pulse, setPulse] = useState(false); // short-lived flag used for header badge animation
   const [loading, setLoading] = useState(false);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user || user.role !== 'customer') { setWishlist(null); return null; }
     setLoading(true);
     try {
@@ -20,17 +20,17 @@ export function WishlistProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  useEffect(() => { refresh(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [user?.id]);
+  useEffect(() => { refresh(); }, [refresh]);
 
-  const add = async (productId) => { await api.addToWishlist(productId); await refresh(); setPulse(true); setTimeout(() => setPulse(false), 700); };
-  const removeItem = async (itemId) => { await api.removeFromWishlist(itemId); await refresh(); };
-  const removeByProduct = async (productId) => {
+  const add = useCallback(async (productId) => { await api.addToWishlist(productId); await refresh(); setPulse(true); setTimeout(() => setPulse(false), 700); }, [refresh]);
+  const removeItem = useCallback(async (itemId) => { await api.removeFromWishlist(itemId); await refresh(); }, [refresh]);
+  const removeByProduct = useCallback(async (productId) => {
     const wl = wishlist || (await refresh());
     const item = wl?.items?.find((it) => (it.product?.id === productId || it.productId === productId));
     if (item) await removeItem(item.id);
-  };
+  }, [wishlist, refresh, removeItem]);
 
   const value = useMemo(() => ({
     wishlist: wishlist || { items: [] },
@@ -43,7 +43,7 @@ export function WishlistProvider({ children }) {
     removeByProduct,
     pulse,
     isInWishlist: (pid) => !!(wishlist?.items?.some((it) => (it.product?.id === pid || it.productId === pid))),
-  }), [wishlist, loading]);
+  }), [wishlist, loading, refresh, add, removeItem, removeByProduct, pulse]);
 
   return (
     <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>

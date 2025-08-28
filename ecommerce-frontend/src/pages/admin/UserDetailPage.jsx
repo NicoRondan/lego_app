@@ -5,6 +5,7 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import * as api from '../../services/api';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
+import { useConfirm } from '../../components/ConfirmProvider.jsx';
 
 function TabNav({ tab, setTab }) {
   return (
@@ -25,6 +26,7 @@ function UserDetailPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', marketingOptIn: false });
   const [addresses, setAddresses] = useState([]);
   const [audit, setAudit] = useState([]);
+  const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const u = await api.adminGetUser(id);
@@ -54,6 +56,8 @@ function UserDetailPage() {
   };
 
   const delAddress = async (addressId) => {
+    const ok = await confirm({ title: 'Eliminar dirección', body: '¿Eliminar esta dirección? Esta acción no se puede deshacer.' });
+    if (!ok) return;
     await api.adminDeleteAddress(id, addressId);
     await load();
   };

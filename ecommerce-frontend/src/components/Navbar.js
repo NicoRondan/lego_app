@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import CartModal from './CartModal';
 import ThemeToggle from './ThemeToggle';
-import * as api from '../services/api';
+// import * as api from '../services/api'; // no longer needed after WishlistContext
 import { useWishlist } from '../contexts/WishlistContext.jsx';
 
 // Navigation bar component. Uses Bootstrap classes for styling.

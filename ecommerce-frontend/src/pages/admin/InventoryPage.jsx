@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
 import AdminTablePager from '../../components/admin/AdminTablePager.jsx';
+import AdminFiltersBar from '../../components/admin/AdminFiltersBar.jsx';
+import useFilters from '../../hooks/useFilters';
+import useListState from '../../hooks/useListState';
 import {
   adminListInventory,
   adminAdjustInventory,
@@ -202,21 +205,11 @@ function InventoryRow({ item, onAdjusted, onSafetyUpdated }) {
 }
 
 function InventoryPage() {
-  const [q, setQ] = useState('');
-  const [low, setLow] = useState(false);
-  const [data, setData] = useState({ items: [], page: 1, pageSize: 20, total: 0 });
-
-  const load = async (overrides = {}) => {
-    const nextPage = overrides.page ?? data.page ?? 1;
-    const nextSize = overrides.pageSize ?? data.pageSize ?? 20;
-    const res = await adminListInventory({ q, lowStockOnly: low, page: nextPage, pageSize: nextSize });
-    setData(res);
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { filters, bind } = useFilters({ q: '', low: false });
+  const list = useListState(async ({ page, pageSize, filters: f }) => {
+    const res = await adminListInventory({ q: f.q, lowStockOnly: !!f.low, page, pageSize });
+    return { items: res.items || [], total: res.total || 0, pageSize: res.pageSize || pageSize };
+  }, { initialPage: 1, initialPageSize: 20 });
 
   return (
     <AdminLayout>
@@ -224,23 +217,14 @@ function InventoryPage() {
         title="Inventario"
         subtitle="Consulta stock, reservas y disponible. Ajusta cantidades, edita mínimos y revisa movimientos por producto."
       />
-      <div className="d-flex align-items-end gap-2 mb-3">
-        <div className="flex-grow-1">
-          <label className="form-label">Buscar por set o nombre</label>
-          <input
-            aria-label="Buscar inventario"
-            className="form-control"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="75192 o Hogwarts"
-          />
-        </div>
-        <div className="form-check mb-2">
-          <input id="lowOnly" className="form-check-input" type="checkbox" checked={low} onChange={(e) => setLow(e.target.checked)} />
-          <label className="form-check-label" htmlFor="lowOnly">Bajo stock</label>
-        </div>
-        <button className="btn btn-primary mb-2" onClick={load}>Buscar</button>
-      </div>
+      <AdminFiltersBar
+        className="mb-3"
+        controls={[
+          { type: 'text', key: 'q', label: 'Buscar por set o nombre', ariaLabel: 'Buscar inventario', placeholder: '75192 o Hogwarts', ...bind('q') },
+          { type: 'checkbox', key: 'low', id: 'lowOnly', label: 'Bajo stock', ...bind('low') },
+        ]}
+        onSearch={() => list.applyFilters(filters)}
+      />
 
       <div className="table-responsive">
         <table className="table align-middle">
@@ -255,18 +239,18 @@ function InventoryPage() {
             </tr>
           </thead>
           <tbody>
-            {data.items.map((it) => (
-              <InventoryRow key={it.productId} item={it} onAdjusted={load} onSafetyUpdated={load} />
+            {list.items.map((it) => (
+              <InventoryRow key={it.productId} item={it} onAdjusted={() => list.load()} onSafetyUpdated={() => list.load()} />
             ))}
           </tbody>
         </table>
       </div>
       <AdminTablePager
-        page={data.page}
-        pageSize={data.pageSize}
-        total={data.total}
-        onChangePage={(p) => load({ page: p })}
-        onChangePageSize={(ps) => load({ page: 1, pageSize: ps })}
+        page={list.page}
+        pageSize={list.pageSize}
+        total={list.total}
+        onChangePage={list.changePage}
+        onChangePageSize={list.changePageSize}
       />
     </AdminLayout>
   );

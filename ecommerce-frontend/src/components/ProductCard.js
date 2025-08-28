@@ -7,7 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import QuantityStepper from "./QuantityStepper";
 import { toast } from "react-toastify";
 import "./ProductCard.css";
-import * as api from "../services/api";
+// import * as api from "../services/api"; // handled by WishlistContext
 import { useWishlist } from "../contexts/WishlistContext.jsx";
 
 // Card component for displaying a product in a grid with minimalist design.

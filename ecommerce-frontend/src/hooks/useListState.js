@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 // Generic hook to manage list states: page, pageSize, filters, loading, items, total.
 // loader: async ({ page, pageSize, filters }) => ({ items, total, pageSize? })
@@ -50,4 +50,3 @@ export default function useListState(loader, { initialFilters = {}, initialPage 
     load, changePage, changePageSize, applyFilters, setItems, setTotal,
   };
 }
-
