@@ -299,6 +299,12 @@ export const adminCreateAddress = (id, data) => request(`/admin/users/${id}/addr
 export const adminDeleteAddress = (id, addressId) => request(`/admin/users/${id}/addresses/${addressId}`, { method: 'DELETE' });
 export const adminImpersonateUser = (id) => request(`/admin/users/${id}/impersonate`, { method: 'POST' });
 export const adminUpdateAddress = (id, addressId, data) => request(`/admin/users/${id}/addresses/${addressId}`, { method: 'PUT', body: data });
+export const adminListUserAudit = (id, { limit = 50 } = {}) => {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', limit);
+  const qs = params.toString();
+  return request(`/admin/users/${id}/audit` + (qs ? `?${qs}` : ''));
+};
 
 // Impersonation client-side helper
 export const impersonate = (token) => request('/auth/impersonate', { method: 'POST', body: { token } });

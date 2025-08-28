@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import * as api from '../../services/api';
+import InfoTooltip from '../../components/InfoTooltip.jsx';
 
 function TabNav({ tab, setTab }) {
   return (
@@ -21,6 +22,7 @@ function UserDetailPage() {
   const [tab, setTab] = useState('perfil');
   const [form, setForm] = useState({ name: '', email: '', phone: '', marketingOptIn: false });
   const [addresses, setAddresses] = useState([]);
+  const [audit, setAudit] = useState([]);
 
   const load = async () => {
     const u = await api.adminGetUser(id);
@@ -28,6 +30,8 @@ function UserDetailPage() {
     setForm({ name: u.name, email: u.email, phone: u.phone || '', marketingOptIn: !!u.marketingOptIn });
     const addrs = await api.adminListAddresses(id);
     setAddresses(addrs);
+    const aud = await api.adminListUserAudit(id).catch(() => []);
+    setAudit(aud || []);
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
@@ -70,16 +74,16 @@ function UserDetailPage() {
         <div className="card p-3">
           <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label">Nombre</label>
-              <input className="form-control" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} />
+              <label className="form-label">Nombre <InfoTooltip text="Nombre completo del cliente" /></label>
+              <input className="form-control" placeholder="Juan Pérez" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} />
             </div>
             <div className="col-md-6">
-              <label className="form-label">Email</label>
-              <input className="form-control" value={form.email} onChange={(e)=>setForm({...form,email:e.target.value})} />
+              <label className="form-label">Email <InfoTooltip text="Correo principal del cliente" /></label>
+              <input className="form-control" placeholder="user@example.com" value={form.email} onChange={(e)=>setForm({...form,email:e.target.value})} />
             </div>
             <div className="col-md-6">
-              <label className="form-label">Teléfono</label>
-              <input className="form-control" value={form.phone} onChange={(e)=>setForm({...form,phone:e.target.value})} />
+              <label className="form-label">Teléfono <InfoTooltip text="Formato sugerido: +54 9 11 1234-5678" /></label>
+              <input className="form-control" placeholder="+54 9 11 1234-5678" value={form.phone} onChange={(e)=>setForm({...form,phone:e.target.value})} />
             </div>
             <div className="col-md-6 d-flex align-items-end">
               <div className="form-check">
@@ -109,44 +113,44 @@ function UserDetailPage() {
             <form onSubmit={addAddress}>
               <div className="row g-2">
                 <div className="col-6">
-                  <label className="form-label">Tipo</label>
+                  <label className="form-label">Tipo <InfoTooltip text="Envío o Facturación. El default es exclusivo por tipo" /></label>
                   <select name="type" className="form-select" defaultValue="shipping">
                     <option value="shipping">Envío</option>
                     <option value="billing">Facturación</option>
                   </select>
                 </div>
                 <div className="col-6">
-                  <label className="form-label">Nombre</label>
-                  <input name="name" className="form-control" />
+                  <label className="form-label">Nombre <InfoTooltip text="Alias de la dirección (Casa, Trabajo)" /></label>
+                  <input name="name" className="form-control" placeholder="Casa / Trabajo" required />
                 </div>
                 <div className="col-12">
-                  <label className="form-label">Dirección</label>
-                  <input name="line1" className="form-control" />
+                  <label className="form-label">Dirección <InfoTooltip text="Calle y número" /></label>
+                  <input name="line1" className="form-control" placeholder="Av. Siempre Viva 742" required />
                 </div>
                 <div className="col-12">
                   <label className="form-label">Línea 2</label>
-                  <input name="line2" className="form-control" />
+                  <input name="line2" className="form-control" placeholder="Piso / Depto" />
                 </div>
                 <div className="col-6">
                   <label className="form-label">Ciudad</label>
-                  <input name="city" className="form-control" />
+                  <input name="city" className="form-control" placeholder="CABA" required />
                 </div>
                 <div className="col-6">
                   <label className="form-label">Provincia/Estado</label>
-                  <input name="state" className="form-control" />
+                  <input name="state" className="form-control" placeholder="Buenos Aires" />
                 </div>
                 <div className="col-6">
                   <label className="form-label">CP</label>
-                  <input name="zip" className="form-control" />
+                  <input name="zip" className="form-control" placeholder="C1000" />
                 </div>
                 <div className="col-6">
                   <label className="form-label">País</label>
-                  <input name="country" className="form-control" />
+                  <input name="country" className="form-control" placeholder="AR" required />
                 </div>
                 <div className="col-12">
                   <div className="form-check">
                     <input id="isDefault" name="isDefault" type="checkbox" className="form-check-input" />
-                    <label htmlFor="isDefault" className="form-check-label">Marcar como default</label>
+                    <label htmlFor="isDefault" className="form-check-label">Marcar como default <InfoTooltip text="Sólo una default por tipo (envío/facturación)" /></label>
                   </div>
                 </div>
                 <div className="col-12">
@@ -175,6 +179,12 @@ function UserDetailPage() {
           {(user.events || []).length === 0 && <div>Sin eventos</div>}
           {(user.events || []).map(ev => (
             <div key={ev.id} className="small text-muted">{new Date(ev.createdAt).toLocaleString()} – {ev.type}</div>
+          ))}
+          <hr />
+          <div className="fw-bold mb-2">Auditoría admin</div>
+          {(audit || []).length === 0 && <div className="text-muted">Sin actividades de admin</div>}
+          {(audit || []).map(a => (
+            <div key={a.id} className="small text-muted">{new Date(a.createdAt || a.created_at).toLocaleString()} – {a.action} {a.ip ? `(${a.ip})` : ''}</div>
           ))}
         </div>
       )}
@@ -205,8 +215,20 @@ function AddressItem({ a, onDelete, onSaved }) {
     country: a.country || '',
     isDefault: !!a.isDefault,
   });
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const e = {};
+    if (!form.name) e.name = 'Requerido';
+    if (!form.line1) e.line1 = 'Requerido';
+    if (!form.city) e.city = 'Requerido';
+    if (!form.country) e.country = 'Requerido';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const save = async () => {
+    if (!validate()) return;
     await api.adminUpdateAddress(id, a.id, form);
     setEditing(false);
     onSaved?.();
@@ -239,11 +261,13 @@ function AddressItem({ a, onDelete, onSaved }) {
         </div>
         <div className="col-8">
           <label className="form-label">Nombre</label>
-          <input className="form-control" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} />
+          <input className={`form-control ${errors.name?'is-invalid':''}`} placeholder="Casa / Trabajo" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} />
+          {errors.name && <div className="invalid-feedback">{errors.name}</div>}
         </div>
         <div className="col-12">
           <label className="form-label">Dirección</label>
-          <input className="form-control" value={form.line1} onChange={(e)=>setForm({...form,line1:e.target.value})} />
+          <input className={`form-control ${errors.line1?'is-invalid':''}`} placeholder="Av. Siempre Viva 742" value={form.line1} onChange={(e)=>setForm({...form,line1:e.target.value})} />
+          {errors.line1 && <div className="invalid-feedback">{errors.line1}</div>}
         </div>
         <div className="col-12">
           <label className="form-label">Línea 2</label>
@@ -251,7 +275,8 @@ function AddressItem({ a, onDelete, onSaved }) {
         </div>
         <div className="col-4">
           <label className="form-label">Ciudad</label>
-          <input className="form-control" value={form.city} onChange={(e)=>setForm({...form,city:e.target.value})} />
+          <input className={`form-control ${errors.city?'is-invalid':''}`} placeholder="CABA" value={form.city} onChange={(e)=>setForm({...form,city:e.target.value})} />
+          {errors.city && <div className="invalid-feedback">{errors.city}</div>}
         </div>
         <div className="col-4">
           <label className="form-label">Provincia/Estado</label>
@@ -263,7 +288,8 @@ function AddressItem({ a, onDelete, onSaved }) {
         </div>
         <div className="col-8">
           <label className="form-label">País</label>
-          <input className="form-control" value={form.country} onChange={(e)=>setForm({...form,country:e.target.value})} />
+          <input className={`form-control ${errors.country?'is-invalid':''}`} placeholder="AR" value={form.country} onChange={(e)=>setForm({...form,country:e.target.value})} />
+          {errors.country && <div className="invalid-feedback">{errors.country}</div>}
         </div>
         <div className="col-4">
           <div className="form-check">

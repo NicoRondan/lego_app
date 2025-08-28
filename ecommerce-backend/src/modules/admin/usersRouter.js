@@ -20,4 +20,7 @@ router.post('/:id/addresses', controller.createAddress);
 router.put('/:id/addresses/:addressId', controller.updateAddress);
 router.delete('/:id/addresses/:addressId', controller.deleteAddress);
 
+// Audit
+router.get('/:id/audit', controller.listAudit);
+
 module.exports = router;

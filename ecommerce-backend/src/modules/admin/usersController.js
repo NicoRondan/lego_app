@@ -190,6 +190,22 @@ exports.updateAddress = async (req, res, next) => {
   }
 };
 
+// Admin audit log for a specific customer (targetUserId)
+exports.listAudit = async (req, res, next) => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+    const rows = await AdminAuditLog.findAll({
+      where: { targetUserId: userId },
+      order: [['created_at', 'DESC']],
+      limit,
+    });
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.impersonate = async (req, res, next) => {
   try {
     const userId = parseInt(req.params.id, 10);
