@@ -99,6 +99,24 @@ los colores semánticos o ajustar valores específicos.
 
 - Página de cupones: `/admin/coupons` para crear, editar y filtrar cupones (requiere usuario con rol `admin`).
 
+### Inventario
+
+- Página: `/admin/inventory` (solo `admin`).
+- Funcionalidad:
+  - Buscador por número de set y nombre.
+  - Filtro “Bajo stock” (señalado cuando `Disponible ≤ Mínimo`).
+  - Acciones por producto:
+    - `+ Ajustar` / `- Ajustar` abre un modal con:
+      - `Cantidad` (entero > 0). El signo se define por el botón presionado.
+      - `Motivo` opcional (inventario, corrección, rotura, recepción, etc.).
+    - `Editar mínimo` abre un modal para setear el `Mínimo (safety stock)`.
+    - `Movimientos` alterna la sublista de movimientos (últimos N) con fecha, tipo, cantidad y motivo/pedido.
+  - Badge “Bajo stock” junto al nombre cuando el disponible es bajo.
+
+Notas:
+- El “Disponible” considera reservas de pedidos (`Disponible = Stock − Reservado`).
+- Los modales se renderizan en portal; no se ven condicionados por el layout de la tabla.
+
 ### Reportes
 
 - Página: `/admin/reports` (solo `admin`).
