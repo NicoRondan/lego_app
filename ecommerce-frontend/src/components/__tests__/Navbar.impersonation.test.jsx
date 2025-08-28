@@ -5,6 +5,12 @@ import { MemoryRouter } from 'react-router-dom';
 jest.mock('../../contexts/AuthContext.jsx', () => ({
   useAuth: () => ({ user: { id: 1, name: 'Soporte', role: 'support' }, logout: jest.fn() }),
 }));
+jest.mock('../../contexts/CartContext.jsx', () => ({
+  useCart: () => ({ cart: { summary: { itemsCount: 0 } } }),
+}));
+jest.mock('../../contexts/WishlistContext.jsx', () => ({
+  useWishlist: () => ({ count: 0 }),
+}));
 
 import Navbar from '../Navbar';
 
@@ -23,4 +29,3 @@ describe('Navbar impersonation banner', () => {
     expect(btn).toBeTruthy();
   });
 });
-
