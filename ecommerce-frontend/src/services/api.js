@@ -186,10 +186,12 @@ export const adminRefundOrder = (id, { amount, reason }) =>
 export const adminGetPaymentAudit = (idOrExtId) => request(`/admin/payments/${idOrExtId}`);
 
 // Admin - Coupons
-export const adminListCoupons = ({ q = '', status = '', page = 1, pageSize = 20 } = {}) => {
+export const adminListCoupons = ({ q = '', status = '', from = '', to = '', page = 1, pageSize = 20 } = {}) => {
   const params = new URLSearchParams();
   if (q) params.set('q', q);
   if (status) params.set('status', status);
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
   if (page) params.set('page', page);
   if (pageSize) params.set('pageSize', pageSize);
   const qs = params.toString();

@@ -163,6 +163,9 @@ function CheckoutPage() {
                   </button>
                 )}
               </div>
+              {cart?.couponCode && (
+                <div className="form-text">Cupón aplicado: <strong>{cart.couponCode}</strong></div>
+              )}
             </div>
             <OrderSummary subtotal={subtotal} tax={tax} discount={discount} />
             <button className="btn btn-primary mt-3" disabled={loading} type="submit">

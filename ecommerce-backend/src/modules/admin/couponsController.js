@@ -115,10 +115,18 @@ exports.updateCoupon = async (req, res, next) => {
 // GET /admin/coupons?q=&status=&page=
 exports.listCoupons = async (req, res, next) => {
   try {
-    const { q = '', status = '', page = 1, pageSize = 20 } = req.query || {};
+    const { q = '', status = '', from = '', to = '', page = 1, pageSize = 20 } = req.query || {};
     const where = {};
     if (q) where.code = { [Op.like]: `%${String(q).toUpperCase()}%` };
     if (status) where.status = String(status);
+    if (from) {
+      const d = new Date(from);
+      if (!isNaN(d)) where.createdAt = { ...(where.createdAt || {}), [Op.gte]: d };
+    }
+    if (to) {
+      const d = new Date(to);
+      if (!isNaN(d)) where.createdAt = { ...(where.createdAt || {}), [Op.lte]: d };
+    }
     const limit = Math.min(parseInt(pageSize, 10) || 20, 100);
     const offset = ((parseInt(page, 10) || 1) - 1) * limit;
     const { rows, count } = await Coupon.findAndCountAll({ where, limit, offset, order: [['createdAt', 'DESC']] });
@@ -153,4 +161,3 @@ exports.listCouponUsages = async (req, res, next) => {
     next(err);
   }
 };
-

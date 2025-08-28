@@ -231,8 +231,17 @@ components:
           name: status
           schema: { type: string, enum: [active, paused] }
         - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+        - in: query
           name: page
           schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
       responses:
         '200': { description: OK }
     post:

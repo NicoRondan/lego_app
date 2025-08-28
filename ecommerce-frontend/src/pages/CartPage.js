@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import QuantityStepper from '../components/QuantityStepper';
+import * as api from '../services/api';
 
 // Page that displays the user's cart and allows quantity adjustments and removal
 function CartPage() {
@@ -173,6 +174,24 @@ function CartPage() {
               <h5 className="mb-3">Resumen</h5>
               <p className="mb-1">Subtotal: ${subtotal.toFixed(2)}</p>
               {discount > 0 && <p className="mb-1 text-success">Descuento: -${discount.toFixed(2)}</p>}
+              {cart?.couponCode && (
+                <p className="mb-1">Cupón aplicado: <strong>{cart.couponCode}</strong>{' '}
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary ms-2"
+                    onClick={async () => {
+                      try {
+                        const updated = await api.cartRemoveCoupon();
+                        await fetchCart();
+                        // Optionally set a toast; keeping UI minimal
+                      } catch (err) {
+                        // eslint-disable-next-line no-console
+                        console.error(err);
+                      }
+                    }}
+                  >Quitar</button>
+                </p>
+              )}
               <p className="mb-3">Total: ${grand.toFixed(2)}</p>
               <button
                 className="btn btn-outline-danger w-100 mb-2 d-flex align-items-center justify-content-center"

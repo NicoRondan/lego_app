@@ -265,6 +265,14 @@ async function seed() {
     code: 'EXPIRED5', type: 'percent', value: 5,
     status: 'active', validTo: new Date(Date.now() - 24*60*60*1000),
   }));
+  coupons.push(await Coupon.create({
+    code: 'STACK5', type: 'percent', value: 5,
+    status: 'active', stackable: true, perUserLimit: 5,
+  }));
+  coupons.push(await Coupon.create({
+    code: 'SINGLE30', type: 'fixed', value: 30,
+    status: 'active', stackable: false, perUserLimit: 1, maxUses: 50,
+  }));
 
   // Orders
   for (let i = 1; i <= 15; i++) {
