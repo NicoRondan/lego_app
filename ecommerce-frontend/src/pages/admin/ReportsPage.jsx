@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import AdminLayout from '../../components/admin/AdminLayout';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
+import { API_URL, adminReportSalesSummary, adminReportSalesByTheme, adminReportTopProducts, adminReportLowStock } from '../../services/api';
 import { formatMoney } from '../../utils/format';
 const CURRENCY = process.env.REACT_APP_CURRENCY || 'USD';
-import AdminLayout from '../../components/admin/AdminLayout';
-import { API_URL, adminReportSalesSummary, adminReportSalesByTheme, adminReportTopProducts, adminReportLowStock } from '../../services/api';
 
 const STATUS_OPTIONS = [
   { code: 'pending', label: 'Pendiente' },
@@ -197,7 +197,7 @@ function ReportsPage() {
 
       {tab !== 'stock' && (
         <>
-        <div className="row g-3 mb-0">
+        <div className="row g-3 mb-2">
           <div className="col-md-2">
             <label className="form-label">Desde</label>
             <input type="date" className="form-control" value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -208,7 +208,7 @@ function ReportsPage() {
           </div>
           <div className="col-md-4 col-lg-3">
             <label className="form-label">Rango rápido</label>
-            <div className="d-flex gap-2">
+            <div className="d-flex flex-wrap gap-2">
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => { const r = defaultRange(7); load({ from: r.from, to: r.to }); }}>Últimos 7 días</button>
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => { const r = defaultRange(30); load({ from: r.from, to: r.to }); }}>Últimos 30 días</button>
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => { const d = new Date(); const start = new Date(d.getFullYear(), d.getMonth(), 1); const r = { from: fmtDate(start), to: fmtDate(d) }; load({ from: r.from, to: r.to }); }}>Este mes</button>

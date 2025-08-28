@@ -1,0 +1,10 @@
+{
+  "name": "Brick Market",
+  "icons": [
+    { "src": "/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ],
+  "theme_color": "#DA1A32",
+  "background_color": "#DA1A32",
+  "display": "standalone"
+}
