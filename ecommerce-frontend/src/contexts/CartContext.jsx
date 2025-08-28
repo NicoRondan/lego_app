@@ -24,7 +24,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const fetchCart = async () => {
-    if (!user) {
+    if (!user || user.role !== 'customer') {
       setCart(null);
       return;
     }
@@ -106,4 +106,3 @@ export const CartProvider = ({ children }) => {
 };
 
 export const useCart = () => useContext(CartContext);
-

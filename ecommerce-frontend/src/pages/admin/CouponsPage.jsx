@@ -423,7 +423,7 @@ export default function CouponsPage() {
             </BrickModal>
           </div>
         </div>
-        <BrickModal id="couponEditModal" title={`Editar cupón ${editing?.code || ''}`} open={editOpen} onClose={closeEditModal}>
+        <BrickModal id="couponEditModal" title={`Editar cupón ${editing?.code || ''}`} open={editOpen} onClose={closeEditModal} size="lg">
           {editing && (
             <CouponForm
               categories={categories}

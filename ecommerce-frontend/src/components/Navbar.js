@@ -43,14 +43,14 @@ function Navbar() {
                 Productos
               </Link>
             </li>
-            {user && (
+            {user?.role === 'customer' && (
               <li className="nav-item">
                 <Link className="nav-link" to="/orders">
                   Mis pedidos
                 </Link>
               </li>
             )}
-            {user && (
+            {user?.role === 'customer' && (
               <li className="nav-item">
                 <Link className="nav-link" to="/wishlist">
                   Mi wishlist
@@ -66,14 +66,14 @@ function Navbar() {
             )}
           </ul>
           <ul className="navbar-nav ms-auto">
-            {(user || allowGuestCart) && (
+            {((user?.role === 'customer') || (!user && allowGuestCart)) && (
               <li className="nav-item">
                 <button
                   className="nav-link btn btn-link d-flex align-items-center"
                   type="button"
                   data-bs-toggle="modal"
                   data-bs-target="#cartModal"
-                  disabled={!user}
+                  disabled={!!user && user.role !== 'customer'}
                 >
                   <span className="position-relative me-1">
                     <i className="fa-solid fa-cart-shopping" aria-hidden="true"></i>
@@ -118,7 +118,7 @@ function Navbar() {
         </div>
       </div>
     </nav>
-    <CartModal />
+    {((user?.role === 'customer') || (!user && allowGuestCart)) && <CartModal />}
     </>
   );
 }
