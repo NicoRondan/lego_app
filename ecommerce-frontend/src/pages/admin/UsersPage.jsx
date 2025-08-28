@@ -20,7 +20,7 @@ function UsersPage() {
 
   return (
     <AdminLayout>
-      <h1 className="mb-3">Usuarios</h1>
+      <h2 className="mb-3">Usuarios</h2>
       <div className="d-flex gap-2 mb-3">
         <input className="form-control" placeholder="Buscar por nombre o email" value={q} onChange={(e) => setQ(e.target.value)} />
         <button className="btn btn-primary" onClick={() => { setPage(1); load(); }}>Buscar</button>
