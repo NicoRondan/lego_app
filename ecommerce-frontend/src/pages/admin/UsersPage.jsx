@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import * as api from '../../services/api';
 
@@ -8,19 +8,20 @@ function UsersPage() {
   const [data, setData] = useState([]);
   const [meta, setMeta] = useState({ total: 0, pageSize: 20 });
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const res = await api.adminListUsers({ q, page });
     setData(res.data || []);
     setMeta(res.meta || { total: 0, pageSize: 20, page });
-  };
+  }, [q, page]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [page]);
+  useEffect(() => { load(); }, [load]);
 
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.pageSize || 20)));
 
   return (
     <AdminLayout>
-      <h2 className="mb-3">Usuarios</h2>
+      <h2 className="mb-1">Usuarios</h2>
+      <p className="text-muted">Consulta, busca y gestiona perfiles de clientes. Desde aquí también puedes ver direcciones, actividad e impersonar usuarios.</p>
       <div className="d-flex gap-2 mb-3">
         <input className="form-control" placeholder="Buscar por nombre o email" value={q} onChange={(e) => setQ(e.target.value)} />
         <button className="btn btn-primary" onClick={() => { setPage(1); load(); }}>Buscar</button>

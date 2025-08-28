@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import * as api from '../../services/api';
@@ -9,13 +9,13 @@ function CampaignsPage() {
   const [form, setForm] = useState({ name: '', segmentId: '', couponCode: '', startsAt: '', endsAt: '', status: 'draft' });
   const [loading, setLoading] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     const [segs, camps] = await Promise.all([api.adminListSegments(), api.adminListCampaigns()]);
     setSegments(segs);
     setCampaigns(camps);
-  }
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   return (
     <AdminLayout>

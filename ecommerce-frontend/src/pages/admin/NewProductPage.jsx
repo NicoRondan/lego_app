@@ -347,7 +347,8 @@ function NewProductPage() {
 
   return (
     <AdminLayout>
-      <h2>Crear nuevo producto</h2>
+      <h2 className="mb-1">Crear nuevo producto</h2>
+      <p className="text-muted">Completa los datos principales del set, imágenes y metadatos SEO. Usa el generador de slug y valida el rango de edad.</p>
       <form>
         <ul className="nav nav-tabs mb-3">
           <li className="nav-item">
@@ -736,4 +737,3 @@ function NewProductPage() {
 }
 
 export default NewProductPage;
-

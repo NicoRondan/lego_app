@@ -181,7 +181,7 @@ function CartPage() {
                     className="btn btn-sm btn-outline-secondary ms-2"
                     onClick={async () => {
                       try {
-                        const updated = await api.cartRemoveCoupon();
+                        await api.cartRemoveCoupon();
                         await fetchCart();
                         // Optionally set a toast; keeping UI minimal
                       } catch (err) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { adminGetOrder, adminUpdateOrderStatus, adminShipOrder, adminRefundOrder, adminGetPaymentAudit } from '../../services/api';
@@ -17,7 +17,7 @@ function OrderDetailPage() {
   const [refund, setRefund] = useState({ amount: '', reason: '' });
   const [paymentAudit, setPaymentAudit] = useState(null);
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     setLoading(true);
     setError('');
     adminGetOrder(id)
@@ -29,9 +29,9 @@ function OrderDetailPage() {
         }
       })
       .catch((e) => { setError(e.message || 'Error'); setLoading(false); });
-  };
+  }, [id]);
 
-  useEffect(() => { refresh(); }, [id]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const doUpdateStatus = async () => {
     try {
@@ -64,10 +64,11 @@ function OrderDetailPage() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="d-flex justify-content-between align-items-center mb-1">
         <h2>Pedido #{order.id}</h2>
         <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>Volver</button>
       </div>
+      <p className="text-muted mb-3">Consulta el detalle completo del pedido, historial de estados y auditoría de pagos. Puedes actualizar estado, marcar envío o registrar reembolso.</p>
 
       <div className="row g-3">
         <div className="col-md-8">
@@ -216,4 +217,3 @@ function OrderDetailPage() {
 }
 
 export default OrderDetailPage;
-

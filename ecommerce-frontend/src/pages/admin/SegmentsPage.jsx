@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import * as api from '../../services/api';
@@ -9,12 +9,12 @@ function SegmentsPage() {
   const [previewSize, setPreviewSize] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     const list = await api.adminListSegments();
     setSegments(list);
-  }
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   const buildDefinition = () => {
     const def = {};

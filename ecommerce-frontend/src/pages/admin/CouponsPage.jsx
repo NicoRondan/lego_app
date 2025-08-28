@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as api from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
@@ -187,16 +187,16 @@ export default function CouponsPage() {
   const [pageSize, setPageSize] = useState(20);
   const [sort, setSort] = useState({ field: 'code', dir: 'asc' });
 
-  const load = async (override = {}) => {
+  const load = useCallback(async (override = {}) => {
     setLoading(true);
     const params = { page, pageSize, ...filters, ...override };
     const data = (await api.adminListCoupons(params)) || {};
     setList(data.items || []);
     setTotal(data.total || 0);
     setLoading(false);
-  };
+  }, [page, pageSize, filters]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [page, pageSize]);
+  useEffect(() => { load(); }, [load]);
 
   const applyFilters = async () => {
     setPage(1);
@@ -280,7 +280,8 @@ export default function CouponsPage() {
   return (
     <AdminLayout>
       <div>
-        <h2 className="mb-3">Cupones</h2>
+        <h2 className="mb-1">Cupones</h2>
+        <p className="text-muted mb-3">Crea, lista y edita códigos de descuento. Puedes filtrar por estado o periodo y revisar usos.</p>
         <ul className="nav nav-tabs mb-3">
           <li className="nav-item">
             <button type="button" className={`nav-link ${activeTab === 'crear' ? 'active' : ''}`} onClick={() => setActiveTab('crear')}>Crear</button>

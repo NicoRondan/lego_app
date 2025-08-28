@@ -36,10 +36,11 @@ function OrdersListPage() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="d-flex justify-content-between align-items-center mb-1">
         <h2>Pedidos</h2>
         <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
       </div>
+      <p className="text-muted">Filtra y navega pedidos por estado, búsqueda y rango de fechas. Exporta resultados a CSV.</p>
 
       <div className="row g-3 mb-3">
         <div className="col-md-2">
@@ -120,4 +121,3 @@ function OrdersListPage() {
 }
 
 export default OrdersListPage;
-

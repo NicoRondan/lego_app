@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 import * as api from '../../services/api';
@@ -25,7 +25,7 @@ function UserDetailPage() {
   const [addresses, setAddresses] = useState([]);
   const [audit, setAudit] = useState([]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const u = await api.adminGetUser(id);
     setUser(u);
     setForm({ name: u.name, email: u.email, phone: u.phone || '', marketingOptIn: !!u.marketingOptIn });
@@ -33,9 +33,9 @@ function UserDetailPage() {
     setAddresses(addrs);
     const aud = await api.adminListUserAudit(id).catch(() => []);
     setAudit(aud || []);
-  };
+  }, [id]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
+  useEffect(() => { load(); }, [load]);
 
   const save = async () => {
     await api.adminUpdateUser(id, form);
@@ -69,7 +69,8 @@ function UserDetailPage() {
 
   return (
     <AdminLayout>
-      <h1 className="mb-3">Usuario #{user.id} – {user.name}</h1>
+      <h2 className="mb-1">Usuario #{user.id} – {user.name}</h2>
+      <p className="text-muted mb-3">Edita datos de perfil, administra direcciones, revisa actividad y genera token seguro para impersonar.</p>
       <TabNav tab={tab} setTab={setTab} />
       {tab === 'perfil' && (
         <div className="card p-3">

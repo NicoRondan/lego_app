@@ -214,7 +214,8 @@ function InventoryPage() {
 
   return (
     <AdminLayout>
-      <h2 className="mb-3">Inventario</h2>
+      <h2 className="mb-1">Inventario</h2>
+      <p className="text-muted">Consulta stock, reservas y disponible. Ajusta cantidades, edita mínimos y revisa movimientos por producto.</p>
       <div className="d-flex align-items-end gap-2 mb-3">
         <div className="flex-grow-1">
           <label className="form-label">Buscar por set o nombre</label>
