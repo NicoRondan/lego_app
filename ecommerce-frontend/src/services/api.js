@@ -248,3 +248,27 @@ export const adminReportLowStock = ({ threshold = 5, format = '' } = {}) => {
   const qs = params.toString();
   return request('/admin/reports/stock/low' + (qs ? `?${qs}` : ''));
 };
+
+// Admin - Inventory
+export const adminListInventory = ({ q = '', lowStockOnly = false, page = 1, pageSize = 20 } = {}) => {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (lowStockOnly) params.set('lowStockOnly', 'true');
+  if (page) params.set('page', page);
+  if (pageSize) params.set('pageSize', pageSize);
+  const qs = params.toString();
+  return request('/admin/inventory' + (qs ? `?${qs}` : ''));
+};
+
+export const adminAdjustInventory = (productId, { qty, reason }) =>
+  request(`/admin/inventory/${productId}/adjust`, { method: 'PATCH', body: { qty, reason } });
+
+export const adminUpdateSafetyStock = (productId, { safetyStock }) =>
+  request(`/admin/inventory/${productId}/safety`, { method: 'PUT', body: { safetyStock } });
+
+export const adminListInventoryMovements = (productId, { limit = 20 } = {}) => {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', limit);
+  const qs = params.toString();
+  return request(`/admin/inventory/${productId}/movements` + (qs ? `?${qs}` : ''));
+};
