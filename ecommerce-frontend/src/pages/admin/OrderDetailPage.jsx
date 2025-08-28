@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import { adminGetOrder, adminUpdateOrderStatus, adminShipOrder, adminRefundOrder, adminGetPaymentAudit } from '../../services/api';
 
 const statuses = ['pending', 'paid', 'picking', 'shipped', 'delivered', 'canceled', 'refunded'];
@@ -64,11 +65,11 @@ function OrderDetailPage() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-1">
-        <h2>Pedido #{order.id}</h2>
-        <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>Volver</button>
-      </div>
-      <p className="text-muted mb-3">Consulta el detalle completo del pedido, historial de estados y auditoría de pagos. Puedes actualizar estado, marcar envío o registrar reembolso.</p>
+      <AdminPageHeader
+        title={`Pedido #${order.id}`}
+        subtitle="Consulta el detalle, historial y auditoría de pagos. Puedes actualizar estado, marcar envío o registrar reembolso."
+        actions={<button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>Volver</button>}
+      />
 
       <div className="row g-3">
         <div className="col-md-8">

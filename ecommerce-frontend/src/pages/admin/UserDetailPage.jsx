@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import * as api from '../../services/api';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
@@ -69,8 +70,10 @@ function UserDetailPage() {
 
   return (
     <AdminLayout>
-      <h2 className="mb-1">Usuario #{user.id} – {user.name}</h2>
-      <p className="text-muted mb-3">Edita datos de perfil, administra direcciones, revisa actividad y genera token seguro para impersonar.</p>
+      <AdminPageHeader
+        title={`Usuario #${user.id} – ${user.name}`}
+        subtitle="Edita datos de perfil, administra direcciones, revisa actividad y genera token seguro para impersonar."
+      />
       <TabNav tab={tab} setTab={setTab} />
       {tab === 'perfil' && (
         <div className="card p-3">

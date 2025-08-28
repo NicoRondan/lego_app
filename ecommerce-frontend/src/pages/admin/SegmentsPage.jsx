@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import * as api from '../../services/api';
 
@@ -27,11 +28,12 @@ function SegmentsPage() {
 
   return (
     <AdminLayout>
-      <h2 className="mb-1">Segmentos</h2>
-      <p className="text-muted mb-3">
-        Agrupa clientes según reglas simples (tema, AOV, actividad y wishlist) para usarlos en campañas.
-        Puedes previsualizar el tamaño antes de guardar el segmento.
-      </p>
+      <AdminPageHeader
+        title="Segmentos"
+        subtitle={(<>
+          Agrupa clientes según reglas simples (tema, AOV, actividad y wishlist) para usarlos en campañas. Puedes previsualizar el tamaño antes de guardar el segmento.
+        </>)}
+      />
       <div className="card mb-4">
         <div className="card-body">
           <h5 className="card-title">Nuevo segmento</h5>

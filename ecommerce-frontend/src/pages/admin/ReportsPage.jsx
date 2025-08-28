@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import { API_URL, adminReportSalesSummary, adminReportSalesByTheme, adminReportTopProducts, adminReportLowStock } from '../../services/api';
 import { formatMoney } from '../../utils/format';
@@ -184,10 +185,10 @@ function ReportsPage() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-1">
-        <h2>Reportes</h2>
-      </div>
-      <p className="text-muted">Analiza ventas por periodo, temas y sets, y detecta bajo stock. Exporta cualquier vista a CSV.</p>
+      <AdminPageHeader
+        title="Reportes"
+        subtitle="Analiza ventas por periodo, temas y sets, y detecta bajo stock. Exporta cualquier vista a CSV."
+      />
 
       <ul className="nav nav-tabs mb-3">
         <li className="nav-item"><button className={`nav-link ${tab==='sales'?'active':''}`} onClick={() => setTab('sales')}>Ventas</button></li>

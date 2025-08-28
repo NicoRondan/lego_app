@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 import * as api from '../../services/api';
 
@@ -19,10 +20,12 @@ function CampaignsPage() {
 
   return (
     <AdminLayout>
-      <h2 className="mb-1">Campañas</h2>
-      <p className="text-muted mb-3">
-        Programa acciones sobre un segmento de clientes. El estado se deriva por fechas (o puede quedar en borrador/pausada). No envía emails en este MVP.
-      </p>
+      <AdminPageHeader
+        title="Campañas"
+        subtitle={(<>
+          Programa acciones sobre un segmento de clientes. El estado se deriva por fechas (o puede quedar en borrador/pausada). No envía emails en este MVP.
+        </>)}
+      />
       <div className="card mb-4">
         <div className="card-body">
           <h5 className="card-title">Nueva campaña</h5>

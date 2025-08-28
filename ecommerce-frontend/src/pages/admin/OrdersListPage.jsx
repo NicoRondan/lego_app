@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import { adminListOrders } from '../../services/api';
 import { API_URL } from '../../services/api';
 
@@ -36,11 +37,11 @@ function OrdersListPage() {
 
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-1">
-        <h2>Pedidos</h2>
-        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
-      </div>
-      <p className="text-muted">Filtra y navega pedidos por estado, búsqueda y rango de fechas. Exporta resultados a CSV.</p>
+      <AdminPageHeader
+        title="Pedidos"
+        subtitle="Filtra y navega pedidos por estado, búsqueda y rango de fechas. Exporta resultados a CSV."
+        actions={<button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>}
+      />
 
       <div className="row g-3 mb-3">
         <div className="col-md-2">

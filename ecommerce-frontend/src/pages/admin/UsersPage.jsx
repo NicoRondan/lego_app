@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import * as api from '../../services/api';
 
 function UsersPage() {
@@ -20,8 +21,10 @@ function UsersPage() {
 
   return (
     <AdminLayout>
-      <h2 className="mb-1">Usuarios</h2>
-      <p className="text-muted">Consulta, busca y gestiona perfiles de clientes. Desde aquí también puedes ver direcciones, actividad e impersonar usuarios.</p>
+      <AdminPageHeader
+        title="Usuarios"
+        subtitle="Consulta, busca y gestiona perfiles de clientes. También puedes ver direcciones, actividad e impersonar usuarios."
+      />
       <div className="d-flex gap-2 mb-3">
         <input className="form-control" placeholder="Buscar por nombre o email" value={q} onChange={(e) => setQ(e.target.value)} />
         <button className="btn btn-primary" onClick={() => { setPage(1); load(); }}>Buscar</button>

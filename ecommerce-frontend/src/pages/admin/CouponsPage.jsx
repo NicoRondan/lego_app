@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as api from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import AdminPageHeader from '../../components/admin/AdminPageHeader.jsx';
 import BrickModal from '../../components/lego/BrickModal.jsx';
 import InfoTooltip from '../../components/InfoTooltip.jsx';
 
@@ -199,8 +200,11 @@ export default function CouponsPage() {
   useEffect(() => { load(); }, [load]);
 
   const applyFilters = async () => {
-    setPage(1);
-    await load({ page: 1 });
+    if (page !== 1) {
+      setPage(1);
+    } else {
+      await load({ page: 1 });
+    }
   };
 
   const buildPayload = (form) => {
@@ -280,8 +284,10 @@ export default function CouponsPage() {
   return (
     <AdminLayout>
       <div>
-        <h2 className="mb-1">Cupones</h2>
-        <p className="text-muted mb-3">Crea, lista y edita códigos de descuento. Puedes filtrar por estado o periodo y revisar usos.</p>
+        <AdminPageHeader
+          title="Cupones"
+          subtitle="Crea, lista y edita códigos de descuento. Filtra por estado/periodo y revisa usos."
+        />
         <ul className="nav nav-tabs mb-3">
           <li className="nav-item">
             <button type="button" className={`nav-link ${activeTab === 'crear' ? 'active' : ''}`} onClick={() => setActiveTab('crear')}>Crear</button>
