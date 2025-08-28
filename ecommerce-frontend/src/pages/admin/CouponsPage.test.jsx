@@ -1,14 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { MemoryRouter } from 'react-router-dom';
-import CouponsPage from './CouponsPage.jsx';
 
 jest.mock('../../services/api', () => ({
   adminListCoupons: jest.fn().mockResolvedValue({ items: [{ id: 1, code: 'TEST', type: 'percent', value: 10, status: 'active', usageCount: 0 }], total: 1 }),
   adminCreateCoupon: jest.fn(),
   adminUpdateCoupon: jest.fn(),
   adminListCouponUsages: jest.fn().mockResolvedValue({ items: [] }),
+  getCategories: jest.fn().mockResolvedValue([]),
 }));
+
+// Import the component after mocking the API
+import CouponsPage from './CouponsPage.jsx';
 
 describe('CouponsPage', () => {
   test('renders and triggers filtered search', async () => {
@@ -40,4 +43,3 @@ describe('CouponsPage', () => {
     expect(api.adminListCoupons).toHaveBeenCalledTimes(2);
   });
 });
-

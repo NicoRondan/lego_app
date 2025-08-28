@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import * as api from '../../services/api';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
 
-function CouponForm({ initial = {}, onSubmit, submitting }) {
+function CouponForm({ initial = {}, onSubmit, submitting, categories = [] }) {
   const [form, setForm] = useState({
     code: '', type: 'percent', value: 10, status: 'active',
-    validFrom: '', validTo: '', minSubtotal: 0, maxUses: '', perUserLimit: '',
+    validFrom: '', validTo: '', minSubtotal: '', maxUses: '', perUserLimit: '',
     allowedThemes: '', disallowProducts: '', stackable: false,
     ...initial,
   });
+  const themeListId = useMemo(() => 'themes-list', []);
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="row g-2">
       <div className="col-auto">
@@ -31,9 +32,37 @@ function CouponForm({ initial = {}, onSubmit, submitting }) {
           <option value="paused">Pausado</option>
         </select>
       </div>
+      <div className="col-auto">
+        <input type="date" className="form-control" placeholder="Desde" value={form.validFrom}
+          onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
+      </div>
+      <div className="col-auto">
+        <input type="date" className="form-control" placeholder="Hasta" value={form.validTo}
+          onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
+      </div>
+      <div className="col-auto">
+        <input className="form-control" type="number" step="0.01" placeholder="Min subtotal" value={form.minSubtotal}
+          onChange={(e) => setForm({ ...form, minSubtotal: e.target.value })} />
+      </div>
+      <div className="col-auto">
+        <input className="form-control" type="number" step="1" placeholder="Max usos" value={form.maxUses}
+          onChange={(e) => setForm({ ...form, maxUses: e.target.value })} />
+      </div>
+      <div className="col-auto">
+        <input className="form-control" type="number" step="1" placeholder="Límite por usuario" value={form.perUserLimit}
+          onChange={(e) => setForm({ ...form, perUserLimit: e.target.value })} />
+      </div>
+      <div className="col-auto form-check d-flex align-items-center ms-2">
+        <input id="stackableCheck" className="form-check-input" type="checkbox" checked={!!form.stackable}
+          onChange={(e) => setForm({ ...form, stackable: e.target.checked })} />
+        <label htmlFor="stackableCheck" className="form-check-label ms-1">Acumulable</label>
+      </div>
       <div className="col-12">
-        <input className="form-control" placeholder="Temas permitidos (coma)" value={form.allowedThemes}
+        <input list={themeListId} className="form-control" placeholder="Temas permitidos (separa con coma)" value={form.allowedThemes}
           onChange={(e) => setForm({ ...form, allowedThemes: e.target.value })} />
+        <datalist id={themeListId}>
+          {categories.map((c) => <option key={c} value={c} />)}
+        </datalist>
       </div>
       <div className="col-12">
         <input className="form-control" placeholder="Productos bloqueados (IDs o códigos, coma)" value={form.disallowProducts}
@@ -75,24 +104,43 @@ export default function CouponsPage() {
     await load({ page: 1 });
   };
 
+  const buildPayload = (form) => {
+    const toArray = (val) => Array.isArray(val)
+      ? val
+      : (typeof val === 'string' ? val.split(',').map((s) => s.trim()).filter(Boolean) : []);
+    const num = (v) => (v === '' || v === undefined || v === null ? undefined : Number(v));
+    const out = {
+      code: (form.code || '').toString().toUpperCase().trim(),
+      type: String(form.type || 'percent'),
+      value: num(form.value),
+      status: String(form.status || 'active'),
+      stackable: !!form.stackable,
+    };
+    if (form.validFrom) out.validFrom = form.validFrom; // yyyy-mm-dd
+    if (form.validTo) out.validTo = form.validTo;
+    const minSubtotal = num(form.minSubtotal);
+    if (minSubtotal !== undefined) out.minSubtotal = minSubtotal;
+    const maxUses = num(form.maxUses);
+    if (maxUses !== undefined) out.maxUses = maxUses;
+    const perUserLimit = num(form.perUserLimit);
+    if (perUserLimit !== undefined) out.perUserLimit = perUserLimit;
+    const allowedThemes = toArray(form.allowedThemes);
+    if (allowedThemes.length) out.allowedThemes = allowedThemes;
+    const disallowProducts = toArray(form.disallowProducts);
+    if (disallowProducts.length) out.disallowProducts = disallowProducts;
+    return out;
+  };
+
   const handleCreate = async (form) => {
     setCreating(true);
-    const payload = {
-      ...form,
-      allowedThemes: form.allowedThemes ? form.allowedThemes.split(',').map((s) => s.trim()).filter(Boolean) : [],
-      disallowProducts: form.disallowProducts ? form.disallowProducts.split(',').map((s) => s.trim()).filter(Boolean) : [],
-    };
+    const payload = buildPayload(form);
     await api.adminCreateCoupon(payload);
     setCreating(false);
     await load();
   };
 
   const handleUpdate = async (id, form) => {
-    await api.adminUpdateCoupon(id, {
-      ...form,
-      allowedThemes: form.allowedThemes ? form.allowedThemes.split(',').map((s) => s.trim()).filter(Boolean) : [],
-      disallowProducts: form.disallowProducts ? form.disallowProducts.split(',').map((s) => s.trim()).filter(Boolean) : [],
-    });
+    await api.adminUpdateCoupon(id, buildPayload(form));
     setEditing(null);
     await load();
   };
@@ -105,6 +153,15 @@ export default function CouponsPage() {
     const res = await api.adminListCouponUsages(coupon.id, { page: 1, pageSize: 50 });
     setUsages({ openFor: coupon.id, items: res.items || [] });
   };
+
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    if (typeof api.getCategories === 'function') {
+      Promise.resolve(api.getCategories())
+        .then((cats) => setCategories((cats || []).map((c) => c.name)))
+        .catch(() => {});
+    }
+  }, []);
 
   return (
     <AdminLayout>
@@ -158,7 +215,7 @@ export default function CouponsPage() {
         </div>
         <div className="mb-4">
           <h5>Crear cupón</h5>
-          <CouponForm onSubmit={handleCreate} submitting={creating} />
+          <CouponForm onSubmit={handleCreate} submitting={creating} categories={categories} />
         </div>
         {loading ? (
           <p>Cargando…</p>
@@ -211,7 +268,7 @@ export default function CouponsPage() {
         {editing && (
           <div className="mt-4">
             <h5>Editar {editing.code}</h5>
-            <CouponForm initial={{
+            <CouponForm categories={categories} initial={{
               ...editing,
               allowedThemes: Array.isArray(editing.allowedThemes) ? editing.allowedThemes.join(',') : '',
               disallowProducts: Array.isArray(editing.disallowProducts) ? editing.disallowProducts.join(',') : '',
