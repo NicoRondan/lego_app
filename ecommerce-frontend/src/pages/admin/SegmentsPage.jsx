@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import InfoTooltip from '../../components/InfoTooltip.jsx';
 import * as api from '../../services/api';
 
 function SegmentsPage() {
@@ -26,31 +27,35 @@ function SegmentsPage() {
 
   return (
     <AdminLayout>
-      <h3 className="mb-3">Segmentos</h3>
+      <h2 className="mb-1">Segmentos</h2>
+      <p className="text-muted mb-3">
+        Agrupa clientes según reglas simples (tema, AOV, actividad y wishlist) para usarlos en campañas.
+        Puedes previsualizar el tamaño antes de guardar el segmento.
+      </p>
       <div className="card mb-4">
         <div className="card-body">
           <h5 className="card-title">Nuevo segmento</h5>
           <div className="row g-3">
             <div className="col-md-4">
-              <label className="form-label">Nombre</label>
-              <input className="form-control" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <label className="form-label">Nombre <InfoTooltip text="Usa un nombre descriptivo, p. ej. 'Fans SW alto gasto'" /></label>
+              <input className="form-control" placeholder="Ej: Fans SW alto gasto" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="col-md-4">
-              <label className="form-label">Temas (coma-separados)</label>
-              <input className="form-control" placeholder="Star Wars, Technic" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} />
+              <label className="form-label">Temas (coma-separados) <InfoTooltip text="Filtra por categorías/temas de productos comprados o en wishlist. Coincidirá si el usuario tiene al menos un ítem de alguno de estos temas." /></label>
+              <input className="form-control" placeholder="Ej: Star Wars, Technic" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} />
             </div>
             <div className="col-md-2">
-              <label className="form-label">AOV mínimo</label>
-              <input type="number" className="form-control" value={form.minAov} onChange={(e) => setForm({ ...form, minAov: e.target.value })} />
+              <label className="form-label">AOV mínimo <InfoTooltip text="Ticket promedio mínimo (Average Order Value) del cliente." /></label>
+              <input type="number" className="form-control" placeholder="Ej: 100" value={form.minAov} onChange={(e) => setForm({ ...form, minAov: e.target.value })} />
             </div>
             <div className="col-md-2">
-              <label className="form-label">Últ. compra &lt; días</label>
-              <input type="number" className="form-control" value={form.lastOrderDaysLt} onChange={(e) => setForm({ ...form, lastOrderDaysLt: e.target.value })} />
+              <label className="form-label">Últ. compra &lt; días <InfoTooltip text="Clientes cuya última compra fue hace menos de N días." /></label>
+              <input type="number" className="form-control" placeholder="Ej: 90" value={form.lastOrderDaysLt} onChange={(e) => setForm({ ...form, lastOrderDaysLt: e.target.value })} />
             </div>
             <div className="col-12">
               <div className="form-check">
                 <input className="form-check-input" type="checkbox" id="hasWishlist" checked={!!form.hasWishlist} onChange={(e) => setForm({ ...form, hasWishlist: e.target.checked })} />
-                <label className="form-check-label" htmlFor="hasWishlist">Debe tener wishlist</label>
+                <label className="form-check-label" htmlFor="hasWishlist">Debe tener wishlist <InfoTooltip text="Incluye solo clientes que tengan una wishlist con al menos un producto." /></label>
               </div>
             </div>
             <div className="col-12 d-flex gap-2">
@@ -96,4 +101,3 @@ function SegmentsPage() {
 }
 
 export default SegmentsPage;
-

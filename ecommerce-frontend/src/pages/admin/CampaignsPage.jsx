@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout.jsx';
+import InfoTooltip from '../../components/InfoTooltip.jsx';
 import * as api from '../../services/api';
 
 function CampaignsPage() {
@@ -18,17 +19,20 @@ function CampaignsPage() {
 
   return (
     <AdminLayout>
-      <h3 className="mb-3">Campañas</h3>
+      <h2 className="mb-1">Campañas</h2>
+      <p className="text-muted mb-3">
+        Programa acciones sobre un segmento de clientes. El estado se deriva por fechas (o puede quedar en borrador/pausada). No envía emails en este MVP.
+      </p>
       <div className="card mb-4">
         <div className="card-body">
           <h5 className="card-title">Nueva campaña</h5>
           <div className="row g-3">
             <div className="col-md-4">
-              <label className="form-label">Nombre</label>
-              <input className="form-control" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <label className="form-label">Nombre <InfoTooltip text="Ej.: Vuelta al cole, Black Friday, Navidad." /></label>
+              <input className="form-control" placeholder="Ej: Black Friday" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="col-md-4">
-              <label className="form-label">Segmento</label>
+              <label className="form-label">Segmento <InfoTooltip text="Audiencia objetivo a la que se aplica la campaña." /></label>
               <select className="form-select" value={form.segmentId} onChange={(e) => setForm({ ...form, segmentId: e.target.value })}>
                 <option value="">Seleccionar…</option>
                 {segments.map((s) => (
@@ -37,19 +41,19 @@ function CampaignsPage() {
               </select>
             </div>
             <div className="col-md-4">
-              <label className="form-label">Cupón (opcional)</label>
-              <input className="form-control" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value })} />
+              <label className="form-label">Cupón (opcional) <InfoTooltip text="Código de cupón a comunicar junto con la campaña (si aplica)." /></label>
+              <input className="form-control" placeholder="Ej: BRICKS10" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value })} />
             </div>
             <div className="col-md-3">
-              <label className="form-label">Inicio</label>
+              <label className="form-label">Inicio <InfoTooltip text="Fecha y hora de comienzo (programa la campaña como 'scheduled' hasta ese momento)." /></label>
               <input type="datetime-local" className="form-control" value={form.startsAt} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} />
             </div>
             <div className="col-md-3">
-              <label className="form-label">Fin</label>
+              <label className="form-label">Fin <InfoTooltip text="Fecha y hora de finalización. Luego la campaña queda 'finished'." /></label>
               <input type="datetime-local" className="form-control" value={form.endsAt} onChange={(e) => setForm({ ...form, endsAt: e.target.value })} />
             </div>
             <div className="col-md-3">
-              <label className="form-label">Estado</label>
+              <label className="form-label">Estado <InfoTooltip text="Borrador o Pausada. Si dejas en borrador y defines fechas, el sistema deriva 'scheduled' o 'running'." /></label>
               <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
                 <option value="draft">Borrador</option>
                 <option value="paused">Pausada</option>
@@ -95,4 +99,3 @@ function CampaignsPage() {
 }
 
 export default CampaignsPage;
-
