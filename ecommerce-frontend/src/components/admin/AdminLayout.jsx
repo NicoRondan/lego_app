@@ -4,8 +4,8 @@ import AdminSidebar from './AdminSidebar';
 // Layout component providing an admin sidebar with links
 function AdminLayout({ children }) {
   return (
-    <div className="row align-items-start g-3">
-      <div className="col-12 col-md-3 col-lg-2 mb-4 mb-md-0">
+    <div className="row gx-3">
+      <div className="col-12 col-md-3 col-lg-2">
         <AdminSidebar />
       </div>
       <div className="col">

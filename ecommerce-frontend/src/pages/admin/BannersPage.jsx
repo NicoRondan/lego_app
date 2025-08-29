@@ -5,7 +5,21 @@ import BrickModal from '../../components/lego/BrickModal';
 
 function EditRow({ banner, onSave }) {
   const [form, setForm] = useState({ ...banner });
+  const [err, setErr] = useState({});
+  const validate = (f) => {
+    const e = {};
+    if (!String(f.title || '').trim()) e.title = 'Requerido';
+    const img = String(f.imageUrl || '').trim();
+    if (!img) e.imageUrl = 'Requerido';
+    else if (!/^https?:\/\//i.test(img) && !/^data:/i.test(img)) e.imageUrl = 'URL inválida';
+    if (f.startsAt && f.endsAt && new Date(f.startsAt) > new Date(f.endsAt)) e.endsAt = 'Fin < Inicio';
+    if (!['home-hero','rail','sidebar'].includes(f.placement)) e.placement = 'Placement inválido';
+    return e;
+  };
   const save = async () => {
+    const e = validate(form);
+    setErr(e);
+    if (Object.keys(e).length) return;
     const data = { title: form.title, imageUrl: form.imageUrl, linkUrl: form.linkUrl, placement: form.placement, isActive: !!form.isActive, startsAt: form.startsAt, endsAt: form.endsAt };
     if (banner?.id) await api.adminUpdateBanner(banner.id, data); else await onSave(data);
   };
@@ -19,13 +33,13 @@ function EditRow({ banner, onSave }) {
           ) : (
             <div style={{ width: 64, height: 32, background: '#eee', borderRadius: 4 }} />
           )}
-          <input className="form-control" value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <input className={`form-control ${err.title ? 'is-invalid' : ''}`} value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} />
         </div>
       </td>
-      <td style={{ minWidth: 320 }}><input className="form-control" placeholder="https://..." value={form.imageUrl || ''} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} /></td>
+      <td style={{ minWidth: 320 }}><input className={`form-control ${err.imageUrl ? 'is-invalid' : ''}`} placeholder="https://..." value={form.imageUrl || ''} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} /></td>
       <td style={{ minWidth: 220 }}><input className="form-control" placeholder="/ruta" value={form.linkUrl || ''} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} /></td>
       <td style={{ width: 160 }}>
-        <select className="form-select" value={form.placement || 'home-hero'} onChange={(e) => setForm({ ...form, placement: e.target.value })}>
+        <select className={`form-select ${err.placement ? 'is-invalid' : ''}`} value={form.placement || 'home-hero'} onChange={(e) => setForm({ ...form, placement: e.target.value })}>
           <option value="home-hero">Home Hero</option>
           <option value="rail">Rail</option>
           <option value="sidebar">Sidebar</option>
@@ -35,7 +49,7 @@ function EditRow({ banner, onSave }) {
         <input type="datetime-local" className="form-control" value={form.startsAt ? String(form.startsAt).slice(0,16) : ''} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} />
       </td>
       <td style={{ minWidth: 220 }}>
-        <input type="datetime-local" className="form-control" value={form.endsAt ? String(form.endsAt).slice(0,16) : ''} onChange={(e) => setForm({ ...form, endsAt: e.target.value })} />
+        <input type="datetime-local" className={`form-control ${err.endsAt ? 'is-invalid' : ''}`} value={form.endsAt ? String(form.endsAt).slice(0,16) : ''} onChange={(e) => setForm({ ...form, endsAt: e.target.value })} />
       </td>
       <td className="text-center">
         <input type="checkbox" className="form-check-input" checked={!!form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
