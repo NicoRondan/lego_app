@@ -318,3 +318,20 @@ export const adminCreateSegment = ({ name, definition, preview = false }) =>
 export const adminListCampaigns = () => request('/admin/campaigns');
 export const adminCreateCampaign = ({ name, segmentId, couponCode, startsAt, endsAt, status }) =>
   request('/admin/campaigns', { method: 'POST', body: { name, segmentId, couponCode, startsAt, endsAt, status } });
+
+// CMS - Public
+export const getHome = () => request('/home');
+export const getPageBySlug = (slug) => request(`/pages/${encodeURIComponent(slug)}`);
+
+// CMS - Admin
+export const adminGetHomeLayout = () => request('/admin/home-layout');
+export const adminSaveHomeLayout = ({ json, publish = false }) =>
+  request('/admin/home-layout', { method: 'POST', body: { json, publish } });
+
+export const adminListBanners = () => request('/admin/banners');
+export const adminCreateBanner = (data) => request('/admin/banners', { method: 'POST', body: data });
+export const adminUpdateBanner = (id, data) => request(`/admin/banners/${id}`, { method: 'PUT', body: data });
+
+export const adminListPages = () => request('/admin/pages');
+export const adminCreatePage = (data) => request('/admin/pages', { method: 'POST', body: data });
+export const adminUpdatePage = (id, data) => request(`/admin/pages/${id}`, { method: 'PUT', body: data });
