@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
@@ -33,10 +33,13 @@ import HomeBuilderPage from './pages/admin/HomeBuilderPage.jsx';
 import BannersPage from './pages/admin/BannersPage.jsx';
 
 function App() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const wrapperClass = isAdminRoute ? 'container-fluid px-3' : 'container my-4';
   return (
     <>
       <Navbar />
-      <div className="container my-4">
+      <div className={wrapperClass}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductsPage />} />

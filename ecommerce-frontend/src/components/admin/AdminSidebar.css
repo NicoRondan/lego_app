@@ -1,9 +1,14 @@
 .admin-sidebar { min-height: 100%; position: sticky; top: 0; }
+@media (min-width: 992px){
+  /* sit just below navbar height (~56px) on large screens */
+  .admin-sidebar{ top: 64px; }
+}
 
 /* Force admin content to align flush with sidebar top */
 .admin-layout-row { align-items: flex-start; flex-wrap: nowrap; }
 .admin-main { min-width: 0; }
-.admin-main .lego-container { margin-top: 0 !important; width: 100%; }
+.admin-main .lego-container { margin-top: 0 !important; width: 100%; padding: .75rem 1rem; border-width: 3px; }
+.admin-sidebar.lego-container { padding: .75rem 1rem; border-width: 3px; }
 .admin-main h1:first-child { margin-top: 0; }
 .admin-main .lego-container { margin-top: 0 !important; }
 
