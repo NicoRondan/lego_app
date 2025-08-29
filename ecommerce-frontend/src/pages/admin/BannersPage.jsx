@@ -52,6 +52,18 @@ function BannersPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [createForm, setCreateForm] = useState({ title: '', imageUrl: '', linkUrl: '', placement: 'home-hero', isActive: true, startsAt: '', endsAt: '' });
+  const [errors, setErrors] = useState({});
+
+  const validate = (f) => {
+    const e = {};
+    if (!String(f.title || '').trim()) e.title = 'El título es obligatorio';
+    const img = String(f.imageUrl || '').trim();
+    if (!img) e.imageUrl = 'La imagen es obligatoria';
+    else if (!/^https?:\/\//i.test(img) && !/^data:/i.test(img)) e.imageUrl = 'Debe ser una URL válida (http/https)';
+    if (f.startsAt && f.endsAt && new Date(f.startsAt) > new Date(f.endsAt)) e.endsAt = 'Fin debe ser posterior o igual a Inicio';
+    if (!['home-hero','rail','sidebar'].includes(f.placement)) e.placement = 'Placement inválido';
+    return e;
+  };
   const [q, setQ] = useState('');
   const [placement, setPlacement] = useState('');
 
@@ -87,7 +99,7 @@ function BannersPage() {
             <option value="sidebar">Sidebar</option>
           </select>
         </div>
-        <button className="btn btn-outline-primary ms-auto" onClick={() => { setCreating(true); setCreateForm({ title: '', imageUrl: '', linkUrl: '', placement: 'home-hero', isActive: true, startsAt: '', endsAt: '' }); }}>+ Nuevo banner</button>
+        <button className="btn btn-outline-primary ms-auto" onClick={() => { setCreating(true); setCreateForm({ title: '', imageUrl: '', linkUrl: '', placement: 'home-hero', isActive: true, startsAt: '', endsAt: '' }); setErrors({}); }}>+ Nuevo banner</button>
       </div>
 
       <div className="table-responsive">
@@ -106,11 +118,13 @@ function BannersPage() {
         <div className="row g-3">
           <div className="col-12">
             <label className="form-label">Título</label>
-            <input className="form-control" value={createForm.title} onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })} />
+            <input className={`form-control ${errors.title ? 'is-invalid' : ''}`} value={createForm.title} onChange={(e) => { const v = e.target.value; setCreateForm({ ...createForm, title: v }); setErrors((prev) => ({ ...prev, title: undefined })); }} />
+            {errors.title && <div className="invalid-feedback">{errors.title}</div>}
           </div>
           <div className="col-md-7">
             <label className="form-label">Imagen (URL)</label>
-            <input className="form-control" placeholder="https://…" value={createForm.imageUrl} onChange={(e) => setCreateForm({ ...createForm, imageUrl: e.target.value })} />
+            <input className={`form-control ${errors.imageUrl ? 'is-invalid' : ''}`} placeholder="https://…" value={createForm.imageUrl} onChange={(e) => { const v = e.target.value; setCreateForm({ ...createForm, imageUrl: v }); setErrors((prev) => ({ ...prev, imageUrl: undefined })); }} />
+            {errors.imageUrl && <div className="invalid-feedback">{errors.imageUrl}</div>}
           </div>
           <div className="col-md-5 d-flex align-items-end">
             {createForm.imageUrl ? (
@@ -125,11 +139,12 @@ function BannersPage() {
           </div>
           <div className="col-md-6">
             <label className="form-label">Placement</label>
-            <select className="form-select" value={createForm.placement} onChange={(e) => setCreateForm({ ...createForm, placement: e.target.value })}>
+            <select className={`form-select ${errors.placement ? 'is-invalid' : ''}`} value={createForm.placement} onChange={(e) => { setCreateForm({ ...createForm, placement: e.target.value }); setErrors((prev) => ({ ...prev, placement: undefined })); }}>
               <option value="home-hero">Home Hero</option>
               <option value="rail">Rail</option>
               <option value="sidebar">Sidebar</option>
             </select>
+            {errors.placement && <div className="invalid-feedback">{errors.placement}</div>}
           </div>
           <div className="col-md-6">
             <label className="form-label">Inicio</label>
@@ -137,7 +152,8 @@ function BannersPage() {
           </div>
           <div className="col-md-6">
             <label className="form-label">Fin</label>
-            <input type="datetime-local" className="form-control" value={createForm.endsAt} onChange={(e) => setCreateForm({ ...createForm, endsAt: e.target.value })} />
+            <input type="datetime-local" className={`form-control ${errors.endsAt ? 'is-invalid' : ''}`} value={createForm.endsAt} onChange={(e) => { const v = e.target.value; setCreateForm({ ...createForm, endsAt: v }); setErrors((prev) => ({ ...prev, endsAt: undefined })); }} />
+            {errors.endsAt && <div className="invalid-feedback">{errors.endsAt}</div>}
           </div>
           <div className="col-12">
             <div className="form-check">
@@ -148,7 +164,14 @@ function BannersPage() {
         </div>
         <div className="d-flex justify-content-end gap-2 mt-3">
           <button className="btn btn-outline-secondary" onClick={() => setCreating(false)}>Cancelar</button>
-          <button className="btn btn-primary" onClick={async () => { await api.adminCreateBanner(createForm); setCreating(false); await load(); }}>Crear</button>
+          <button className="btn btn-primary" onClick={async () => {
+            const e = validate(createForm);
+            setErrors(e);
+            if (Object.keys(e).length) return;
+            await api.adminCreateBanner(createForm);
+            setCreating(false);
+            await load();
+          }}>Crear</button>
         </div>
       </BrickModal>
     </AdminLayout>
