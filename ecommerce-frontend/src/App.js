@@ -28,6 +28,10 @@ import UserDetailPage from './pages/admin/UserDetailPage.jsx';
 import SegmentsPage from './pages/admin/SegmentsPage.jsx';
 import CampaignsPage from './pages/admin/CampaignsPage.jsx';
 import Impersonate from './pages/Impersonate.jsx';
+import PageView from './pages/PageView.jsx';
+import HomeBuilderPage from './pages/admin/HomeBuilderPage.jsx';
+import BannersPage from './pages/admin/BannersPage.jsx';
+import PagesPage from './pages/admin/PagesPage.jsx';
 
 function App() {
   return (
@@ -65,6 +69,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login/callback" element={<LoginCallback />} />
+          <Route path="/p/:slug" element={<PageView />} />
           <Route
             path="/orders"
             element={
@@ -90,10 +95,34 @@ function App() {
             }
           />
           <Route
+            path="/admin/home"
+            element={
+              <ProtectedRoute role="admin">
+                <HomeBuilderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/orders"
             element={
               <ProtectedRoute role="admin">
                 <OrdersListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/banners"
+            element={
+              <ProtectedRoute role="admin">
+                <BannersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/pages"
+            element={
+              <ProtectedRoute role="admin">
+                <PagesPage />
               </ProtectedRoute>
             }
           />

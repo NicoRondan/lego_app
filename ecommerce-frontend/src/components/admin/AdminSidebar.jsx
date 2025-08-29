@@ -16,6 +16,24 @@ function AdminSidebar() {
           Dashboard
         </NavLink>
         <NavLink
+          to="/admin/home"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          Home Builder
+        </NavLink>
+        <NavLink
+          to="/admin/banners"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          Banners
+        </NavLink>
+        <NavLink
+          to="/admin/pages"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          Páginas
+        </NavLink>
+        <NavLink
           to="/admin/orders"
           className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
         >
