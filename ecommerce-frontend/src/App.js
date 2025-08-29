@@ -35,7 +35,7 @@ import BannersPage from './pages/admin/BannersPage.jsx';
 function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const wrapperClass = isAdminRoute ? 'container-fluid px-3' : 'container my-4';
+  const wrapperClass = isAdminRoute ? 'container-fluid px-3 mt-3' : 'container my-4';
   return (
     <>
       <Navbar />
