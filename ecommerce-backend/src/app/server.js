@@ -27,6 +27,16 @@ const {
 const csrfMiddleware = require('../shared/csrf');
 const { logger } = require('../shared/logger');
 
+// Ensure schema exists when running tests (global setup)
+let __syncedForTests = false;
+async function ensureTestSchema() {
+  if (process.env.NODE_ENV !== 'test' || __syncedForTests) return;
+  // Lazy require to respect DB_URI overrides set by tests before calling createApp
+  const { sequelize } = require('../infra/models');
+  await sequelize.sync();
+  __syncedForTests = true;
+}
+
 // Import routers for each module
 const authRouter = require('../modules/auth/routes');
 const catalogRouter = require('../modules/catalog/router');
@@ -51,6 +61,7 @@ const adminPagesRouter = require('../modules/admin/pagesRouter');
 const cmsRouter = require('../modules/cms/router');
 
 async function createApp() {
+  await ensureTestSchema();
   const app = express();
   // Core security middleware
   app.use(

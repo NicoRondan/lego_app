@@ -388,13 +388,7 @@ async function seed() {
     placement: 'home-hero',
     isActive: true,
   });
-  const railBanner = await Banner.create({
-    title: 'Ofertas de la semana',
-    imageUrl: 'https://via.placeholder.com/800x300?text=RAIL',
-    linkUrl: '/products?order=price_desc',
-    placement: 'rail',
-    isActive: true,
-  });
+  // Nota: por ahora las secciones rail no usan banner.
   await Banner.create({
     title: 'Promo lateral',
     imageUrl: 'https://via.placeholder.com/300x600?text=SIDEBAR',
