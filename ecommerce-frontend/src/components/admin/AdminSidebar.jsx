@@ -28,12 +28,6 @@ function AdminSidebar() {
           Banners
         </NavLink>
         <NavLink
-          to="/admin/pages"
-          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-        >
-          Páginas
-        </NavLink>
-        <NavLink
           to="/admin/orders"
           className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
         >

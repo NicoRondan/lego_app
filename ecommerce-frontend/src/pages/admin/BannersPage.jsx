@@ -10,8 +10,8 @@ function EditRow({ banner, onSave }) {
   };
   return (
     <tr>
-      <td className="text-muted">{banner?.id || '-'}</td>
-      <td>
+      <td className="text-muted" style={{ width: 60 }}>{banner?.id || '-'}</td>
+      <td style={{ minWidth: 260 }}>
         <div className="d-flex align-items-center gap-2">
           {form.imageUrl ? (
             <img src={form.imageUrl} alt="preview" style={{ width: 64, height: 32, objectFit: 'cover', borderRadius: 4 }} />
@@ -21,25 +21,25 @@ function EditRow({ banner, onSave }) {
           <input className="form-control" value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} />
         </div>
       </td>
-      <td><input className="form-control" placeholder="https://..." value={form.imageUrl || ''} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} /></td>
-      <td><input className="form-control" placeholder="/ruta" value={form.linkUrl || ''} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} /></td>
-      <td>
+      <td style={{ minWidth: 320 }}><input className="form-control" placeholder="https://..." value={form.imageUrl || ''} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} /></td>
+      <td style={{ minWidth: 220 }}><input className="form-control" placeholder="/ruta" value={form.linkUrl || ''} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} /></td>
+      <td style={{ width: 160 }}>
         <select className="form-select" value={form.placement || 'home-hero'} onChange={(e) => setForm({ ...form, placement: e.target.value })}>
           <option value="home-hero">Home Hero</option>
           <option value="rail">Rail</option>
           <option value="sidebar">Sidebar</option>
         </select>
       </td>
-      <td>
+      <td style={{ minWidth: 220 }}>
         <input type="datetime-local" className="form-control" value={form.startsAt ? String(form.startsAt).slice(0,16) : ''} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} />
       </td>
-      <td>
+      <td style={{ minWidth: 220 }}>
         <input type="datetime-local" className="form-control" value={form.endsAt ? String(form.endsAt).slice(0,16) : ''} onChange={(e) => setForm({ ...form, endsAt: e.target.value })} />
       </td>
       <td className="text-center">
         <input type="checkbox" className="form-check-input" checked={!!form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
       </td>
-      <td>
+      <td style={{ width: 140 }}>
         <button className="btn btn-primary" onClick={save}>Guardar</button>
       </td>
     </tr>

@@ -31,7 +31,6 @@ import Impersonate from './pages/Impersonate.jsx';
 import PageView from './pages/PageView.jsx';
 import HomeBuilderPage from './pages/admin/HomeBuilderPage.jsx';
 import BannersPage from './pages/admin/BannersPage.jsx';
-import PagesPage from './pages/admin/PagesPage.jsx';
 
 function App() {
   return (
@@ -115,14 +114,6 @@ function App() {
             element={
               <ProtectedRoute role="admin">
                 <BannersPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/pages"
-            element={
-              <ProtectedRoute role="admin">
-                <PagesPage />
               </ProtectedRoute>
             }
           />
