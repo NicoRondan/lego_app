@@ -128,7 +128,12 @@ function HomeBuilderPage() {
 
           <div className="mt-4">
             <h6>Estado</h6>
-            <pre className="bg-light p-2 rounded"><code>{JSON.stringify(info, null, 2)}</code></pre>
+            <pre className="bg-light text-dark p-2 rounded" style={{ whiteSpace: 'pre-wrap' }}>
+              {info ? JSON.stringify({
+                latestDraft: info.latestDraft ? { version: info.latestDraft.version, publishedAt: info.latestDraft.publishedAt, sections: info.latestDraft.json?.sections?.length ?? 0 } : null,
+                latestPublished: info.latestPublished ? { version: info.latestPublished.version, publishedAt: info.latestPublished.publishedAt, sections: info.latestPublished.json?.sections?.length ?? 0 } : null,
+              }, null, 2) : 'Sin datos'}
+            </pre>
           </div>
         </>
       )}
@@ -137,4 +142,3 @@ function HomeBuilderPage() {
 }
 
 export default HomeBuilderPage;
-

@@ -1,16 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import * as api from '../services/api';
+import { toHtmlSafe } from '../utils/markdown';
 
-function mdToHtml(md) {
-  let html = md || '';
-  html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
-  html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
-  html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
-  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-  html = html.split(/\n{2,}/).map(p => `<p>${p}</p>`).join('');
-  return html;
-}
 
 function PageView() {
   const { slug } = useParams();
@@ -30,12 +22,7 @@ function PageView() {
     return () => { mounted = false; };
   }, [slug]);
 
-  const html = useMemo(() => {
-    if (!page) return '';
-    const body = page.body || '';
-    if (body.trim().startsWith('<')) return body;
-    return mdToHtml(body);
-  }, [page]);
+  const html = useMemo(() => (page ? toHtmlSafe(page.body || '') : ''), [page]);
 
   if (notFound) return <div className="container my-5"><h1>Página no encontrada</h1></div>;
   if (!page) return <div className="container my-5"><p>Cargando…</p></div>;

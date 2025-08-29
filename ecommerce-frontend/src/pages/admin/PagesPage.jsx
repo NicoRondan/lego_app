@@ -1,25 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import * as api from '../../services/api';
+import { toHtmlSafe } from '../../utils/markdown';
 
-function mdToHtml(md) {
-  // very naive markdown -> html (headings, paragraphs, links)
-  let html = md || '';
-  html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
-  html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
-  html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
-  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-  html = html.split(/\n{2,}/).map(p => `<p>${p}</p>`).join('');
-  return html;
-}
 
 function Editor({ initial, onSaved }) {
   const [form, setForm] = useState(initial || { slug: '', title: '', body: '', publishedAt: '' });
-  const previewHtml = useMemo(() => {
-    const body = form.body || '';
-    if (body.trim().startsWith('<')) return body; // assume HTML
-    return mdToHtml(body);
-  }, [form.body]);
+  const previewHtml = useMemo(() => toHtmlSafe(form.body || ''), [form.body]);
   const save = async () => {
     const data = { slug: form.slug, title: form.title, body: form.body, publishedAt: form.publishedAt || null };
     if (initial?.id) await api.adminUpdatePage(initial.id, data); else await api.adminCreatePage(data);
@@ -102,4 +89,3 @@ function PagesPage() {
 }
 
 export default PagesPage;
-
