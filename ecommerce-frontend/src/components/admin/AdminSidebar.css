@@ -2,6 +2,10 @@
   min-height: 100%;
 }
 
+/* Force admin content to align flush with sidebar top */
+.admin-layout-row { align-items: flex-start; }
+.admin-main .lego-container { margin-top: 0 !important; }
+
 .admin-sidebar .nav-link {
   color: #f8f9fa;
 }
