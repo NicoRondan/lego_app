@@ -99,6 +99,15 @@ los colores semánticos o ajustar valores específicos.
 
 - Página de cupones: `/admin/coupons` para crear, editar y filtrar cupones (requiere usuario con rol `admin`).
 
+### CMS (Home, Banners, Páginas)
+
+- Home Builder: `/admin/home` para armar secciones y publicar sin redeploy.
+- Banners: `/admin/banners` CRUD con fechas y `placement` (`home-hero`, `rail`, `sidebar`).
+- Páginas: `/admin/pages` editor con preview (Markdown o HTML). Públicas en `/p/:slug` con SEO básico.
+
+Home en cliente
+- La Home consulta `GET /home` y renderiza las secciones declaradas. Si no hay layout publicado, muestra el contenido por defecto.
+
 ### Usuarios, Direcciones e Impersonación
 
 - Página: `/admin/users` (roles: support, superadmin y compatibilidad con `admin`).

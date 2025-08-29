@@ -57,6 +57,34 @@ Servicio backend para una tienda B2C de Lego construido con Node.js, Express, Se
 - `npm test`: ejecuta las pruebas con el runner nativo de Node.
 - `npm run seed`: recrea el esquema y carga datos de ejemplo.
 
+## CMS (Home, Banners, Páginas)
+
+Mini CMS para construir la Home, gestionar Banners y páginas legales/estáticas.
+
+- Modelos:
+  - `home_layouts`: `id`, `json` (estructura de secciones), `version`, `published_at`.
+  - `banners`: `id`, `title`, `image_url`, `link_url`, `starts_at`, `ends_at`, `placement` (`home-hero|rail|sidebar`), `is_active`.
+  - `pages`: `id`, `slug` (único), `title`, `body` (markdown o html), `published_at`.
+
+- Contrato `home_layout.json`:
+  - `sections`: lista con objetos de secciones con `type`:
+    - `hero` `{ bannerId }`
+    - `rail` `{ title, query: { theme?, isOnSale?, sort? }, cta? }`
+    - `grid` `{ collectionId }` (reservado)
+    - `notice` `{ text, variant }`
+
+- Endpoints públicos:
+  - `GET /home` → `{ layout, version, publishedAt, bannersById }` (publishing actualiza sin redeploy).
+  - `GET /pages/:slug` → página publicada.
+
+- Endpoints Admin (requieren rol marketing/admin):
+  - `GET /admin/home-layout` — obtener último borrador/publicado.
+  - `POST /admin/home-layout` — guardar `{ json, publish? }`.
+  - `GET/POST/PUT /admin/banners` — CRUD banners.
+  - `GET/POST/PUT /admin/pages` — CRUD páginas.
+
+Ver frontend para el Home Builder y editores.
+
 ## Esquema de base de datos
 
 ```mermaid

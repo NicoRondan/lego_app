@@ -40,6 +40,9 @@ function PageView() {
   if (notFound) return <div className="container my-5"><h1>Página no encontrada</h1></div>;
   if (!page) return <div className="container my-5"><p>Cargando…</p></div>;
 
+  // Basic SEO: set document title
+  if (page?.title) document.title = `${page.title} – Brick Market`;
+
   return (
     <div className="container my-5">
       <h1 className="mb-4">{page.title}</h1>
@@ -49,4 +52,3 @@ function PageView() {
 }
 
 export default PageView;
-
