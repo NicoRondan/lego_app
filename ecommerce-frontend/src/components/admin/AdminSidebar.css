@@ -1,9 +1,10 @@
-.admin-sidebar {
-  min-height: 100%;
-}
+.admin-sidebar { min-height: 100%; position: sticky; top: 0; }
 
 /* Force admin content to align flush with sidebar top */
-.admin-layout-row { align-items: flex-start; }
+.admin-layout-row { align-items: flex-start; flex-wrap: nowrap; }
+.admin-main { min-width: 0; }
+.admin-main .lego-container { margin-top: 0 !important; width: 100%; }
+.admin-main h1:first-child { margin-top: 0; }
 .admin-main .lego-container { margin-top: 0 !important; }
 
 .admin-sidebar .nav-link {
