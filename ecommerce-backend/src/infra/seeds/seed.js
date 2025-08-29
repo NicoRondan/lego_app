@@ -9,6 +9,10 @@ const {
   OrderItem,
   ProductMedia,
   ProductPriceHistory,
+  // CMS
+  HomeLayout,
+  Banner,
+  Page,
 } = require('../models');
 const bcrypt = require('bcrypt');
 
@@ -374,6 +378,38 @@ async function seed() {
   }
 
   console.log('Database seeded');
+
+  // CMS: Seed a hero banner, simple pages and initial published home layout
+  const hero = await Banner.create({
+    title: 'LEGO Super Sale',
+    imageUrl: 'https://images.lego.com/marketing-hero-placeholder.jpg',
+    linkUrl: '/products',
+    placement: 'home-hero',
+    isActive: true,
+  });
+  await Banner.create({
+    title: 'Sidebar Promo',
+    imageUrl: 'https://images.lego.com/sidebar-banner.jpg',
+    linkUrl: '/products?order=createdAt_desc',
+    placement: 'sidebar',
+    isActive: true,
+  });
+
+  await Page.create({ slug: 'terminos', title: 'Términos y Condiciones', body: '<h2>Términos</h2><p>Estos son los términos de ejemplo.</p>', publishedAt: new Date() });
+  await Page.create({ slug: 'privacidad', title: 'Política de Privacidad', body: '# Privacidad\n\nEjemplo de página en markdown.', publishedAt: new Date() });
+
+  await HomeLayout.create({
+    version: 1,
+    publishedAt: new Date(),
+    json: {
+      sections: [
+        { type: 'hero', bannerId: hero.id },
+        { type: 'notice', text: 'Envíos gratis en compras superiores a $100', variant: 'info' },
+        { type: 'rail', title: 'Más vendidos', query: { sort: 'sales_desc' }, cta: { label: 'Ver todo', href: '/products?order=sales_desc' } },
+        { type: 'rail', title: 'Novedades', query: { sort: 'createdAt_desc' } },
+      ],
+    },
+  });
 }
 
 module.exports = { seed };
