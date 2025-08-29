@@ -45,6 +45,9 @@ const adminCampaignsRouter = require('../modules/admin/campaignsRouter');
 const adminReportsRouter = require('../modules/admin/reportsRouter');
 const adminInventoryRouter = require('../modules/admin/inventoryRouter');
 const adminUsersRouter = require('../modules/admin/usersRouter');
+const adminHomeLayoutRouter = require('../modules/admin/homeLayoutRouter');
+const adminBannersRouter = require('../modules/admin/bannersRouter');
+const adminPagesRouter = require('../modules/admin/pagesRouter');
 const cmsRouter = require('../modules/cms/router');
 
 async function createApp() {
@@ -134,6 +137,9 @@ async function createApp() {
   app.use('/admin/reports', isAdmin, adminReportsRouter);
   app.use('/admin/inventory', isAdmin, hasRole('catalog_manager'), adminInventoryRouter);
   app.use('/admin/users', isAdmin, hasRole('support'), adminUsersRouter);
+  app.use('/admin/home-layout', isAdmin, hasRole('marketing'), adminHomeLayoutRouter);
+  app.use('/admin/banners', isAdmin, hasRole('marketing'), adminBannersRouter);
+  app.use('/admin/pages', isAdmin, hasRole('marketing'), adminPagesRouter);
 
   // Configure Apollo Server for GraphQL (Apollo Server 5)
   const apolloServer = new ApolloServer({
