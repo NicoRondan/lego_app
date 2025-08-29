@@ -1,17 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import * as api from '../../services/api';
+import HeroBanner from '../../components/cms/HeroBanner';
+import Notice from '../../components/cms/Notice';
+import SectionRail from '../../components/cms/SectionRail';
 
-function SectionRow({ section, onChange, onRemove, onMoveUp, onMoveDown }) {
+function SectionRow({ section, onChange, onRemove, onMoveUp, onMoveDown, banners }) {
   return (
     <div className="card mb-2">
       <div className="card-body d-flex align-items-center gap-3">
         <span className="badge text-bg-secondary text-uppercase">{section.type}</span>
         {section.type === 'hero' && (
-          <>
-            <label className="form-label mb-0">bannerId</label>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <label className="form-label mb-0">Banner</label>
+            <select
+              className="form-select form-select-sm"
+              style={{ width: 260 }}
+              value={section.bannerId || ''}
+              onChange={(e) => onChange({ ...section, bannerId: e.target.value ? parseInt(e.target.value, 10) : null })}
+            >
+              <option value="">(Elegir banner hero)</option>
+              {(banners || []).filter(b => b.placement === 'home-hero').map((b) => (
+                <option key={b.id} value={b.id}>{`#${b.id} – ${b.title}`}</option>
+              ))}
+            </select>
+            <input list="heroBanners" className="form-control form-control-sm" placeholder="Buscar banner por título" style={{ width: 240 }}
+                   onChange={(e) => onChange({ ...section, bannerId: e.target.value ? parseInt(e.target.value, 10) : null })} />
+            <datalist id="heroBanners">
+              {(banners || []).filter(b => b.placement === 'home-hero').map((b) => (
+                <option key={b.id} value={b.id}>{`#${b.id} – ${b.title}`}</option>
+              ))}
+            </datalist>
+            <span className="text-muted small">o ID manual:</span>
             <input type="number" value={section.bannerId || ''} onChange={(e) => onChange({ ...section, bannerId: parseInt(e.target.value, 10) || null })} className="form-control form-control-sm" style={{ width: 120 }} />
-          </>
+            {section.bannerId && (banners || []).some(b => b.id === section.bannerId) && (
+              <span className="d-flex align-items-center gap-2 ms-2">
+                <img alt="preview" src={(banners || []).find(b => b.id === section.bannerId)?.imageUrl} style={{ height: 32, width: 64, objectFit: 'cover', borderRadius: 4 }} />
+                <span className="small text-muted">{(banners || []).find(b => b.id === section.bannerId)?.title}</span>
+              </span>
+            )}
+          </div>
         )}
         {section.type === 'rail' && (
           <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -27,6 +55,9 @@ function SectionRow({ section, onChange, onRemove, onMoveUp, onMoveDown }) {
             </select>
             <label className="form-label mb-0">Tema</label>
             <input type="text" value={section.query?.theme || ''} onChange={(e) => onChange({ ...section, query: { ...(section.query || {}), theme: e.target.value } })} className="form-control form-control-sm" style={{ width: 160 }} />
+            <label className="form-label mb-0">CTA</label>
+            <input type="text" placeholder="Etiqueta" value={section.cta?.label || ''} onChange={(e) => onChange({ ...section, cta: { ...(section.cta || {}), label: e.target.value } })} className="form-control form-control-sm" style={{ width: 160 }} />
+            <input type="text" placeholder="/ruta" value={section.cta?.href || ''} onChange={(e) => onChange({ ...section, cta: { ...(section.cta || {}), href: e.target.value } })} className="form-control form-control-sm" style={{ width: 220 }} />
           </div>
         )}
         {section.type === 'notice' && (
@@ -56,6 +87,8 @@ function HomeBuilderPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [info, setInfo] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [banners, setBanners] = useState([]);
 
   useEffect(() => {
     async function load() {
@@ -65,6 +98,8 @@ function HomeBuilderPage() {
         const initial = data.latestDraft?.json?.sections || data.latestPublished?.json?.sections || [];
         setSections(initial);
         setInfo({ latestDraft: data.latestDraft, latestPublished: data.latestPublished });
+        // banners for hero selector
+        try { setBanners(await api.adminListBanners()); } catch {}
       } finally {
         setLoading(false);
       }
@@ -118,12 +153,14 @@ function HomeBuilderPage() {
               onRemove={() => setSections((prev) => prev.filter((_, idx) => idx !== i))}
               onMoveUp={() => move(i, -1)}
               onMoveDown={() => move(i, +1)}
+              banners={banners}
             />
           ))}
 
           <div className="mt-3 d-flex gap-2">
             <button className="btn btn-secondary" disabled={saving} onClick={() => save(false)}>Guardar borrador</button>
             <button className="btn btn-primary" disabled={saving} onClick={() => save(true)}>Publicar</button>
+            <button className="btn btn-outline-info" type="button" onClick={() => setShowPreview(p => !p)}>{showPreview ? 'Ocultar vista previa' : 'Vista previa'}</button>
           </div>
 
           <div className="mt-4">
@@ -135,6 +172,20 @@ function HomeBuilderPage() {
               }, null, 2) : 'Sin datos'}
             </pre>
           </div>
+
+          {showPreview && (
+            <div className="mt-4">
+              <h6>Vista previa</h6>
+              <div className="lego-container p-3" style={{ border: '1px dashed var(--bs-secondary)', borderRadius: 6 }}>
+                {sections.map((s, idx) => {
+                  if (s.type === 'hero') return <HeroBanner key={idx} banner={(banners || []).find(b => b.id === s.bannerId)} />;
+                  if (s.type === 'notice') return <Notice key={idx} text={s.text} variant={s.variant} />;
+                  if (s.type === 'rail') return <SectionRail key={idx} title={s.title} query={s.query || {}} cta={s.cta} />;
+                  return null;
+                })}
+              </div>
+            </div>
+          )}
         </>
       )}
     </AdminLayout>
