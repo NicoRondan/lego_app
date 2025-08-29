@@ -10,14 +10,29 @@ import Newsletter from '../components/home/Newsletter';
 import TrustBadges from '../components/home/TrustBadges';
 import * as api from '../services/api';
 import SkeletonCard from '../components/home/SkeletonCard';
+import HeroBanner from '../components/cms/HeroBanner';
+import SectionRail from '../components/cms/SectionRail';
+import Notice from '../components/cms/Notice';
 
 function Home() {
   const [featured, setFeatured] = useState(null);
   const [top, setTop] = useState(null);
   const [news, setNews] = useState(null);
+  // CMS
+  const [homeLayout, setHomeLayout] = useState(null);
+  const [bannersById, setBannersById] = useState({});
 
   useEffect(() => {
     const load = async () => {
+      try {
+        // Load CMS home first
+        const home = await api.getHome().catch(() => null);
+        if (home && home.layout && Array.isArray(home.layout.sections) && home.layout.sections.length > 0) {
+          setHomeLayout(home.layout);
+          setBannersById(home.bannersById || {});
+          return; // use CMS, skip legacy widgets
+        }
+      } catch {}
       try {
         const [f, t, n] = await Promise.all([
           api.getProducts({ featured: true, limit: 12 }),
@@ -62,6 +77,32 @@ function Home() {
     </div>
   );
 
+  // Render CMS-driven home if available
+  if (homeLayout && Array.isArray(homeLayout.sections)) {
+    return (
+      <div>
+        <PromoStrip />
+        <div className="container my-4">
+          {homeLayout.sections.map((s, idx) => {
+            if (s.type === 'hero') {
+              const banner = bannersById?.[s.bannerId];
+              return <HeroBanner key={idx} banner={banner} />;
+            }
+            if (s.type === 'notice') {
+              return <Notice key={idx} text={s.text} variant={s.variant} />;
+            }
+            if (s.type === 'rail') {
+              return <SectionRail key={idx} title={s.title} query={s.query || {}} cta={s.cta} />;
+            }
+            // grid or unknown: skip for now
+            return null;
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback to legacy home
   return (
     <div>
       <PromoStrip />
@@ -103,4 +144,3 @@ function Home() {
 }
 
 export default Home;
-
