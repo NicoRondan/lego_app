@@ -3,3 +3,4 @@
 # Local env
 **/.env
 ecommerce-backend/data/*.sqlite*
+ecommerce-backend/test/tmp_*.sqlite
