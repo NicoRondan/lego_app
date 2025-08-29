@@ -39,7 +39,7 @@ function App() {
   return (
     <>
       <Navbar />
-      <div className={wrapperClass + (isAdminRoute ? ' mt-3' : '')}>
+      <div className={wrapperClass}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductsPage />} />
@@ -188,7 +188,7 @@ function App() {
           <Route path="/impersonate" element={<Impersonate />} />
         </Routes>
       </div>
-      {!isAdminRoute && <Footer />}
+      <Footer />
       <ToastContainer position="bottom-right" />
     </>
   );
