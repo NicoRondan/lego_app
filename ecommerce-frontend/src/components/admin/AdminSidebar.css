@@ -5,10 +5,11 @@
 }
 
 /* Force admin content to align flush with sidebar top */
-.admin-layout-row { align-items: flex-start; flex-wrap: nowrap; }
+.admin-layout-row { align-items: stretch !important; flex-wrap: nowrap; margin-top: 1rem; }
+.admin-layout-row > .col { display: flex; }
 .admin-main { min-width: 0; }
-.admin-main .lego-container { margin-top: 1rem !important; width: 100%; padding: .75rem 1rem; border-width: 2px; }
-.admin-sidebar.lego-container { margin-top: 1rem; padding: .5rem .75rem; border-width: 2px; }
+.admin-main .lego-container { width: 100%; padding: .75rem 1rem; border-width: 2px; flex: 1 1 auto; }
+.admin-sidebar.lego-container { padding: .5rem .75rem; border-width: 2px; height: 100%; }
 
 /* Narrower fixed width sidebar on md+ to avoid taking too much space */
 @media (min-width: 768px){

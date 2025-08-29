@@ -96,7 +96,7 @@ function BannersPage() {
 
   return (
     <AdminLayout>
-      <h1>Banners</h1>
+      <h2>Banners</h2>
       <p className="text-muted">Gestioná los banners con fechas y placement.</p>
 
       <div className="d-flex gap-2 align-items-end mb-3">
