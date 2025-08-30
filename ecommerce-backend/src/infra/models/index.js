@@ -433,6 +433,52 @@ const Review = sequelize.define('Review', {
   underscored: true,
 });
 
+// CMS: Home layout versions (draft/published)
+const HomeLayout = sequelize.define('HomeLayout', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  json: { type: DataTypes.JSON, allowNull: false },
+  version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
+  publishedAt: { type: DataTypes.DATE, field: 'published_at' },
+}, {
+  tableName: 'home_layouts',
+  underscored: true,
+});
+
+// CMS: Marketing banners
+const Banner = sequelize.define('Banner', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  title: { type: DataTypes.STRING, allowNull: false },
+  imageUrl: { type: DataTypes.STRING, allowNull: false, field: 'image_url' },
+  linkUrl: { type: DataTypes.STRING, field: 'link_url' },
+  startsAt: { type: DataTypes.DATE, field: 'starts_at' },
+  endsAt: { type: DataTypes.DATE, field: 'ends_at' },
+  placement: { type: DataTypes.ENUM('home-hero','rail','sidebar'), allowNull: false },
+  isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: 'is_active' },
+}, {
+  tableName: 'banners',
+  underscored: true,
+  indexes: [
+    { fields: ['placement'] },
+    { fields: ['starts_at'] },
+    { fields: ['ends_at'] },
+  ],
+});
+
+// CMS: Legal or content pages
+const Page = sequelize.define('Page', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  slug: { type: DataTypes.STRING, allowNull: false, unique: true },
+  title: { type: DataTypes.STRING, allowNull: false },
+  body: { type: DataTypes.TEXT, allowNull: false }, // markdown or html
+  publishedAt: { type: DataTypes.DATE, field: 'published_at' },
+}, {
+  tableName: 'pages',
+  underscored: true,
+  indexes: [
+    { unique: true, fields: ['slug'] },
+  ],
+});
+
 // Product media (multiple images, instructions, etc)
 const ProductMedia = sequelize.define('ProductMedia', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -772,6 +818,10 @@ Order?.addHook?.('afterUpdate', OrderUpdatedHook);
 module.exports = {
   sequelize,
   User,
+  // CMS
+  HomeLayout,
+  Banner,
+  Page,
   AdminUser,
   AdminUserSession,
   AdminAuditLog,

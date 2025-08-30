@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
@@ -28,12 +28,18 @@ import UserDetailPage from './pages/admin/UserDetailPage.jsx';
 import SegmentsPage from './pages/admin/SegmentsPage.jsx';
 import CampaignsPage from './pages/admin/CampaignsPage.jsx';
 import Impersonate from './pages/Impersonate.jsx';
+import PageView from './pages/PageView.jsx';
+import HomeBuilderPage from './pages/admin/HomeBuilderPage.jsx';
+import BannersPage from './pages/admin/BannersPage.jsx';
 
 function App() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const wrapperClass = isAdminRoute ? 'container-fluid px-3 mt-3' : 'container my-4';
   return (
     <>
       <Navbar />
-      <div className="container my-4">
+      <div className={wrapperClass}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductsPage />} />
@@ -65,6 +71,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login/callback" element={<LoginCallback />} />
+          <Route path="/p/:slug" element={<PageView />} />
           <Route
             path="/orders"
             element={
@@ -90,10 +97,26 @@ function App() {
             }
           />
           <Route
+            path="/admin/home"
+            element={
+              <ProtectedRoute role="admin">
+                <HomeBuilderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/orders"
             element={
               <ProtectedRoute role="admin">
                 <OrdersListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/banners"
+            element={
+              <ProtectedRoute role="admin">
+                <BannersPage />
               </ProtectedRoute>
             }
           />

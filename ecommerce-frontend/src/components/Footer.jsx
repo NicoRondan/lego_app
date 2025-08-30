@@ -5,15 +5,9 @@ import BenefitsBar from './home/BenefitsBar';
 
 export default function Footer(){
   return (
-    <footer className="bg-dark text-light mt-5" role="contentinfo">
+    <footer className="bg-dark text-light mt-4" role="contentinfo">
       <BenefitsBar />
-      <div className="container py-5">
-        <div className="lego-plate p-4 text-center rounded mb-4">
-          <h2 className="mb-3">¿Listo para construir?</h2>
-          <Link to="/products" className="text-decoration-none">
-            <BrickButton className="btn-lg">Ver productos</BrickButton>
-          </Link>
-        </div>
+      <div className="container py-3">
         <div className="row">
           <div className="col-md-4 mb-4">
             <h5 className="text-warning">Información</h5>
@@ -44,7 +38,7 @@ export default function Footer(){
             </div>
           </div>
         </div>
-        <div className="text-center mt-4 small">
+        <div className="text-center mt-3 small">
           Brick Market – inspirado en LEGO
         </div>
       </div>

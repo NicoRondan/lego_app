@@ -9,6 +9,10 @@ const {
   OrderItem,
   ProductMedia,
   ProductPriceHistory,
+  // CMS
+  HomeLayout,
+  Banner,
+  Page,
 } = require('../models');
 const bcrypt = require('bcrypt');
 
@@ -374,6 +378,46 @@ async function seed() {
   }
 
   console.log('Database seeded');
+
+  // CMS: Seed a hero banner, simple pages and initial published home layout
+  // Banners (placeholder images; update in Admin UI)
+  const hero = await Banner.create({
+    title: 'Bienvenido a Brick Market',
+    imageUrl: 'https://via.placeholder.com/1200x420?text=HERO',
+    linkUrl: '/products',
+    placement: 'home-hero',
+    isActive: true,
+  });
+  // Nota: por ahora las secciones rail no usan banner.
+  await Banner.create({
+    title: 'Promo lateral',
+    imageUrl: 'https://via.placeholder.com/300x600?text=SIDEBAR',
+    linkUrl: '/products?order=createdAt_desc',
+    placement: 'sidebar',
+    isActive: true,
+  });
+
+  // Legal pages (editable luego desde Admin)
+  await Page.create({ slug: 'terminos', title: 'Términos y Condiciones', body: '# Términos\n\nCompletá aquí los términos del e‑commerce.', publishedAt: new Date() });
+  await Page.create({ slug: 'privacidad', title: 'Política de Privacidad', body: '# Privacidad\n\nDescribe el tratamiento de datos personales.', publishedAt: new Date() });
+  await Page.create({ slug: 'envios', title: 'Envíos', body: '# Envíos\n\nCostos y tiempos de entrega.', publishedAt: new Date() });
+  await Page.create({ slug: 'devoluciones', title: 'Devoluciones', body: '# Devoluciones\n\nPolítica de cambios y devoluciones.', publishedAt: new Date() });
+
+  // Home layout estándar inicial
+  await HomeLayout.create({
+    version: 1,
+    publishedAt: new Date(),
+    json: {
+      sections: [
+        { type: 'hero', bannerId: hero.id },
+        { type: 'notice', text: 'Envíos gratis en compras superiores a $100', variant: 'info' },
+        { type: 'rail', title: 'Más vendidos', query: { sort: 'sales_desc' }, cta: { label: 'Ver todo', href: '/products?order=sales_desc' } },
+        { type: 'rail', title: 'Novedades', query: { sort: 'createdAt_desc' }, cta: { label: 'Ver novedades', href: '/products?order=createdAt_desc' } },
+        { type: 'rail', title: 'Ofertas', query: { sort: 'price_desc', isOnSale: true }, cta: { label: 'Ver ofertas', href: '/products?featured=true' } },
+        { type: 'rail', title: 'Star Wars', query: { theme: 'Star Wars', sort: 'sales_desc' }, cta: { label: 'Ver colección', href: '/products?theme=Star%20Wars' } },
+      ],
+    },
+  });
 }
 
 module.exports = { seed };
